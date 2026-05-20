@@ -34,6 +34,7 @@ export type DisplayPayload = {
     deviceCode: string;
     name: string;
     orientation: "horizontal" | "vertical";
+    layoutMode: "default" | "youtube";
   };
   masjid: {
     id: string;
@@ -45,6 +46,8 @@ export type DisplayPayload = {
     timezone: string;
     latitude: string | null;
     longitude: string | null;
+    hijriOffset: number;
+    logoUrl: string | null;
   };
   schedule: {
     scheduleDate: string;

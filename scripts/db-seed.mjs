@@ -141,6 +141,25 @@ try {
   );
 
   await conn.query(`
+		INSERT INTO pricing_plans (name, badge, price_monthly, price_yearly, price_note, features_json, cta_label, cta_href, is_highlight, is_active, sort_order)
+		VALUES
+			('Starter', NULL, 0.00, 0.00, 'selamanya', JSON_ARRAY('1 device display','Jadwal sholat manual','Running text dasar','Support komunitas'), 'Mulai Gratis', '/auth/login', 0, 1, 1),
+			('Masjid', 'POPULER', 99000.00, 990000.00, '/ bulan atau Rp 990.000 / tahun', JSON_ARRAY('3 device display','Jadwal sholat otomatis','Slide gambar & jumbotron','Running text unlimited','Mode Sholat Jumat','Event countdown','Support prioritas'), 'Pilih Paket Ini', '/auth/login', 1, 1, 2),
+			('Premium', NULL, 199000.00, 1990000.00, '/ bulan atau Rp 1.990.000 / tahun', JSON_ARRAY('Unlimited device','Semua fitur Masjid','Upload media','YouTube integration','Tema custom','Laporan & statistik','Dedicated support'), 'Hubungi Kami', '/auth/login', 0, 1, 3)
+		ON DUPLICATE KEY UPDATE
+			badge = VALUES(badge),
+			price_monthly = VALUES(price_monthly),
+			price_yearly = VALUES(price_yearly),
+			price_note = VALUES(price_note),
+			features_json = VALUES(features_json),
+			cta_label = VALUES(cta_label),
+			cta_href = VALUES(cta_href),
+			is_highlight = VALUES(is_highlight),
+			is_active = VALUES(is_active),
+			sort_order = VALUES(sort_order)
+	`);
+
+  await conn.query(`
 		INSERT INTO prayer_providers (provider_key, name, base_url, is_active)
 		VALUES ('manual', 'Manual Input', NULL, 1)
 		ON DUPLICATE KEY UPDATE name = VALUES(name), is_active = VALUES(is_active)

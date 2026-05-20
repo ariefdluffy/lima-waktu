@@ -133,6 +133,8 @@ export const masjids = mysqlTable("masjids", {
   timezone: varchar("timezone", { length: 64 })
     .default("Asia/Jakarta")
     .notNull(),
+  hijriOffset: int("hijri_offset").default(0).notNull(),
+  logoUrl: varchar("logo_url", { length: 500 }),
   isActive: int("is_active").default(1).notNull(),
   ...timestamps,
 });
@@ -184,6 +186,9 @@ export const devices = mysqlTable(
     lastSeenAt: datetime("last_seen_at"),
     pairedAt: datetime("paired_at"),
     isActive: int("is_active").default(1).notNull(),
+    layoutMode: mysqlEnum("layout_mode", ["default", "youtube"])
+      .default("default")
+      .notNull(),
     ...timestamps,
   },
   (table) => [uniqueIndex("devices_code_uq").on(table.deviceCode)],
@@ -588,6 +593,36 @@ export const invoices = mysqlTable(
     ...timestamps,
   },
   (table) => [uniqueIndex("invoices_invoice_no_uq").on(table.invoiceNo)],
+);
+
+export const pricingPlans = mysqlTable(
+  "pricing_plans",
+  {
+    id: bigint("id", { mode: "number", unsigned: true })
+      .autoincrement()
+      .primaryKey(),
+    name: varchar("name", { length: 120 }).notNull(),
+    badge: varchar("badge", { length: 64 }),
+    priceMonthly: decimal("price_monthly", { precision: 12, scale: 2 })
+      .default("0.00")
+      .notNull(),
+    priceYearly: decimal("price_yearly", { precision: 12, scale: 2 })
+      .default("0.00")
+      .notNull(),
+    priceNote: varchar("price_note", { length: 255 }),
+    featuresJson: json("features_json"),
+    ctaLabel: varchar("cta_label", { length: 120 })
+      .default("Mulai Gratis")
+      .notNull(),
+    ctaHref: varchar("cta_href", { length: 255 })
+      .default("/auth/login")
+      .notNull(),
+    isHighlight: int("is_highlight").default(0).notNull(),
+    isActive: int("is_active").default(1).notNull(),
+    sortOrder: int("sort_order").default(0).notNull(),
+    ...timestamps,
+  },
+  (table) => [uniqueIndex("pricing_plans_name_uq").on(table.name)],
 );
 
 export const auditLogs = mysqlTable("audit_logs", {

@@ -145,17 +145,32 @@ export const GET: RequestHandler = async (event) => {
     }
 
     // Normalise ke format yang dipakai form
-    const schedules = jadwalList.map((j) => ({
-      date: `${year}-${paddedMonth}-${String(j.tanggal).padStart(2, "0")}`,
-      imsakTime: j.imsak,
-      subuhTime: j.subuh,
-      sunriseTime: j.terbit,
-      dhuhaTime: j.dhuha,
-      dzuhurTime: j.dzuhur,
-      asharTime: j.ashar,
-      maghribTime: j.maghrib,
-      isyaTime: j.isya,
-    }));
+    const schedules = jadwalList
+      .map((j) => {
+        // j.tanggal bisa berupa number (1) atau string ("Jumat, 01/05/2026")
+        // Ekstrak angka hari saja
+        let dayNum: number;
+        if (typeof j.tanggal === "number") {
+          dayNum = j.tanggal;
+        } else {
+          // Format: "Jumat, 01/05/2026" — ambil bagian DD dari DD/MM/YYYY
+          const match = String(j.tanggal).match(/(\d{1,2})\/\d{2}\/\d{4}/);
+          dayNum = match ? parseInt(match[1], 10) : NaN;
+        }
+        const dayStr = String(dayNum).padStart(2, "0");
+        return {
+          date: `${year}-${paddedMonth}-${dayStr}`,
+          imsakTime: j.imsak,
+          subuhTime: j.subuh,
+          sunriseTime: j.terbit,
+          dhuhaTime: j.dhuha,
+          dzuhurTime: j.dzuhur,
+          asharTime: j.ashar,
+          maghribTime: j.maghrib,
+          isyaTime: j.isya,
+        };
+      })
+      .filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s.date));
 
     return json({ ok: true, data: schedules });
   }

@@ -1,14 +1,17 @@
-import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import { asc, eq } from "drizzle-orm";
+import { db } from "$lib/server/db";
+import { pricingPlans } from "$lib/server/db/schema";
 
 export const load: PageServerLoad = async ({ locals }) => {
-  if (!locals.user) {
-    throw redirect(302, "/auth/login");
-  }
+  const plans = await db
+    .select()
+    .from(pricingPlans)
+    .where(eq(pricingPlans.isActive, 1))
+    .orderBy(asc(pricingPlans.sortOrder));
 
-  if (locals.user.roles.includes("superadmin")) {
-    throw redirect(302, "/superadmin");
-  }
-
-  throw redirect(302, "/admin");
+  return {
+    user: locals.user ?? null,
+    plans,
+  };
 };

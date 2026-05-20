@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "$lib/server/db";
 import { devices } from "$lib/server/db/schema";
 
+// Halaman ini publik — tidak perlu login
 export const load: PageServerLoad = async ({ params }) => {
   const deviceCode = params.deviceCode?.trim();
   if (!deviceCode) {

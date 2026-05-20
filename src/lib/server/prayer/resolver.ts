@@ -40,7 +40,10 @@ export type ResolvedPrayerSchedule = {
   scheduleDate: string;
   base: ResolvedPrayerTimes | null;
   resolved: ResolvedPrayerTimes | null;
-  iqamah: Record<IqamahPrayerName, { time: string; delayMinutes: number; enabled: boolean }>;
+  iqamah: Record<
+    IqamahPrayerName,
+    { time: string; delayMinutes: number; enabled: boolean }
+  >;
   source: {
     provider: string | null;
     method: string | null;
@@ -108,13 +111,19 @@ function applyOffset(time: string, offsetMinutes: number): string {
 }
 
 function isCorrectionActive(
-  correction: { activeFrom: Date | null; activeUntil: Date | null; isActive: number },
+  correction: {
+    activeFrom: Date | null;
+    activeUntil: Date | null;
+    isActive: number;
+  },
   date: Date,
 ): boolean {
   if (correction.isActive !== 1) return false;
   const ts = date.getTime();
-  if (correction.activeFrom && correction.activeFrom.getTime() > ts) return false;
-  if (correction.activeUntil && correction.activeUntil.getTime() < ts) return false;
+  if (correction.activeFrom && correction.activeFrom.getTime() > ts)
+    return false;
+  if (correction.activeUntil && correction.activeUntil.getTime() < ts)
+    return false;
   return true;
 }
 
@@ -132,15 +141,13 @@ export async function resolvePrayerScheduleForMasjid(
   masjidId: string,
   scheduleDateYmd: string,
 ): Promise<ResolvedPrayerSchedule> {
-  const targetDate = ymdToUtcDate(scheduleDateYmd);
-
   const [scheduleRow] = await db
     .select()
     .from(prayerSchedules)
     .where(
       and(
         eq(prayerSchedules.masjidId, masjidId),
-        eq(prayerSchedules.scheduleDate, targetDate),
+        eq(prayerSchedules.scheduleDate, scheduleDateYmd as unknown as Date),
       ),
     )
     .limit(1);
@@ -154,11 +161,11 @@ export async function resolvePrayerScheduleForMasjid(
         eq(prayerCorrections.isActive, 1),
         or(
           isNull(prayerCorrections.activeFrom),
-          lte(prayerCorrections.activeFrom, targetDate),
+          lte(prayerCorrections.activeFrom, new Date()),
         ),
         or(
           isNull(prayerCorrections.activeUntil),
-          gte(prayerCorrections.activeUntil, targetDate),
+          gte(prayerCorrections.activeUntil, new Date()),
         ),
       ),
     );
@@ -169,7 +176,7 @@ export async function resolvePrayerScheduleForMasjid(
     .where(
       and(
         eq(prayerOverrides.masjidId, masjidId),
-        eq(prayerOverrides.scheduleDate, targetDate),
+        eq(prayerOverrides.scheduleDate, scheduleDateYmd as unknown as Date),
       ),
     );
 
@@ -198,7 +205,7 @@ export async function resolvePrayerScheduleForMasjid(
   if (resolved) {
     for (const key of PRAYER_KEYS) {
       const matching = correctionRows.filter(
-        (row) => row.prayerName === key && isCorrectionActive(row, targetDate),
+        (row) => row.prayerName === key && isCorrectionActive(row, new Date()),
       );
       if (matching.length === 0) continue;
       const totalOffset = matching.reduce(
@@ -226,7 +233,8 @@ export async function resolvePrayerScheduleForMasjid(
     iqamahRows.map((row) => [row.prayerName as IqamahPrayerName, row]),
   );
 
-  const iqamah: ResolvedPrayerSchedule["iqamah"] = {} as ResolvedPrayerSchedule["iqamah"];
+  const iqamah: ResolvedPrayerSchedule["iqamah"] =
+    {} as ResolvedPrayerSchedule["iqamah"];
 
   for (const prayer of IQAMAH_PRAYERS) {
     const setting = iqamahMap.get(prayer);
@@ -265,9 +273,9 @@ export async function resolvePrayerScheduleForMasjid(
 }
 
 export function todayYmdInJakarta(now = new Date()): string {
-  const jakartaOffsetMs = 7 * 60 * 60 * 1000;
-  const jakartaTime = new Date(now.getTime() + jakartaOffsetMs);
-  return dateToYmd(jakartaTime);
+  const timezoneOffsetMs = 8 * 60 * 60 * 1000; // WITA (UTC+8)
+  const localTime = new Date(now.getTime() + timezoneOffsetMs);
+  return dateToYmd(localTime);
 }
 
 export { PRAYER_KEYS, IQAMAH_PRAYERS };

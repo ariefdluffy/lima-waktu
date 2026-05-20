@@ -15,6 +15,7 @@ import {
   resolvePrayerScheduleForMasjid,
   todayYmdInJakarta,
 } from "$lib/server/prayer/resolver";
+import { getCachedSchedule, setCachedSchedule } from "$lib/server/prayer/cache";
 
 export const GET: RequestHandler = async ({ params, request }) => {
   const deviceCode = params.deviceCode?.trim();
@@ -63,9 +64,15 @@ export const GET: RequestHandler = async ({ params, request }) => {
   const today = todayYmdInJakarta();
   const todayDate = new Date(`${today}T00:00:00.000Z`);
 
-  const [schedule, runningTextRows, slideRows, jumbotronRows, youtubeRows, eventRows] =
+  // Baca dari cache dulu, jika miss fetch dari DB dan simpan ke cache
+  let schedule = getCachedSchedule(masjid.id, today);
+  if (!schedule) {
+    schedule = await resolvePrayerScheduleForMasjid(masjid.id, today);
+    setCachedSchedule(masjid.id, today, schedule);
+  }
+
+  const [runningTextRows, slideRows, jumbotronRows, youtubeRows, eventRows] =
     await Promise.all([
-      resolvePrayerScheduleForMasjid(masjid.id, today),
       db
         .select()
         .from(runningTexts)
@@ -77,10 +84,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
               isNull(runningTexts.startAt),
               lte(runningTexts.startAt, new Date()),
             ),
-            or(
-              isNull(runningTexts.endAt),
-              gte(runningTexts.endAt, new Date()),
-            ),
+            or(isNull(runningTexts.endAt), gte(runningTexts.endAt, new Date())),
           ),
         )
         .orderBy(desc(runningTexts.createdAt)),
@@ -125,7 +129,10 @@ export const GET: RequestHandler = async ({ params, request }) => {
           and(
             eq(youtubeItems.masjidId, masjid.id),
             eq(youtubeItems.isActive, 1),
-            or(isNull(youtubeItems.startAt), lte(youtubeItems.startAt, new Date())),
+            or(
+              isNull(youtubeItems.startAt),
+              lte(youtubeItems.startAt, new Date()),
+            ),
             or(isNull(youtubeItems.endAt), gte(youtubeItems.endAt, new Date())),
           ),
         )
@@ -153,6 +160,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
         deviceCode: device.deviceCode,
         name: device.name,
         orientation: device.orientation,
+        layoutMode: device.layoutMode,
       },
       masjid: {
         id: masjid.id,
@@ -164,6 +172,8 @@ export const GET: RequestHandler = async ({ params, request }) => {
         timezone: masjid.timezone,
         latitude: masjid.latitude,
         longitude: masjid.longitude,
+        hijriOffset: masjid.hijriOffset ?? 0,
+        logoUrl: masjid.logoUrl ?? null,
       },
       schedule,
       runningTexts: runningTextRows.map((row) => ({

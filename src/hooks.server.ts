@@ -1,6 +1,10 @@
 import { sequence } from "@sveltejs/kit/hooks";
 import type { Handle } from "@sveltejs/kit";
 import { getAuthenticatedUserFromSession } from "$lib/server/auth/session";
+import { startPrayerScheduler } from "$lib/server/prayer/scheduler";
+
+// Jalankan cron job prayer scheduler saat server start
+startPrayerScheduler();
 
 const authHandle: Handle = async ({ event, resolve }) => {
   event.locals.user = await getAuthenticatedUserFromSession(event);
@@ -43,7 +47,7 @@ const securityHandle: Handle = async ({ event, resolve }) => {
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "img-src 'self' data: blob: https:",
         "font-src 'self' https://fonts.gstatic.com",
-        "connect-src 'self'",
+        "connect-src 'self' https://api.open-meteo.com",
         "frame-ancestors 'self'",
       ].join("; "),
     );

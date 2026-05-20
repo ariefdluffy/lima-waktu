@@ -1,7 +1,21 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    import type { PageData } from "./$types";
+
+    let { data }: { data: PageData } = $props();
 
     let currentYear = $state(new Date().getFullYear());
+
+    function formatRupiah(val: string | number | null): string {
+        const n = Number(val ?? 0);
+        if (n === 0) return "Gratis";
+        return "Rp " + n.toLocaleString("id-ID");
+    }
+
+    function getFeatures(plan: { featuresJson: unknown }): string[] {
+        if (Array.isArray(plan.featuresJson))
+            return plan.featuresJson as string[];
+        return [];
+    }
 
     const features = [
         {
@@ -33,60 +47,6 @@
             icon: "🔒",
             title: "Multi-Tenant & Aman",
             desc: "Setiap masjid punya data terpisah. Admin hanya bisa akses data masjidnya sendiri. Sistem aman dan terpercaya.",
-        },
-    ];
-
-    const pricing = [
-        {
-            name: "Starter",
-            badge: null,
-            price: "Gratis",
-            priceNote: "selamanya",
-            features: [
-                "1 device display",
-                "Jadwal sholat manual",
-                "Running text dasar",
-                "Support komunitas",
-            ],
-            cta: "Mulai Gratis",
-            ctaHref: "/auth/login",
-            highlight: false,
-        },
-        {
-            name: "Masjid",
-            badge: "POPULER",
-            price: "Rp 99.000",
-            priceNote: "/ bulan atau Rp 990.000 / tahun",
-            features: [
-                "3 device display",
-                "Jadwal sholat otomatis",
-                "Slide gambar & jumbotron",
-                "Running text unlimited",
-                "Mode Sholat Jumat",
-                "Event countdown",
-                "Support prioritas",
-            ],
-            cta: "Pilih Paket Ini",
-            ctaHref: "/auth/login",
-            highlight: true,
-        },
-        {
-            name: "Premium",
-            badge: null,
-            price: "Rp 199.000",
-            priceNote: "/ bulan atau Rp 1.990.000 / tahun",
-            features: [
-                "Unlimited device",
-                "Semua fitur Masjid",
-                "Upload media",
-                "YouTube integration",
-                "Tema custom",
-                "Laporan & statistik",
-                "Dedicated support",
-            ],
-            cta: "Hubungi Kami",
-            ctaHref: "/auth/login",
-            highlight: false,
         },
     ];
 </script>
@@ -224,10 +184,11 @@
             </p>
         </div>
         <div class="grid gap-6 lg:grid-cols-3">
-            {#each pricing as plan}
+            {#each data.plans as plan}
+                {@const highlight = plan.isHighlight === 1}
                 <div
                     class="relative flex flex-col rounded-2xl border-2 p-6 transition
-          {plan.highlight
+                        {highlight
                         ? 'border-emerald-500 bg-emerald-600 text-white shadow-xl shadow-emerald-200'
                         : 'border-slate-200 bg-white text-slate-800 hover:border-emerald-300 hover:shadow-md'}"
                 >
@@ -240,7 +201,7 @@
                     {/if}
                     <div class="mb-4">
                         <h3
-                            class="text-lg font-bold {plan.highlight
+                            class="text-lg font-bold {highlight
                                 ? 'text-white'
                                 : 'text-slate-900'}"
                         >
@@ -248,26 +209,30 @@
                         </h3>
                         <div class="mt-3">
                             <span
-                                class="text-3xl font-extrabold {plan.highlight
+                                class="text-3xl font-extrabold {highlight
                                     ? 'text-white'
-                                    : 'text-emerald-700'}">{plan.price}</span
+                                    : 'text-emerald-700'}"
                             >
+                                {formatRupiah(plan.priceMonthly)}
+                            </span>
                             <span
-                                class="ml-1 text-sm {plan.highlight
+                                class="ml-1 text-sm {highlight
                                     ? 'text-emerald-200'
-                                    : 'text-slate-500'}">{plan.priceNote}</span
+                                    : 'text-slate-500'}"
                             >
+                                {plan.priceNote ?? ""}
+                            </span>
                         </div>
                     </div>
                     <ul class="mb-6 flex-1 space-y-2">
-                        {#each plan.features as feat}
+                        {#each getFeatures(plan) as feat}
                             <li
-                                class="flex items-start gap-2 text-sm {plan.highlight
+                                class="flex items-start gap-2 text-sm {highlight
                                     ? 'text-emerald-100'
                                     : 'text-slate-600'}"
                             >
                                 <span
-                                    class="mt-0.5 text-xs {plan.highlight
+                                    class="mt-0.5 text-xs {highlight
                                         ? 'text-emerald-300'
                                         : 'text-emerald-500'}">✓</span
                                 >
@@ -278,11 +243,11 @@
                     <a
                         href={plan.ctaHref}
                         class="block rounded-xl py-2.5 text-center text-sm font-bold transition
-              {plan.highlight
+                            {highlight
                             ? 'bg-white text-emerald-700 hover:bg-emerald-50'
                             : 'bg-emerald-600 text-white hover:bg-emerald-700'}"
                     >
-                        {plan.cta}
+                        {plan.ctaLabel}
                     </a>
                 </div>
             {/each}
