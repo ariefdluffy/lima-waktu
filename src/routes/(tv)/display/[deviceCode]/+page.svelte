@@ -28,6 +28,7 @@
     let { data }: { data: PageData } = $props();
 
     let payload: DisplayPayload | null = $state(null);
+    let theme = $derived.by(() => payload?.theme ?? null);
     let loading = $state(true);
     let error: string | null = $state(null);
 
@@ -74,6 +75,16 @@
     let currentJumbotron = $state(0);
 
     // Konstanta prayer diimport dari $lib/utils/prayer
+
+    function themeCssVars(palette: Record<string, string> | null): string {
+        if (!palette) return "";
+        return Object.entries(palette)
+            .map(
+                ([k, v]) =>
+                    `--${k.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase())}: ${v}`,
+            )
+            .join("; ");
+    }
 
     // Timezone offset & label dari payload masjid
     let tzLabel = $derived.by(() => {
@@ -573,7 +584,11 @@
             </div>
         </div>
     {:else}
-        <div class="tv-wrap" class:tv-wrap--mood={mood !== "normal"}>
+        <div
+            class="tv-wrap"
+            style={themeCssVars(payload?.theme?.palette ?? null)}
+            class:tv-wrap--mood={mood !== "normal"}
+        >
             <div class="bg-stars"></div>
             <div class="bg-grid"></div>
             <button
@@ -685,9 +700,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #0a0f1e;
-        color: #fff;
-        font-family: "Exo 2", sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: var(--font-body);
     }
 
     /* SCREENSAVER (MODE HEMAT) */
@@ -700,12 +715,12 @@
         background: linear-gradient(
             135deg,
             #05080f 0%,
-            #0a0f1e 30%,
+            var(--bg-primary) 30%,
             #0d1520 60%,
             #080c18 100%
         );
-        font-family: "Exo 2", sans-serif;
-        color: #fff;
+        font-family: var(--font-body);
+        color: var(--text-primary);
         position: relative;
         overflow: hidden;
     }
@@ -713,17 +728,7 @@
     .screensaver-bg {
         position: absolute;
         inset: 0;
-        background:
-            radial-gradient(
-                ellipse at 50% 80%,
-                rgba(16, 185, 129, 0.06) 0%,
-                transparent 60%
-            ),
-            radial-gradient(
-                ellipse at 30% 20%,
-                rgba(52, 211, 153, 0.03) 0%,
-                transparent 40%
-            );
+        background: var(--screensaver-bg);
         pointer-events: none;
     }
 
@@ -771,10 +776,10 @@
     }
 
     .screensaver-masjid-name {
-        font-family: "Cinzel", serif;
+        font-family: var(--font-heading), serif;
         font-size: clamp(18px, 2.5vw, 36px);
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-secondary);
         letter-spacing: 0.05em;
     }
 
@@ -792,12 +797,12 @@
 
     .screensaver-date {
         font-size: clamp(14px, 1.6vw, 24px);
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
     }
 
     .screensaver-hijri {
         font-size: clamp(12px, 1.3vw, 18px);
-        color: rgba(200, 168, 75, 0.5);
+        color: var(--accent-muted);
         margin-top: 4px;
     }
 
@@ -805,7 +810,7 @@
         position: absolute;
         bottom: 40px;
         font-size: clamp(10px, 0.9vw, 14px);
-        color: rgba(255, 255, 255, 0.15);
+        color: var(--text-muted);
         text-align: center;
         width: 100%;
         padding: 0 24px;
@@ -821,12 +826,12 @@
         background: linear-gradient(
             135deg,
             #05080f 0%,
-            #0c1220 40%,
+            var(--bg-primary) 40%,
             #0f1a2e 70%,
             #080c18 100%
         );
-        font-family: "Exo 2", sans-serif;
-        color: #fff;
+        font-family: var(--font-body);
+        color: var(--text-primary);
         position: relative;
         overflow: hidden;
     }
@@ -834,22 +839,7 @@
     .tahajud-bg {
         position: absolute;
         inset: 0;
-        background:
-            radial-gradient(
-                ellipse at 50% 50%,
-                rgba(168, 139, 75, 0.06) 0%,
-                transparent 50%
-            ),
-            radial-gradient(
-                ellipse at 20% 80%,
-                rgba(52, 211, 153, 0.03) 0%,
-                transparent 40%
-            ),
-            radial-gradient(
-                ellipse at 80% 20%,
-                rgba(148, 113, 226, 0.04) 0%,
-                transparent 40%
-            );
+        background: var(--tahajud-bg);
         pointer-events: none;
     }
 
@@ -867,17 +857,17 @@
     }
 
     .tahajud-badge {
-        font-family: "Cinzel", serif;
+        font-family: var(--font-heading), serif;
         font-size: clamp(14px, 1.6vw, 24px);
         font-weight: 700;
-        color: #c8a84b;
+        color: var(--accent-secondary);
         letter-spacing: 0.3em;
-        text-shadow: 0 0 20px rgba(200, 168, 75, 0.3);
+        text-shadow: 0 0 20px var(--accent-muted);
     }
 
     .tahajud-ayat {
         font-size: clamp(13px, 1.3vw, 20px);
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-secondary);
         line-height: 1.8;
         font-style: italic;
         max-width: 600px;
@@ -885,7 +875,7 @@
 
     .tahajud-ayat-src {
         font-size: clamp(10px, 0.9vw, 14px);
-        color: rgba(200, 168, 75, 0.4);
+        color: var(--accent-muted);
         margin-top: -8px;
     }
 
@@ -907,21 +897,21 @@
 
     .tahajud-sub {
         font-size: clamp(11px, 1vw, 16px);
-        color: rgba(255, 255, 255, 0.35);
+        color: var(--text-muted);
         margin-top: 6px;
     }
 
     .tahajud-countdown {
         margin-top: 12px;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
         padding: 16px 32px;
     }
 
     .tahajud-countdown-label {
         font-size: clamp(9px, 0.8vw, 12px);
-        color: rgba(255, 255, 255, 0.3);
+        color: var(--text-muted);
         letter-spacing: 0.15em;
         font-weight: 600;
     }
@@ -935,18 +925,18 @@
 
     .tahajud-masjid {
         font-size: clamp(12px, 1.1vw, 17px);
-        color: rgba(255, 255, 255, 0.2);
+        color: var(--text-muted);
         margin-top: 8px;
     }
 
     .tv-wrap {
         width: 100vw;
         height: 100vh;
-        background: #0a0f1e;
-        font-family: "Exo 2", sans-serif;
+        background: var(--bg-primary);
+        font-family: var(--font-body);
         position: relative;
         overflow: hidden;
-        color: #fff;
+        color: var(--text-primary);
     }
 
     .tv-wrap--mood .main-body {
@@ -960,34 +950,13 @@
     .bg-stars {
         position: absolute;
         inset: 0;
-        background:
-            radial-gradient(
-                ellipse at 20% 50%,
-                rgba(0, 80, 60, 0.15) 0%,
-                transparent 60%
-            ),
-            radial-gradient(
-                ellipse at 80% 20%,
-                rgba(10, 40, 100, 0.2) 0%,
-                transparent 60%
-            ),
-            radial-gradient(
-                ellipse at 50% 100%,
-                rgba(30, 10, 80, 0.2) 0%,
-                transparent 60%
-            );
+        background: var(--bg-stars);
     }
 
     .bg-grid {
         position: absolute;
         inset: 0;
-        background-image:
-            linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-            linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0.025) 1px,
-                transparent 1px
-            );
+        background-image: var(--bg-grid);
         background-size: 40px 40px;
     }
 
@@ -1000,9 +969,9 @@
         background: linear-gradient(
             90deg,
             transparent,
-            #c8a84b,
-            #f0d080,
-            #c8a84b,
+            var(--accent-secondary),
+            var(--accent-primary),
+            var(--accent-secondary),
             transparent
         );
     }
@@ -1017,7 +986,7 @@
         display: flex;
         align-items: center;
         padding: 0 2.5% 0 2%;
-        background: rgba(0, 0, 0, 0.3);
+        background: var(--header-bg);
     }
 
     .masjid-logo-area {
@@ -1030,8 +999,8 @@
     .masjid-logo {
         width: 6%;
         aspect-ratio: 1;
-        background: rgba(200, 168, 75, 0.15);
-        border: 1.5px solid rgba(200, 168, 75, 0.5);
+        background: var(--border-accent);
+        border: 1.5px solid var(--prayer-active-border);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1047,16 +1016,16 @@
     }
 
     .masjid-name {
-        font-family: "Cinzel", serif;
+        font-family: var(--font-heading), serif;
         font-size: clamp(18px, 2.2vw, 36px);
         font-weight: 700;
-        color: #f0d080;
+        color: var(--accent-primary);
         letter-spacing: 0.05em;
     }
 
     .masjid-loc {
         font-size: clamp(11px, 1.2vw, 20px);
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-secondary);
         margin-top: 2px;
         letter-spacing: 0.08em;
     }
@@ -1068,7 +1037,7 @@
     .header-time {
         font-size: clamp(28px, 3.6vw, 74px);
         font-weight: 700;
-        color: #f0d080;
+        color: var(--accent-primary);
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.05em;
     }
@@ -1076,14 +1045,14 @@
     .header-tz {
         font-size: 0.35em;
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.3);
+        color: var(--text-muted);
         vertical-align: super;
         margin-left: 6px;
     }
 
     .header-date {
         font-size: clamp(13px, 1.5vw, 44px);
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-secondary);
         margin-top: 1px;
     }
 
@@ -1103,8 +1072,8 @@
         top: 10px;
         right: 10px;
         z-index: 100;
-        background: rgba(200, 168, 75, 0.2);
-        border: 1px solid rgba(200, 168, 75, 0.4);
+        background: var(--border-accent);
+        border: 1px solid var(--accent-muted);
         border-radius: 50%;
         width: 36px;
         height: 36px;
@@ -1113,11 +1082,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #f0d080;
+        color: var(--accent-primary);
         transition: background 0.2s;
     }
     .sound-unlock-btn:hover {
-        background: rgba(200, 168, 75, 0.4);
+        background: var(--prayer-active-bg);
     }
 
     /* Responsive */

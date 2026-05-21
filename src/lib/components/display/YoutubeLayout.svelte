@@ -134,8 +134,8 @@
         display: flex;
         flex-direction: column;
         padding: 2% 2% 2% 2.5%;
-        border-right: 1px solid rgba(200, 168, 75, 0.2);
-        background: rgba(0, 0, 0, 0.2);
+        border-right: 1px solid var(--border-accent);
+        background: var(--bg-secondary);
         justify-content: flex-start;
         align-items: center;
         gap: 2%;
@@ -144,16 +144,16 @@
 
     .next-label {
         font-size: clamp(10px, 1vw, 20px);
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-secondary);
         letter-spacing: 0.15em;
         text-transform: uppercase;
     }
 
     .next-prayer-name {
-        font-family: "Cinzel", serif;
+        font-family: var(--font-heading), serif;
         font-size: clamp(28px, 2.9vw, 56px);
         font-weight: 700;
-        color: #f0d080;
+        color: var(--accent-primary);
         text-align: center;
         line-height: 1.1;
     }
@@ -161,16 +161,16 @@
     .next-prayer-time {
         font-size: clamp(48px, 5.2vw, 100px);
         font-weight: 700;
-        color: #fff;
+        color: var(--text-primary);
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.05em;
         line-height: 1;
     }
 
     .countdown-box {
-        background: rgba(200, 168, 75, 0.1);
-        border: 1px solid rgba(200, 168, 75, 0.4);
-        border-radius: 6px;
+        background: var(--running-bar-bg);
+        border: 1px solid var(--running-bar-border);
+        border-radius: var(--border-radius);
         padding: 2% 6%;
         text-align: center;
         width: 92%;
@@ -178,7 +178,7 @@
 
     .countdown-label {
         font-size: clamp(8px, 0.85vw, 16px);
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
         letter-spacing: 0.12em;
         display: block;
         margin-bottom: 2px;
@@ -187,7 +187,7 @@
     .countdown-val {
         font-size: clamp(22px, 2.7vw, 52px);
         font-weight: 700;
-        color: #c8a84b;
+        color: var(--accent-secondary);
         font-variant-numeric: tabular-nums;
     }
 
@@ -195,14 +195,14 @@
         margin-top: 6px;
         width: 100%;
         height: 4px;
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--border-color);
         border-radius: 2px;
         overflow: hidden;
     }
 
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #c8a84b, #f0d080);
+        background: var(--progress-fill);
         border-radius: 2px;
         transition: width 1s linear;
     }
@@ -210,21 +210,21 @@
     .iqamah-box {
         text-align: center;
         width: 92%;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--border-radius);
         padding: 2% 4%;
     }
 
     .iqamah-label {
         font-size: clamp(8px, 0.85vw, 16px);
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         letter-spacing: 0.1em;
     }
 
     .iqamah-val {
         font-size: clamp(14px, 1.9vw, 36px);
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         font-weight: 500;
     }
 
@@ -241,14 +241,14 @@
         align-items: center;
         gap: 4%;
         padding: 2% 4%;
-        border-radius: 6px;
+        border-radius: var(--border-radius);
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.07);
     }
 
     .yt-prayer-row--active {
-        background: rgba(200, 168, 75, 0.12);
-        border-color: rgba(200, 168, 75, 0.5);
+        background: var(--prayer-active-bg);
+        border-color: var(--prayer-active-border);
     }
 
     .yt-prayer-icon {
@@ -260,33 +260,33 @@
     .yt-prayer-name {
         flex: 1;
         font-size: clamp(9px, 1vw, 15px);
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-secondary);
         letter-spacing: 0.06em;
     }
 
     .yt-prayer-row--active .yt-prayer-name {
-        color: #f0d080;
+        color: var(--accent-primary);
     }
 
     .yt-prayer-time {
         font-size: clamp(11px, 1.3vw, 19px);
         font-weight: 700;
-        color: #fff;
+        color: var(--text-primary);
         font-variant-numeric: tabular-nums;
     }
 
     .yt-imsak-card {
         width: 100%;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
         padding: 4% 6%;
         margin-top: 2%;
     }
 
     .info-card-title {
         font-size: clamp(10px, 1.1vw, 16px);
-        color: rgba(200, 168, 75, 0.7);
+        color: var(--accent-muted);
         letter-spacing: 0.12em;
         margin-bottom: 4%;
     }
@@ -294,13 +294,13 @@
     .info-card-value {
         font-size: clamp(16px, 2vw, 28px);
         font-weight: 600;
-        color: #fff;
+        color: var(--text-primary);
         line-height: 1.3;
     }
 
     .info-card-sub {
         font-size: clamp(11px, 1.2vw, 17px);
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         margin-top: 2%;
     }
 
@@ -316,7 +316,7 @@
     }
 
     .imsakiyah-sep {
-        color: rgba(200, 168, 75, 0.3);
+        color: var(--accent-muted);
         font-size: clamp(18px, 2.2vw, 32px);
     }
 
@@ -339,8 +339,8 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-        color: rgba(255, 255, 255, 0.8);
+        background: linear-gradient(transparent, var(--bg-secondary));
+        color: var(--text-secondary);
         font-size: clamp(12px, 1.4vw, 22px);
         padding: 3% 4% 2%;
         text-align: center;

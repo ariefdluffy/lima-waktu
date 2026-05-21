@@ -13,6 +13,7 @@ import {
   prayerSchedules,
   runningTexts,
   slides,
+  themes,
   youtubeItems,
 } from "$lib/server/db/schema";
 import { fail } from "@sveltejs/kit";
@@ -222,6 +223,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   const youtubeTotal = youtubeCountRows[0]?.total ?? 0;
   const prayerTotal = prayerCountRows[0]?.total ?? 0;
 
+  // Load all global + masjid-specific themes
+  const themeRows = await db
+    .select()
+    .from(themes)
+    .where(eq(themes.isActive, 1))
+    .orderBy(desc(themes.isGlobal), desc(themes.createdAt));
+
   return {
     masjid,
     runningTexts: runningTextRows,
@@ -262,6 +270,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     prayerTotalPages: Math.max(1, Math.ceil(prayerTotal / PAGE_SIZE)),
     todaySchedule,
     iqamahSettings: iqamahRows,
+    themes: themeRows.map((t) => ({
+      id: t.id,
+      themeKey: t.themeKey,
+      name: t.name,
+      isGlobal: t.isGlobal === 1,
+    })),
   };
 };
 
@@ -615,5 +629,33 @@ export const actions: Actions = {
         isManualOverride: 1,
       });
     }
+  },
+
+  updateDeviceTheme: async ({ request }) => {
+    const form = await request.formData();
+    const deviceId = form.get("device_id")?.toString() ?? "";
+    const themeIdRaw = form.get("theme_id")?.toString() ?? "";
+
+    if (!deviceId) {
+      return fail(400, { message: "device_id wajib diisi" });
+    }
+
+    const themeId = themeIdRaw ? Number(themeIdRaw) : null;
+
+    if (themeId !== null) {
+      // Verify theme exists
+      const [theme] = await db
+        .select({ id: themes.id })
+        .from(themes)
+        .where(eq(themes.id, themeId))
+        .limit(1);
+      if (!theme) {
+        return fail(400, { message: "Tema tidak ditemukan" });
+      }
+    }
+
+    await db.update(devices).set({ themeId }).where(eq(devices.id, deviceId));
+
+    return { success: true };
   },
 };

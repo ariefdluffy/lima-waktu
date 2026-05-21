@@ -95,7 +95,7 @@
             </div>
             <div class="event-label">
                 Hari lagi menuju<br />
-                <span style="color: #c8a84b; font-weight: 600;"
+                <span style="color: var(--accent-secondary); font-weight: 600;"
                     >{event.title}</span
                 >
             </div>
@@ -166,8 +166,8 @@
         display: flex;
         flex-direction: column;
         padding: 3% 2.5% 0.3% 2.5%;
-        border-left: 1px solid rgba(200, 168, 75, 0.2);
-        background: rgba(0, 0, 0, 0.2);
+        border-left: 1px solid var(--border-accent);
+        background: var(--bg-secondary);
         gap: 2.5%;
         justify-content: flex-start;
         align-self: stretch;
@@ -176,15 +176,15 @@
     }
 
     .info-card {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
         padding: 6% 7%;
     }
 
     .info-card-title {
         font-size: clamp(10px, 1.1vw, 32px);
-        color: rgba(200, 168, 75, 0.7);
+        color: var(--accent-muted);
         letter-spacing: 0.12em;
         margin-bottom: 4%;
     }
@@ -192,13 +192,13 @@
     .info-card-value {
         font-size: clamp(16px, 2vw, 32px);
         font-weight: 600;
-        color: #fff;
+        color: var(--text-primary);
         line-height: 1.3;
     }
 
     .info-card-sub {
         font-size: clamp(11px, 1.2vw, 17px);
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         margin-top: 2%;
     }
 
@@ -209,14 +209,14 @@
     .hijriyah-value {
         font-size: clamp(11px, 1.3vw, 28px);
         font-weight: 600;
-        color: #c8a84b;
+        color: var(--accent-secondary);
         margin-top: 4%;
         line-height: 1.4;
     }
 
     .weather-loading {
         font-size: clamp(10px, 1.1vw, 15px);
-        color: rgba(255, 255, 255, 0.35);
+        color: var(--text-muted);
         margin-top: 4%;
     }
 
@@ -241,13 +241,13 @@
     .weather-temp {
         font-size: clamp(18px, 2.4vw, 34px);
         font-weight: 700;
-        color: #fff;
+        color: var(--text-primary);
         line-height: 1.1;
     }
 
     .weather-desc {
         font-size: clamp(10px, 1.1vw, 15px);
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
     }
 
     .event-card {
@@ -257,12 +257,12 @@
     .event-days {
         font-size: clamp(32px, 4.5vw, 64px);
         font-weight: 700;
-        color: #c8a84b;
+        color: var(--accent-secondary);
     }
 
     .event-label {
         font-size: clamp(11px, 1.2vw, 17px);
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-secondary);
         margin-top: 2%;
         line-height: 1.4;
     }
@@ -279,7 +279,7 @@
     }
 
     .imsakiyah-sep {
-        color: rgba(200, 168, 75, 0.3);
+        color: var(--accent-muted);
         font-size: clamp(18px, 2.2vw, 32px);
     }
 
@@ -312,7 +312,7 @@
 
     .jumbotron-content {
         font-size: clamp(10px, 1.1vw, 28px);
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-secondary);
         margin-top: 3%;
         line-height: 1.5;
         overflow: hidden;

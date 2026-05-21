@@ -41,19 +41,11 @@
     }
 
     .mood-overlay--iqamah {
-        background: radial-gradient(
-            ellipse at center,
-            rgba(0, 70, 35, 0.96) 0%,
-            rgba(0, 20, 8, 0.99) 100%
-        );
+        background: var(--mood-iqamah-bg);
     }
 
     .mood-overlay--khusuk {
-        background: radial-gradient(
-            ellipse at center,
-            rgba(10, 5, 30, 0.97) 0%,
-            rgba(0, 0, 0, 0.99) 100%
-        );
+        background: var(--mood-khusuk-bg);
     }
 
     .mood-icon {
@@ -63,18 +55,18 @@
     }
 
     .mood-title {
-        font-family: "Cinzel", serif;
+        font-family: var(--font-heading), serif;
         font-size: clamp(36px, 7vw, 110px);
         font-weight: 700;
-        color: #f0d080;
+        color: var(--accent-primary);
         text-align: center;
         letter-spacing: 0.08em;
-        text-shadow: 0 0 40px rgba(240, 208, 128, 0.3);
+        text-shadow: 0 0 40px var(--accent-muted);
     }
 
     .mood-subtitle {
         font-size: clamp(20px, 2.8vw, 48px);
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         margin-top: 1.5%;
         text-align: center;
         letter-spacing: 0.15em;
@@ -83,15 +75,15 @@
     .mood-prayer {
         font-size: clamp(24px, 3.5vw, 60px);
         font-weight: 600;
-        color: #c8a84b;
+        color: var(--accent-secondary);
         margin-top: 2%;
         text-align: center;
     }
 
     .mood-ayat {
-        font-family: "Noto Naskh Arabic", serif;
+        font-family: var(--font-arabic), serif;
         font-size: clamp(16px, 2.2vw, 40px);
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-secondary);
         margin-top: 3%;
         text-align: center;
         max-width: 60%;
@@ -101,7 +93,7 @@
 
     .mood-ayat-src {
         font-size: clamp(10px, 1.2vw, 20px);
-        color: rgba(200, 168, 75, 0.5);
+        color: var(--accent-muted);
         margin-top: 1%;
         text-align: center;
     }

@@ -189,6 +189,10 @@ export const devices = mysqlTable(
     layoutMode: mysqlEnum("layout_mode", ["default", "youtube"])
       .default("default")
       .notNull(),
+    themeId: bigint("theme_id", { mode: "number", unsigned: true }).references(
+      () => themes.id,
+      { onDelete: "set null" },
+    ),
     ...timestamps,
   },
   (table) => [uniqueIndex("devices_code_uq").on(table.deviceCode)],

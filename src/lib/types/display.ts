@@ -27,6 +27,62 @@ export type ResolvedPrayerTimes = {
   isya: string;
 };
 
+export type ThemePalette = {
+  bgPrimary: string;
+  bgSecondary: string;
+  bgOverlay: string;
+  textPrimary: string;
+  textSecondary: string;
+  textMuted: string;
+  accentPrimary: string;
+  accentSecondary: string;
+  accentMuted: string;
+  borderColor: string;
+  borderAccent: string;
+  fontHeading: string;
+  fontBody: string;
+  fontArabic: string;
+  borderRadius: string;
+  cardBg: string;
+  cardBorder: string;
+  prayerActiveBg: string;
+  prayerActiveBorder: string;
+  prayerActiveGlow: string;
+  headerBg: string;
+  runningBarBg: string;
+  runningBarBorder: string;
+  progressFill: string;
+  screensaverBg: string;
+  tahajudBg: string;
+  moodIqamahBg: string;
+  moodKhusukBg: string;
+  topBarColor: string;
+  bgStars: string;
+  bgGrid: string;
+};
+
+export type ThemeLayout = {
+  panelOrder: ("left" | "center" | "right")[];
+  leftWidth: number;
+  centerWidth: number;
+  rightWidth: number;
+  showHeader: boolean;
+  showRunningBar: boolean;
+  prayerCardStyle: "default" | "minimal" | "ornate";
+  headerLayout: "logo-left" | "logo-center" | "logo-top";
+  fontSizeScale: "compact" | "normal" | "large";
+  borderRadiusScale: "sharp" | "normal" | "rounded";
+};
+
+export type ThemeData = {
+  id: number;
+  themeKey: string;
+  name: string;
+  palette: ThemePalette;
+  layout: ThemeLayout;
+  isGlobal: boolean;
+};
+
 export type DisplayPayload = {
   generatedAt: string;
   device: {
@@ -36,6 +92,7 @@ export type DisplayPayload = {
     orientation: "horizontal" | "vertical";
     layoutMode: "default" | "youtube";
   };
+  theme: ThemeData | null;
   masjid: {
     id: string;
     name: string;

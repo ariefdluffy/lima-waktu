@@ -20,8 +20,8 @@
         left: 0;
         right: 0;
         height: 8%;
-        background: rgba(200, 168, 75, 0.12);
-        border-top: 1px solid rgba(200, 168, 75, 0.3);
+        background: var(--running-bar-bg);
+        border-top: 1px solid var(--running-bar-border);
         display: flex;
         align-items: center;
         overflow: hidden;
@@ -31,14 +31,14 @@
         flex-shrink: 0;
         width: 6%;
         height: 100%;
-        background: rgba(200, 168, 75, 0.25);
-        border-right: 1px solid rgba(200, 168, 75, 0.3);
+        background: var(--prayer-active-glow);
+        border-right: 1px solid var(--running-bar-border);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: clamp(14px, 1.8vw, 26px);
         font-weight: 700;
-        color: #f0d080;
+        color: var(--accent-primary);
         letter-spacing: 0.08em;
     }
 
@@ -51,7 +51,7 @@
     .running-text {
         display: inline-block;
         font-size: clamp(20px, 2.2vw, 42px);
-        color: rgba(255, 255, 255, 0.85);
+        color: var(--text-secondary);
         animation: marquee 70s linear infinite;
         padding-left: 100%;
     }

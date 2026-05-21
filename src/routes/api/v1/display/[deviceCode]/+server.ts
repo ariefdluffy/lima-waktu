@@ -9,6 +9,7 @@ import {
   runningTexts,
   slides,
   mediaAssets,
+  themes,
   youtubeItems,
 } from "$lib/server/db/schema";
 import {
@@ -151,6 +152,45 @@ export const GET: RequestHandler = async ({ params, request }) => {
         .limit(5),
     ]);
 
+  // Fetch theme for this device — fallback to default "modern-minimalis"
+  let themeData = null;
+  const themeLookupId = device.themeId ?? null;
+  if (themeLookupId) {
+    const [theme] = await db
+      .select()
+      .from(themes)
+      .where(eq(themes.id, themeLookupId))
+      .limit(1);
+    if (theme) {
+      themeData = {
+        id: theme.id,
+        themeKey: theme.themeKey,
+        name: theme.name,
+        palette: theme.paletteJson as Record<string, string>,
+        layout: theme.layoutJson as Record<string, unknown>,
+        isGlobal: theme.isGlobal === 1,
+      };
+    }
+  }
+  // Fallback to default theme
+  if (!themeData) {
+    const [defaultTheme] = await db
+      .select()
+      .from(themes)
+      .where(eq(themes.themeKey, "modern-minimalis"))
+      .limit(1);
+    if (defaultTheme) {
+      themeData = {
+        id: defaultTheme.id,
+        themeKey: defaultTheme.themeKey,
+        name: defaultTheme.name,
+        palette: defaultTheme.paletteJson as Record<string, string>,
+        layout: defaultTheme.layoutJson as Record<string, unknown>,
+        isGlobal: defaultTheme.isGlobal === 1,
+      };
+    }
+  }
+
   return json({
     ok: true,
     data: {
@@ -162,6 +202,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
         orientation: device.orientation,
         layoutMode: device.layoutMode,
       },
+      theme: themeData,
       masjid: {
         id: masjid.id,
         name: masjid.name,

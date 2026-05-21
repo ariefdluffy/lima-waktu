@@ -45,8 +45,8 @@
         display: flex;
         flex-direction: column;
         padding: 2% 2% 0.3% 2.5%;
-        border-right: 1px solid rgba(200, 168, 75, 0.2);
-        background: rgba(0, 0, 0, 0.2);
+        border-right: 1px solid var(--border-accent);
+        background: var(--bg-secondary);
         justify-content: center;
         align-items: center;
         align-self: stretch;
@@ -56,16 +56,16 @@
 
     .next-label {
         font-size: clamp(10px, 1vw, 20px);
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--text-secondary);
         letter-spacing: 0.15em;
         text-transform: uppercase;
     }
 
     .next-prayer-name {
-        font-family: "Cinzel", serif;
+        font-family: var(--font-heading), serif;
         font-size: clamp(28px, 2.9vw, 56px);
         font-weight: 700;
-        color: #f0d080;
+        color: var(--accent-primary);
         text-align: center;
         line-height: 1.1;
     }
@@ -73,16 +73,16 @@
     .next-prayer-time {
         font-size: clamp(48px, 5.2vw, 100px);
         font-weight: 700;
-        color: #fff;
+        color: var(--text-primary);
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.05em;
         line-height: 1;
     }
 
     .countdown-box {
-        background: rgba(200, 168, 75, 0.1);
-        border: 1px solid rgba(200, 168, 75, 0.4);
-        border-radius: 6px;
+        background: var(--running-bar-bg);
+        border: 1px solid var(--running-bar-border);
+        border-radius: var(--border-radius);
         padding: 2% 6%;
         text-align: center;
         width: 92%;
@@ -90,7 +90,7 @@
 
     .countdown-label {
         font-size: clamp(8px, 0.85vw, 16px);
-        color: rgba(255, 255, 255, 0.45);
+        color: var(--text-muted);
         letter-spacing: 0.12em;
         display: block;
         margin-bottom: 2px;
@@ -99,7 +99,7 @@
     .countdown-val {
         font-size: clamp(22px, 2.7vw, 52px);
         font-weight: 700;
-        color: #c8a84b;
+        color: var(--accent-secondary);
         font-variant-numeric: tabular-nums;
     }
 
@@ -107,14 +107,14 @@
         margin-top: 6px;
         width: 100%;
         height: 4px;
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--border-color);
         border-radius: 2px;
         overflow: hidden;
     }
 
     .progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, #c8a84b, #f0d080);
+        background: var(--progress-fill);
         border-radius: 2px;
         transition: width 1s linear;
     }
@@ -122,21 +122,21 @@
     .iqamah-box {
         text-align: center;
         width: 92%;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 6px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--border-radius);
         padding: 2% 4%;
     }
 
     .iqamah-label {
         font-size: clamp(8px, 0.85vw, 16px);
-        color: rgba(255, 255, 255, 0.4);
+        color: var(--text-muted);
         letter-spacing: 0.1em;
     }
 
     .iqamah-val {
         font-size: clamp(14px, 1.9vw, 36px);
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
         font-weight: 500;
     }
 </style>

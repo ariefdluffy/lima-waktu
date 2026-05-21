@@ -93,9 +93,9 @@
     }
 
     .prayer-card {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--border-radius);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -108,14 +108,14 @@
     }
 
     .prayer-card.active {
-        background: rgba(200, 168, 75, 0.12);
-        border-color: rgba(200, 168, 75, 0.6);
+        background: var(--prayer-active-bg);
+        border-color: var(--prayer-active-border);
         animation: pulse-gold 3s ease-in-out infinite;
     }
 
     @keyframes pulse-gold {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(200, 168, 75, 0); }
-        50% { box-shadow: 0 0 20px 4px rgba(200, 168, 75, 0.25); }
+        0%, 100% { box-shadow: 0 0 0 0 var(--prayer-active-glow); }
+        50% { box-shadow: 0 0 20px 4px var(--prayer-active-glow); }
     }
 
     .prayer-card.active::before {
@@ -125,7 +125,7 @@
         left: 0;
         right: 0;
         height: 2px;
-        background: linear-gradient(90deg, transparent, #f0d080, transparent);
+        background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
     }
 
     .prayer-card-icon {
@@ -139,19 +139,19 @@
 
     .prayer-card-name {
         font-size: clamp(14px, 2.1vw, 40px);
-        color: rgba(255, 255, 255, 0.55);
+        color: var(--text-secondary);
         letter-spacing: 0.08em;
         font-weight: 500;
     }
 
     .prayer-card.active .prayer-card-name {
-        color: #f0d080;
+        color: var(--accent-primary);
     }
 
     .prayer-card-time {
         font-size: clamp(28px, 4.2vw, 80px);
         font-weight: 700;
-        color: #fff;
+        color: var(--text-primary);
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.03em;
         white-space: nowrap;
@@ -159,20 +159,20 @@
 
     .prayer-iqamah {
         font-size: clamp(10px, 1.3vw, 24px);
-        color: rgba(255, 255, 255, 0.35);
+        color: var(--text-muted);
         white-space: nowrap;
     }
 
     .prayer-card.active .prayer-iqamah {
-        color: rgba(200, 168, 75, 0.7);
+        color: var(--accent-muted);
     }
 
     .active-badge {
         font-size: clamp(7px, 0.8vw, 52px);
-        background: rgba(200, 168, 75, 0.3);
-        color: #f0d080;
+        background: var(--running-bar-border);
+        color: var(--accent-primary);
         padding: 1px 6px;
-        border-radius: 10px;
+        border-radius: var(--border-radius);
         letter-spacing: 0.08em;
     }
 
@@ -180,7 +180,7 @@
         flex: 1;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 6px;
+        border-radius: var(--border-radius);
         overflow: hidden;
         position: relative;
         display: flex;
@@ -201,23 +201,23 @@
     }
 
     .slide-arabic {
-        font-family: "Noto Naskh Arabic", serif;
+        font-family: var(--font-arabic), serif;
         font-size: clamp(18px, 3vw, 56px);
-        color: #f0d080;
+        color: var(--accent-primary);
         line-height: 1.8;
         margin-bottom: 3%;
     }
 
     .slide-translation {
         font-size: clamp(12px, 1.6vw, 30px);
-        color: rgba(255, 255, 255, 0.6);
+        color: var(--text-secondary);
         font-style: italic;
         line-height: 1.6;
     }
 
     .slide-source {
         font-size: clamp(8px, 0.9vw, 18px);
-        color: rgba(200, 168, 75, 0.6);
+        color: var(--accent-muted);
         margin-top: 2%;
         letter-spacing: 0.1em;
     }
@@ -248,6 +248,6 @@
     }
 
     .dot.active {
-        background: #c8a84b;
+        background: var(--accent-secondary);
     }
 </style>
