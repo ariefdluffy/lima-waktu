@@ -15,6 +15,10 @@ type UpdateProfileBody = {
   longitude?: number;
   timezone?: string;
   hijriOffset?: number;
+  adzanScreenDuration?: number;
+  khusukScreenDuration?: number;
+  screensaverDelayMinutes?: number;
+  screensaverWakeMinutes?: number;
   logoUrl?: string;
   isActive?: boolean;
 };
@@ -82,6 +86,22 @@ export const PUT: RequestHandler = async (event) => {
       timezone: body.timezone,
       hijriOffset:
         body.hijriOffset !== undefined ? body.hijriOffset : undefined,
+      adzanScreenDuration:
+        body.adzanScreenDuration !== undefined
+          ? body.adzanScreenDuration
+          : undefined,
+      khusukScreenDuration:
+        body.khusukScreenDuration !== undefined
+          ? body.khusukScreenDuration
+          : undefined,
+      screensaverDelayMinutes:
+        body.screensaverDelayMinutes !== undefined
+          ? body.screensaverDelayMinutes
+          : undefined,
+      screensaverWakeMinutes:
+        body.screensaverWakeMinutes !== undefined
+          ? body.screensaverWakeMinutes
+          : undefined,
       logoUrl: body.logoUrl !== undefined ? body.logoUrl : undefined,
       isActive:
         body.isActive !== undefined ? (body.isActive ? 1 : 0) : undefined,

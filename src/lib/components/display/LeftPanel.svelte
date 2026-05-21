@@ -41,10 +41,10 @@
 
 <style>
     .left-panel {
-        width: 20%;
+        width: 23%;
         display: flex;
         flex-direction: column;
-        padding: 2% 2% 0.3% 2.5%;
+        padding: 1% 2% 0.3% 2.5%;
         border-right: 1px solid var(--border-accent);
         background: var(--bg-secondary);
         justify-content: center;
@@ -55,7 +55,7 @@
     }
 
     .next-label {
-        font-size: clamp(10px, 1vw, 20px);
+        font-size: clamp(10px, 1vw, 42px);
         color: var(--text-secondary);
         letter-spacing: 0.15em;
         text-transform: uppercase;
@@ -63,7 +63,7 @@
 
     .next-prayer-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(28px, 2.9vw, 56px);
+        font-size: clamp(28px, 2.9vw, 106px);
         font-weight: 700;
         color: var(--accent-primary);
         text-align: center;
@@ -71,7 +71,7 @@
     }
 
     .next-prayer-time {
-        font-size: clamp(48px, 5.2vw, 100px);
+        font-size: clamp(48px, 5.2vw, 120px);
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;
@@ -83,13 +83,13 @@
         background: var(--running-bar-bg);
         border: 1px solid var(--running-bar-border);
         border-radius: var(--border-radius);
-        padding: 2% 6%;
+        padding: 3% 2%;
         text-align: center;
-        width: 92%;
+        width: 98%;
     }
 
     .countdown-label {
-        font-size: clamp(8px, 0.85vw, 16px);
+        font-size: clamp(8px, 0.85vw, 36px);
         color: var(--text-muted);
         letter-spacing: 0.12em;
         display: block;
@@ -97,7 +97,7 @@
     }
 
     .countdown-val {
-        font-size: clamp(22px, 2.7vw, 52px);
+        font-size: clamp(22px, 2.7vw, 56px);
         font-weight: 700;
         color: var(--accent-secondary);
         font-variant-numeric: tabular-nums;
@@ -121,21 +121,21 @@
 
     .iqamah-box {
         text-align: center;
-        width: 92%;
+        width: 98%;
         background: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: var(--border-radius);
-        padding: 2% 4%;
+        padding: 2% 2%;
     }
 
     .iqamah-label {
-        font-size: clamp(8px, 0.85vw, 16px);
+        font-size: clamp(8px, 0.85vw, 82px);
         color: var(--text-muted);
         letter-spacing: 0.1em;
     }
 
     .iqamah-val {
-        font-size: clamp(14px, 1.9vw, 36px);
+        font-size: clamp(14px, 1.9vw, 76px);
         color: var(--text-secondary);
         font-weight: 500;
     }

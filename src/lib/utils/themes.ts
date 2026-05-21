@@ -47,10 +47,12 @@ export const DEFAULT_THEMES: ThemePreset[] = [
         "radial-gradient(ellipse at center, rgba(0, 30, 20, 0.95) 0%, rgba(0, 10, 5, 0.98) 100%)",
       tahajudBg:
         "radial-gradient(ellipse at center, rgba(5, 5, 30, 0.97) 0%, rgba(0, 0, 10, 0.99) 100%)",
+      moodAdzanBg:
+        "radial-gradient(ellipse at center, rgba(60, 40, 5, 1) 0%, rgba(20, 10, 2, 1) 100%)",
       moodIqamahBg:
-        "radial-gradient(ellipse at center, rgba(0, 70, 35, 0.96) 0%, rgba(0, 20, 8, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(0, 70, 35, 1) 0%, rgba(0, 20, 8, 1) 100%)",
       moodKhusukBg:
-        "radial-gradient(ellipse at center, rgba(10, 5, 30, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(10, 5, 30, 1) 0%, rgba(0, 0, 0, 1) 100%)",
       topBarColor: "transparent",
       bgStars: "#ffffff",
       bgGrid: "rgba(200, 168, 75, 0.06)",
@@ -103,10 +105,12 @@ export const DEFAULT_THEMES: ThemePreset[] = [
         "radial-gradient(ellipse at center, rgba(26, 60, 42, 0.95) 0%, rgba(10, 30, 15, 0.98) 100%)",
       tahajudBg:
         "radial-gradient(ellipse at center, rgba(15, 30, 25, 0.97) 0%, rgba(5, 15, 10, 0.99) 100%)",
+      moodAdzanBg:
+        "radial-gradient(ellipse at center, rgba(60, 35, 5, 1) 0%, rgba(25, 12, 2, 1) 100%)",
       moodIqamahBg:
-        "radial-gradient(ellipse at center, rgba(0, 60, 40, 0.96) 0%, rgba(0, 20, 10, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(0, 60, 40, 1) 0%, rgba(0, 20, 10, 1) 100%)",
       moodKhusukBg:
-        "radial-gradient(ellipse at center, rgba(8, 5, 25, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(8, 5, 25, 1) 0%, rgba(0, 0, 0, 1) 100%)",
       topBarColor: "#d4a853",
       bgStars: "rgba(212, 168, 83, 0.3)",
       bgGrid: "rgba(212, 168, 83, 0.04)",
@@ -159,10 +163,12 @@ export const DEFAULT_THEMES: ThemePreset[] = [
         "radial-gradient(ellipse at center, rgba(8, 12, 20, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
       tahajudBg:
         "radial-gradient(ellipse at center, rgba(10, 8, 25, 0.97) 0%, rgba(0, 0, 10, 0.99) 100%)",
+      moodAdzanBg:
+        "radial-gradient(ellipse at center, rgba(50, 35, 5, 1) 0%, rgba(20, 10, 2, 1) 100%)",
       moodIqamahBg:
-        "radial-gradient(ellipse at center, rgba(0, 30, 60, 0.96) 0%, rgba(0, 10, 20, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(0, 30, 60, 1) 0%, rgba(0, 10, 20, 1) 100%)",
       moodKhusukBg:
-        "radial-gradient(ellipse at center, rgba(5, 3, 25, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(5, 3, 25, 1) 0%, rgba(0, 0, 0, 1) 100%)",
       topBarColor: "#2e86c1",
       bgStars: "rgba(93, 173, 226, 0.3)",
       bgGrid: "rgba(93, 173, 226, 0.04)",
@@ -215,10 +221,12 @@ export const DEFAULT_THEMES: ThemePreset[] = [
         "radial-gradient(ellipse at center, rgba(13, 40, 24, 0.95) 0%, rgba(5, 15, 8, 0.98) 100%)",
       tahajudBg:
         "radial-gradient(ellipse at center, rgba(10, 25, 18, 0.97) 0%, rgba(3, 10, 5, 0.99) 100%)",
+      moodAdzanBg:
+        "radial-gradient(ellipse at center, rgba(50, 40, 5, 1) 0%, rgba(20, 12, 2, 1) 100%)",
       moodIqamahBg:
-        "radial-gradient(ellipse at center, rgba(0, 60, 30, 0.96) 0%, rgba(0, 20, 8, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(0, 60, 30, 1) 0%, rgba(0, 20, 8, 1) 100%)",
       moodKhusukBg:
-        "radial-gradient(ellipse at center, rgba(8, 5, 20, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(8, 5, 20, 1) 0%, rgba(0, 0, 0, 1) 100%)",
       topBarColor: "#66bb6a",
       bgStars: "rgba(102, 187, 106, 0.3)",
       bgGrid: "rgba(102, 187, 106, 0.04)",
@@ -271,10 +279,12 @@ export const DEFAULT_THEMES: ThemePreset[] = [
         "radial-gradient(ellipse at center, rgba(26, 16, 48, 0.95) 0%, rgba(8, 5, 15, 0.98) 100%)",
       tahajudBg:
         "radial-gradient(ellipse at center, rgba(20, 10, 40, 0.97) 0%, rgba(5, 2, 15, 0.99) 100%)",
+      moodAdzanBg:
+        "radial-gradient(ellipse at center, rgba(60, 35, 5, 1) 0%, rgba(25, 10, 2, 1) 100%)",
       moodIqamahBg:
-        "radial-gradient(ellipse at center, rgba(40, 20, 60, 0.96) 0%, rgba(10, 5, 20, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(40, 20, 60, 1) 0%, rgba(10, 5, 20, 1) 100%)",
       moodKhusukBg:
-        "radial-gradient(ellipse at center, rgba(15, 5, 35, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(15, 5, 35, 1) 0%, rgba(0, 0, 0, 1) 100%)",
       topBarColor: "#daa520",
       bgStars: "rgba(218, 165, 32, 0.35)",
       bgGrid: "rgba(218, 165, 32, 0.05)",
@@ -327,10 +337,12 @@ export const DEFAULT_THEMES: ThemePreset[] = [
         "radial-gradient(ellipse at center, rgba(13, 31, 45, 0.95) 0%, rgba(5, 10, 15, 0.98) 100%)",
       tahajudBg:
         "radial-gradient(ellipse at center, rgba(10, 20, 30, 0.97) 0%, rgba(3, 8, 12, 0.99) 100%)",
+      moodAdzanBg:
+        "radial-gradient(ellipse at center, rgba(55, 35, 5, 1) 0%, rgba(20, 10, 2, 1) 100%)",
       moodIqamahBg:
-        "radial-gradient(ellipse at center, rgba(0, 40, 50, 0.96) 0%, rgba(0, 15, 18, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(0, 40, 50, 1) 0%, rgba(0, 15, 18, 1) 100%)",
       moodKhusukBg:
-        "radial-gradient(ellipse at center, rgba(5, 5, 20, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(5, 5, 20, 1) 0%, rgba(0, 0, 0, 1) 100%)",
       topBarColor: "#e8c95a",
       bgStars: "rgba(232, 201, 90, 0.3)",
       bgGrid: "rgba(232, 201, 90, 0.04)",
@@ -383,10 +395,12 @@ export const DEFAULT_THEMES: ThemePreset[] = [
         "radial-gradient(ellipse at center, rgba(27, 10, 46, 0.95) 0%, rgba(8, 3, 15, 0.98) 100%)",
       tahajudBg:
         "radial-gradient(ellipse at center, rgba(20, 10, 35, 0.97) 0%, rgba(5, 2, 10, 0.99) 100%)",
+      moodAdzanBg:
+        "radial-gradient(ellipse at center, rgba(60, 35, 5, 1) 0%, rgba(25, 10, 2, 1) 100%)",
       moodIqamahBg:
-        "radial-gradient(ellipse at center, rgba(30, 15, 50, 0.96) 0%, rgba(8, 5, 15, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(30, 15, 50, 1) 0%, rgba(8, 5, 15, 1) 100%)",
       moodKhusukBg:
-        "radial-gradient(ellipse at center, rgba(12, 5, 25, 0.97) 0%, rgba(0, 0, 0, 0.99) 100%)",
+        "radial-gradient(ellipse at center, rgba(12, 5, 25, 1) 0%, rgba(0, 0, 0, 1) 100%)",
       topBarColor: "#f39c12",
       bgStars: "rgba(243, 156, 18, 0.35)",
       bgGrid: "rgba(243, 156, 18, 0.05)",

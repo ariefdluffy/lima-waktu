@@ -1,9 +1,10 @@
 <script lang="ts">
     import { enhance, deserialize } from "$app/forms";
-    import { goto } from "$app/navigation";
+    import { goto, invalidate } from "$app/navigation";
     import { page } from "$app/stores";
     import Pagination from "$lib/components/Pagination.svelte";
     import AdminSidebar from "$lib/components/admin/AdminSidebar.svelte";
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
 
     let { data } = $props();
 
@@ -21,8 +22,7 @@
         | "runningtext"
         | "devices"
         | "iqamah"
-        | "hijri"
-        | "weather"
+        | "other"
         | "jumbotron"
         | "youtube"
         | "schedule"
@@ -30,6 +30,42 @@
         | "tema";
     let activeSection = $state<Section>("dashboard");
     let mobileOpen = $state(false);
+
+    // ----------------------------------------------------------------
+    // Confirm dialog (hapus jumbotron)
+    // ----------------------------------------------------------------
+    let confirmOpen = $state(false);
+    let pendingDeleteId = $state<number | null>(null);
+    let pendingDeleteTitle = $state("");
+
+    function askDeleteJumbotron(id: number, title: string) {
+        pendingDeleteId = id;
+        pendingDeleteTitle = title;
+        confirmOpen = true;
+    }
+
+    function cancelDelete() {
+        confirmOpen = false;
+        pendingDeleteId = null;
+        pendingDeleteTitle = "";
+    }
+
+    async function confirmDeleteJumbotron() {
+        if (pendingDeleteId === null) return;
+        confirmOpen = false;
+        const formData = new FormData();
+        formData.set("id", String(pendingDeleteId));
+        const res = await fetch("?/deleteJumbotron", {
+            method: "POST",
+            body: formData,
+        });
+        const result = deserialize(await res.text());
+        if (result.type === "success" || result.type === "redirect") {
+            await invalidate("app:admin");
+        }
+        pendingDeleteId = null;
+        pendingDeleteTitle = "";
+    }
 
     function navigateTo(section: string) {
         activeSection = section as Section;
@@ -166,6 +202,64 @@
     let iqamahSaving = $state(false);
     let iqamahSaveSuccess = $state(false);
     let iqamahSaveError = $state("");
+
+    // ----------------------------------------------------------------
+    // Adzan screen duration
+    // ----------------------------------------------------------------
+    let adzanDuration = $state((() => { const v = data.masjid?.adzanScreenDuration; return v ?? 4; })());
+    let khusukDuration = $state((() => { const v = data.masjid?.khusukScreenDuration; return v ?? 10; })());
+    let adzanDurationSaving = $state(false);
+    let adzanDurationSuccess = $state(false);
+
+    async function saveAdzanDuration() {
+        adzanDurationSaving = true;
+        adzanDurationSuccess = false;
+        try {
+            const res = await fetch("/api/v1/masjid/profile", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    adzanScreenDuration: Number(adzanDuration),
+                    khusukScreenDuration: Number(khusukDuration),
+                }),
+            });
+            const json = await res.json();
+            if (json.ok) {
+                adzanDurationSuccess = true;
+                setTimeout(() => (adzanDurationSuccess = false), 3000);
+            }
+        } catch {}
+        adzanDurationSaving = false;
+    }
+
+    // ----------------------------------------------------------------
+    // Screensaver / mode hemat
+    // ----------------------------------------------------------------
+    let screensaverDelay = $state((() => { const v = data.masjid?.screensaverDelayMinutes; return v ?? 120; })());
+    let screensaverWake = $state((() => { const v = data.masjid?.screensaverWakeMinutes; return v ?? 60; })());
+    let screensaverSaving = $state(false);
+    let screensaverSuccess = $state(false);
+
+    async function saveScreensaver() {
+        screensaverSaving = true;
+        screensaverSuccess = false;
+        try {
+            const res = await fetch("/api/v1/masjid/profile", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    screensaverDelayMinutes: Number(screensaverDelay),
+                    screensaverWakeMinutes: Number(screensaverWake),
+                }),
+            });
+            const json = await res.json();
+            if (json.ok) {
+                screensaverSuccess = true;
+                setTimeout(() => (screensaverSuccess = false), 3000);
+            }
+        } catch {}
+        screensaverSaving = false;
+    }
 
     // ----------------------------------------------------------------
     // Hijri offset
@@ -354,6 +448,7 @@
     let profileCity = $state((() => { const v = data.masjid?.city; return v ?? ""; })());
     let profileDistrict = $state((() => { const v = data.masjid?.district; return v ?? ""; })());
     let profileProvince = $state((() => { const v = data.masjid?.province; return v ?? ""; })());
+    let profileTimezone = $state((() => { const v = data.masjid?.timezone; return v ?? "Asia/Jakarta"; })());
     let profileSaving = $state(false);
     let profileSuccess = $state("");
     let profileError = $state("");
@@ -372,6 +467,7 @@
                     city: profileCity.trim() || null,
                     district: profileDistrict.trim() || null,
                     province: profileProvince.trim() || null,
+                    timezone: profileTimezone,
                 }),
             });
             const json = await res.json();
@@ -523,6 +619,8 @@
                 bulkSaveSuccess = `${saved} jadwal berhasil disimpan ke database!`;
                 bulkPreview = [];
                 bulkSuccess = "";
+                // Refresh page data biar list jadwal terbaru muncul
+                await invalidate(() => true);
             } else {
                 bulkSaveError =
                     result?.data?.error ??
@@ -603,7 +701,7 @@
                     <div class="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-emerald-500 to-emerald-700 text-white text-xs font-bold">LW</div>
                     <div>
                         <p class="text-sm font-semibold text-slate-800">
-                            {activeSection === "dashboard" ? "Dashboard" : activeSection === "profile" ? "Profil Masjid" : activeSection === "runningtext" ? "Running Text" : activeSection === "devices" ? "Perangkat" : activeSection === "iqamah" ? "Iqamah" : activeSection === "hijri" ? "Hijri Offset" : activeSection === "weather" ? "Cuaca" : activeSection === "jumbotron" ? "Jumbotron" : activeSection === "youtube" ? "YouTube" : activeSection === "schedule" ? "Jadwal Sholat" : activeSection === "slides" ? "Slide Foto" : "Dashboard"}
+                            {activeSection === "dashboard" ? "Dashboard" : activeSection === "profile" ? "Profil Masjid" : activeSection === "runningtext" ? "Running Text" : activeSection === "devices" ? "Perangkat" : activeSection === "iqamah" ? "Iqamah" : activeSection === "other" ? "Pengaturan Lain" : activeSection === "jumbotron" ? "Jumbotron" : activeSection === "youtube" ? "YouTube" : activeSection === "schedule" ? "Jadwal Sholat" : activeSection === "slides" ? "Slide Foto" : "Dashboard"}
                         </p>
                         {#if data.masjid}
                             <p class="text-xs text-slate-400">{data.masjid.name} • {data.masjid.city ?? "-"}</p>
@@ -828,6 +926,22 @@
                                 bind:value={profileProvince}
                                 class="w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm"
                             />
+                        </div>
+                        <div>
+                            <label
+                                for="profile-timezone"
+                                class="mb-1 block text-xs font-medium text-slate-600"
+                                >Zona Waktu</label
+                            >
+                            <select
+                                id="profile-timezone"
+                                bind:value={profileTimezone}
+                                class="w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                            >
+                                <option value="Asia/Jakarta">WIB (Asia/Jakarta)</option>
+                                <option value="Asia/Makassar">WITA (Asia/Makassar)</option>
+                                <option value="Asia/Jayapura">WIT (Asia/Jayapura)</option>
+                            </select>
                         </div>
                         <div class="flex items-center gap-3">
                             <button
@@ -1258,6 +1372,81 @@
                     </div>
                 </div>
 
+                <!-- Durasi Layar Adzan -->
+                <div
+                    class="mt-5 flex flex-wrap items-center gap-4 rounded-xl border border-emerald-100 bg-emerald-50/50 px-4 py-3"
+                >
+                    <div class="flex-1">
+                        <label
+                            for="adzan-duration"
+                            class="text-sm font-medium text-slate-700"
+                            >Durasi Layar Adzan</label
+                        >
+                        <p class="text-xs text-slate-500">
+                            Berapa menit layar "Waktu Adzan" tampil sebelum
+                            masuk mode Khusyuk.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input
+                            id="adzan-duration"
+                            type="number"
+                            min="1"
+                            max="15"
+                            bind:value={adzanDuration}
+                            class="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-sm focus:border-emerald-400 focus:outline-none"
+                        />
+                        <span class="text-sm text-slate-500">menit</span>
+                    </div>
+                </div>
+
+                <!-- Durasi Layar Khusyuk -->
+                <div
+                    class="mt-2 flex flex-wrap items-center gap-4 rounded-xl border border-emerald-100 bg-emerald-50/50 px-4 py-3"
+                >
+                    <div class="flex-1">
+                        <label
+                            for="khusuk-duration"
+                            class="text-sm font-medium text-slate-700"
+                            >Durasi Layar Khusyuk</label
+                        >
+                        <p class="text-xs text-slate-500">
+                            Total waktu layar Khusyuk/Iqamah muncul sejak waktu
+                            Adzan.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input
+                            id="khusuk-duration"
+                            type="number"
+                            min="1"
+                            max="30"
+                            bind:value={khusukDuration}
+                            class="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-center text-sm focus:border-emerald-400 focus:outline-none"
+                        />
+                        <span class="text-sm text-slate-500">menit</span>
+                    </div>
+                </div>
+
+                <div class="mt-3 flex items-center gap-2">
+                    <button
+                        onclick={saveAdzanDuration}
+                        disabled={adzanDurationSaving}
+                        class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                    >
+                        {#if adzanDurationSaving}
+                            ...
+                        {:else}
+                            Simpan
+                        {/if}
+                    </button>
+                    {#if adzanDurationSuccess}
+                        <span class="text-xs font-medium text-emerald-600"
+                            >✓</span
+                        >
+                    {/if}
+                </div>
+
                 <div class="mt-5 overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
@@ -1345,66 +1534,195 @@
             </section>
         {/if}
 
-        {#if activeSection === "hijri"}
-            <!-- HIJRI OFFSET -->
+        {#if activeSection === "other"}
+            <!-- PENGATURAN LAIN: HIJRI + CUACA -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
                     <div>
                         <h2 class="text-lg font-semibold text-emerald-900">
-                            Kalender Hijriyah
+                            Pengaturan Lain
                         </h2>
                         <p class="mt-0.5 text-xs text-slate-500">
-                            Sesuaikan selisih tanggal hijriyah jika hasil
-                            perhitungan berbeda dengan observasi hilal lokal.
+                            Kalender Hijriyah & Cuaca Lokal.
                         </p>
                     </div>
                 </div>
-                <div class="mt-5 flex flex-wrap items-end gap-4">
-                    <div class="w-40">
-                        <label
-                            for="hijri-offset"
-                            class="mb-1 block text-xs font-medium text-slate-600"
-                        >
-                            Offset Hari
-                        </label>
-                        <input
-                            id="hijri-offset"
-                            type="number"
-                            min="-5"
-                            max="5"
-                            bind:value={hijriOffset}
-                            class="w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm"
-                        />
+                <div class="mt-5 grid gap-6 lg:grid-cols-2">
+                    <!-- HIJRI OFFSET -->
+                    <div class="rounded-xl border border-emerald-100 bg-emerald-50/40 p-5">
+                        <h3 class="text-sm font-semibold text-emerald-800">
+                            Kalender Hijriyah
+                        </h3>
+                        <p class="mt-1 text-xs text-slate-500">
+                            Sesuaikan selisih tanggal hijriyah.
+                        </p>
+                        <div class="mt-4 flex flex-wrap items-end gap-3">
+                            <div class="w-32">
+                                <label
+                                    for="hijri-offset"
+                                    class="mb-1 block text-xs font-medium text-slate-600"
+                                    >Offset Hari</label
+                                >
+                                <input
+                                    id="hijri-offset"
+                                    type="number"
+                                    min="-5"
+                                    max="5"
+                                    bind:value={hijriOffset}
+                                    class="w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <button
+                                onclick={saveHijriOffset}
+                                disabled={hijriOffsetSaving}
+                                class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                            >
+                                {#if hijriOffsetSaving}
+                                    ...
+                                {:else}
+                                    Simpan
+                                {/if}
+                            </button>
+                            {#if hijriOffsetSuccess}
+                                <p class="text-sm font-medium text-emerald-600">
+                                    {hijriOffsetSuccess}
+                                </p>
+                            {/if}
+                            {#if hijriOffsetError}
+                                <p class="text-sm text-red-500"
+                                    >{hijriOffsetError}</p
+                                >
+                            {/if}
+                        </div>
+                        <p class="mt-2 text-xs text-slate-400">
+                            {hijriOffset > 0 ? "+ " : ""}{hijriOffset
+                                ? `${hijriOffset} hari lebih lambat`
+                                : "0 (standar)"}
+                        </p>
                     </div>
+
+                    <!-- CUACA -->
+                    <div class="rounded-xl border border-emerald-100 bg-emerald-50/40 p-5">
+                        <h3 class="text-sm font-semibold text-emerald-800">
+                            Cuaca Lokal
+                        </h3>
+                        <p class="mt-1 text-xs text-slate-500">
+                            Koordinat otomatis terisi saat pilih kota.
+                        </p>
+                        <div class="mt-4 flex flex-wrap items-end gap-3">
+                            <div class="w-32">
+                                <label
+                                    for="weather-lat"
+                                    class="mb-1 block text-xs font-medium text-slate-600"
+                                    >Latitude</label
+                                >
+                                <input
+                                    id="weather-lat"
+                                    type="text"
+                                    placeholder="-6.2146"
+                                    bind:value={weatherLat}
+                                    class="w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <div class="w-32">
+                                <label
+                                    for="weather-lon"
+                                    class="mb-1 block text-xs font-medium text-slate-600"
+                                    >Longitude</label
+                                >
+                                <input
+                                    id="weather-lon"
+                                    type="text"
+                                    placeholder="106.8451"
+                                    bind:value={weatherLon}
+                                    class="w-full rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                                />
+                            </div>
+                            <button
+                                onclick={saveWeatherLocation}
+                                disabled={weatherLocSaving}
+                                class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                            >
+                                {#if weatherLocSaving}
+                                    ...
+                                {:else}
+                                    Simpan
+                                {/if}
+                            </button>
+                            {#if weatherLocSuccess}
+                                <p class="text-sm font-medium text-emerald-600">
+                                    {weatherLocSuccess}
+                                </p>
+                            {/if}
+                            {#if weatherLocError}
+                                <p class="text-sm text-red-500"
+                                    >{weatherLocError}</p
+                                >
+                            {/if}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- MODE HEMAT ENERGI -->
+            <section class="rounded-2xl bg-white p-6 shadow-sm">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-semibold text-emerald-900">Mode Hemat Energi</h2>
+                        <p class="mt-0.5 text-xs text-slate-500">Layar akan masuk mode hemat setelah Isya dan aktif kembali sebelum Subuh.</p>
+                    </div>
+                </div>
+                <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                    <div class="rounded-xl border border-emerald-100 bg-emerald-50/40 p-5">
+                        <h3 class="text-sm font-semibold text-emerald-800">Aktif Setelah Isya</h3>
+                        <p class="mt-1 text-xs text-slate-500">Berapa menit setelah Isya layar masuk mode hemat.</p>
+                        <div class="mt-4">
+                            <label for="screensaver-delay" class="mb-1 block text-xs font-medium text-slate-600">Menit setelah Isya</label>
+                            <input
+                                id="screensaver-delay"
+                                type="number"
+                                min="0"
+                                max="300"
+                                bind:value={screensaverDelay}
+                                class="w-32 rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                            />
+                        </div>
+                    </div>
+                    <div class="rounded-xl border border-emerald-100 bg-emerald-50/40 p-5">
+                        <h3 class="text-sm font-semibold text-emerald-800">Bangun Sebelum Subuh</h3>
+                        <p class="mt-1 text-xs text-slate-500">Berapa menit sebelum Subuh layar aktif kembali.</p>
+                        <div class="mt-4">
+                            <label for="screensaver-wake" class="mb-1 block text-xs font-medium text-slate-600">Menit sebelum Subuh</label>
+                            <input
+                                id="screensaver-wake"
+                                type="number"
+                                min="0"
+                                max="120"
+                                bind:value={screensaverWake}
+                                class="w-32 rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                            />
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center gap-3">
                     <button
-                        onclick={saveHijriOffset}
-                        disabled={hijriOffsetSaving}
-                        class="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                        onclick={saveScreensaver}
+                        disabled={screensaverSaving}
+                        class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
                     >
-                        {#if hijriOffsetSaving}
-                            Menyimpan...
-                        {:else}
-                            Simpan
-                        {/if}
+                        {#if screensaverSaving}...{:else}Simpan{/if}
                     </button>
-                    {#if hijriOffsetSuccess}
-                        <p class="text-sm font-medium text-emerald-600">
-                            {hijriOffsetSuccess}
-                        </p>
+                    {#if screensaverSuccess}
+                        <p class="text-sm font-medium text-emerald-600">✓ Disimpan</p>
                     {/if}
-                    {#if hijriOffsetError}
-                        <p class="text-sm text-red-500">{hijriOffsetError}</p>
-                    {/if}
-                    <p class="text-xs text-slate-400">
-                        {hijriOffset > 0 ? "+ " : ""}{hijriOffset
-                            ? `${hijriOffset} hari lebih lambat`
-                            : "0 (standar)"}
-                    </p>
                 </div>
+                <p class="mt-3 text-xs text-slate-400">
+                    Hemat aktif {screensaverDelay} menit setelah Isya, bangun {screensaverWake} menit sebelum Subuh.
+                </p>
             </section>
         {/if}
 
-        {#if activeSection === "weather"}
+        {#if activeSection === "jumbotron"}
             <!-- CUACA: SET LOKASI -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
@@ -1539,26 +1857,11 @@
                                         BG: {item.backgroundUrl}
                                     </p>
                                 {/if}
-                                <form
-                                    method="POST"
-                                    action="?/deleteJumbotron"
-                                    class="mt-2"
-                                    onsubmit={(e) => {
-                                        if (!confirm("Hapus jumbotron ini?"))
-                                            e.preventDefault();
-                                    }}
-                                >
-                                    <input
-                                        type="hidden"
-                                        name="id"
-                                        value={item.id}
-                                    />
-                                    <button
-                                        type="submit"
-                                        class="text-xs font-medium text-red-500 hover:text-red-700"
-                                        >Hapus</button
-                                    >
-                                </form>
+                                <button
+                                    type="button"
+                                    class="mt-2 text-xs font-medium text-red-500 hover:text-red-700"
+                                    onclick={() => askDeleteJumbotron(item.id, item.title ?? 'Jumbotron')}
+                                >Hapus</button>
                             </div>
                         {/each}
                         {#if data.jumbotrons.length === 0}
@@ -2694,4 +2997,14 @@
         </div>
     </div>
 </div>
+
+<ConfirmDialog
+    open={confirmOpen}
+    title="Hapus Jumbotron"
+    message={`Yakin ingin menghapus jumbotron "${pendingDeleteTitle}"? Tindakan ini tidak bisa dibatalkan.`}
+    confirmLabel="Ya, Hapus"
+    cancelLabel="Batal"
+    onconfirm={confirmDeleteJumbotron}
+    oncancel={cancelDelete}
+/>
 </div>

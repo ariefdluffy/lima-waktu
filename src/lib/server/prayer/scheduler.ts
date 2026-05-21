@@ -1,10 +1,7 @@
 import { db } from "$lib/server/db";
 import { devices, masjids } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
-import {
-  resolvePrayerScheduleForMasjid,
-  todayYmdInJakarta,
-} from "./resolver";
+import { resolvePrayerScheduleForMasjid, todayYmdInTimezone } from "./resolver";
 import { setCachedSchedule } from "./cache";
 
 const INTERVAL_MS = 15 * 60 * 1000; // 15 menit
@@ -16,31 +13,31 @@ async function refreshAllSchedules(): Promise<void> {
   isRunning = true;
 
   try {
-    const today = todayYmdInJakarta();
-
-    // Ambil semua masjid yang punya device aktif
-    const activeDevices = await db
-      .selectDistinct({ masjidId: devices.masjidId })
-      .from(devices)
+    // Ambil semua masjid yang punya device aktif — include timezone
+    const activeMasjids = await db
+      .select({ id: masjids.id, timezone: masjids.timezone })
+      .from(masjids)
+      .innerJoin(devices, eq(devices.masjidId, masjids.id))
       .where(eq(devices.isActive, 1));
 
-    if (activeDevices.length === 0) return;
-
-    const masjidIds = activeDevices.map((d) => d.masjidId);
+    if (activeMasjids.length === 0) return;
 
     console.log(
-      `[PrayerScheduler] Refreshing ${masjidIds.length} masjid(s) for ${today}...`,
+      `[PrayerScheduler] Refreshing ${activeMasjids.length} masjid(s)...`,
     );
 
     await Promise.allSettled(
-      masjidIds.map(async (masjidId) => {
+      activeMasjids.map(async ({ id: masjidId, timezone }) => {
         try {
+          const today = todayYmdInTimezone(timezone ?? "Asia/Jakarta");
           const schedule = await resolvePrayerScheduleForMasjid(
             masjidId,
             today,
           );
           setCachedSchedule(masjidId, today, schedule);
-          console.log(`[PrayerScheduler] Cached schedule for masjid ${masjidId}`);
+          console.log(
+            `[PrayerScheduler] Cached schedule for masjid ${masjidId}`,
+          );
         } catch (err) {
           console.error(
             `[PrayerScheduler] Failed to refresh masjid ${masjidId}:`,
@@ -50,7 +47,9 @@ async function refreshAllSchedules(): Promise<void> {
       }),
     );
 
-    console.log(`[PrayerScheduler] Refresh done at ${new Date().toISOString()}`);
+    console.log(
+      `[PrayerScheduler] Refresh done at ${new Date().toISOString()}`,
+    );
   } catch (err) {
     console.error("[PrayerScheduler] Unexpected error:", err);
   } finally {

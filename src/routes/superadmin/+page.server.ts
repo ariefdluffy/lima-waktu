@@ -49,6 +49,7 @@ export const actions: Actions = {
     const city = String(form.get("city") ?? "").trim();
     const province = String(form.get("province") ?? "").trim();
     const adminUserId = String(form.get("admin_user_id") ?? "").trim();
+    const timezone = String(form.get("timezone") ?? "Asia/Jakarta").trim();
     if (!name || !adminUserId) return;
 
     const masjidId = randomUUID();
@@ -57,7 +58,7 @@ export const actions: Actions = {
       name,
       city: city || null,
       province: province || null,
-      timezone: "Asia/Jakarta",
+      timezone,
       isActive: 1,
     });
     await db.insert(masjidUsers).values({

@@ -41,70 +41,13 @@
         } catch {
             videoId = url;
         }
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&loop=1&playlist=${videoId}&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
     }
 </script>
 
-<main class="main-body main-body--youtube">
-    <!-- LEFT INFO PANEL (30%) -->
-    <aside class="yt-info-panel">
-        <div class="next-label">WAKTU BERIKUTNYA</div>
-        <div class="next-prayer-name">{nextPrayerName}</div>
-        <div class="next-prayer-time">{nextPrayerTime}</div>
-        <div class="countdown-box">
-            <span class="countdown-label">MENUJU ADZAN</span>
-            <div class="countdown-val">{countdown}</div>
-            <div class="progress-track">
-                <div
-                    class="progress-fill"
-                    style="width: {countdownProgress}%"
-                ></div>
-            </div>
-        </div>
-        {#if iqamahTime}
-            <div class="iqamah-box">
-                <div class="iqamah-label">IQAMAH</div>
-                <div class="iqamah-val">{iqamahTime}</div>
-            </div>
-        {/if}
-
-        <div class="yt-prayer-list">
-            {#each PRAYER_ORDER as prayer, idx}
-                <div
-                    class="yt-prayer-row"
-                    class:yt-prayer-row--active={idx === activePrayerIndex}
-                >
-                    <span class="yt-prayer-icon">{PRAYER_ICONS[prayer]}</span>
-                    <span class="yt-prayer-name">{PRAYER_LABELS[prayer]}</span>
-                    <span class="yt-prayer-time">
-                        {payload.schedule.resolved?.[prayer] ?? "--:--"}
-                    </span>
-                </div>
-            {/each}
-        </div>
-
-        <div class="yt-imsak-card">
-            <div class="info-card-title">IMSAKIYAH</div>
-            <div class="imsakiyah-row">
-                <div>
-                    <div class="info-card-sub">Imsak</div>
-                    <div class="info-card-value imsakiyah-time">
-                        {payload.schedule.resolved?.imsak ?? "--:--"}
-                    </div>
-                </div>
-                <div class="imsakiyah-sep">—</div>
-                <div>
-                    <div class="info-card-sub">Syuruq</div>
-                    <div class="info-card-value imsakiyah-time">
-                        {payload.schedule.resolved?.sunrise ?? "--:--"}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- YOUTUBE PANEL (70%) -->
-    <section class="yt-video-panel">
+<main class="main-body--youtube">
+    <!-- VIDEO FULL AREA -->
+    <div class="yt-video-backdrop">
         <iframe
             src={getYoutubeEmbedUrl(payload.youtubeItems[0].youtubeUrl)}
             title={payload.youtubeItems[0].title ?? "Live Streaming"}
@@ -115,214 +58,88 @@
         {#if payload.youtubeItems[0].title}
             <div class="yt-video-label">{payload.youtubeItems[0].title}</div>
         {/if}
-    </section>
+    </div>
+
+    <!-- INFO OVERLAY -->
+    <aside class="yt-info-overlay">
+        <!-- NEXT PRAYER -->
+        <div class="ov-next-section">
+            <div class="ov-next-label">WAKTU BERIKUTNYA</div>
+            <div class="ov-next-name">{nextPrayerName}</div>
+            <div class="ov-next-time">{nextPrayerTime}</div>
+        </div>
+
+        <!-- COUNTDOWN -->
+        <div class="ov-countdown-box">
+            <div class="ov-countdown-label">MENUJU ADZAN</div>
+            <div class="ov-countdown-val">{countdown}</div>
+            <div class="ov-progress-track">
+                <div
+                    class="ov-progress-fill"
+                    style="width: {countdownProgress}%"
+                ></div>
+            </div>
+        </div>
+
+        {#if iqamahTime}
+            <div class="ov-iqamah-box">
+                <span class="ov-iqamah-label">IQAMAH</span>
+                <span class="ov-iqamah-val">{iqamahTime}</span>
+            </div>
+        {/if}
+
+        <!-- PRAYER LIST -->
+        <div class="ov-prayer-list">
+            {#each PRAYER_ORDER as prayer, idx}
+                <div
+                    class="ov-prayer-row"
+                    class:ov-prayer-row--active={idx === activePrayerIndex}
+                >
+                    <span class="ov-prayer-icon">{PRAYER_ICONS[prayer]}</span>
+                    <span class="ov-prayer-name">{PRAYER_LABELS[prayer]}</span>
+                    <span class="ov-prayer-time"
+                        >{payload.schedule.resolved?.[prayer] ?? "--:--"}</span
+                    >
+                </div>
+            {/each}
+        </div>
+
+        <!-- IMSAKIYAH -->
+        <div class="ov-imsak-card">
+            <div class="ov-imsak-title">IMSAKIYAH</div>
+            <div class="ov-imsak-row">
+                <div>
+                    <div class="ov-imsak-sub">Imsak</div>
+                    <div class="ov-imsak-val">
+                        {payload.schedule.resolved?.imsak ?? "--:--"}
+                    </div>
+                </div>
+                <div class="ov-imsak-sep">—</div>
+                <div>
+                    <div class="ov-imsak-sub">Syuruq</div>
+                    <div class="ov-imsak-val">
+                        {payload.schedule.resolved?.sunrise ?? "--:--"}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
 </main>
 
 <style>
+    /* ─── MAIN CONTAINER ─── */
     .main-body--youtube {
         position: absolute;
         top: calc(14% + 3px);
-        bottom: 12%;
+        bottom: 8%;
         left: 0;
         right: 0;
-        display: flex;
-        flex-direction: row;
     }
 
-    .yt-info-panel {
-        width: 30%;
-        display: flex;
-        flex-direction: column;
-        padding: 2% 2% 2% 2.5%;
-        border-right: 1px solid var(--border-accent);
-        background: var(--bg-secondary);
-        justify-content: flex-start;
-        align-items: center;
-        gap: 2%;
-        overflow: hidden;
-    }
-
-    .next-label {
-        font-size: clamp(10px, 1vw, 20px);
-        color: var(--text-secondary);
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-    }
-
-    .next-prayer-name {
-        font-family: var(--font-heading), serif;
-        font-size: clamp(28px, 2.9vw, 56px);
-        font-weight: 700;
-        color: var(--accent-primary);
-        text-align: center;
-        line-height: 1.1;
-    }
-
-    .next-prayer-time {
-        font-size: clamp(48px, 5.2vw, 100px);
-        font-weight: 700;
-        color: var(--text-primary);
-        font-variant-numeric: tabular-nums;
-        letter-spacing: 0.05em;
-        line-height: 1;
-    }
-
-    .countdown-box {
-        background: var(--running-bar-bg);
-        border: 1px solid var(--running-bar-border);
-        border-radius: var(--border-radius);
-        padding: 2% 6%;
-        text-align: center;
-        width: 92%;
-    }
-
-    .countdown-label {
-        font-size: clamp(8px, 0.85vw, 16px);
-        color: var(--text-muted);
-        letter-spacing: 0.12em;
-        display: block;
-        margin-bottom: 2px;
-    }
-
-    .countdown-val {
-        font-size: clamp(22px, 2.7vw, 52px);
-        font-weight: 700;
-        color: var(--accent-secondary);
-        font-variant-numeric: tabular-nums;
-    }
-
-    .progress-track {
-        margin-top: 6px;
-        width: 100%;
-        height: 4px;
-        background: var(--border-color);
-        border-radius: 2px;
-        overflow: hidden;
-    }
-
-    .progress-fill {
-        height: 100%;
-        background: var(--progress-fill);
-        border-radius: 2px;
-        transition: width 1s linear;
-    }
-
-    .iqamah-box {
-        text-align: center;
-        width: 92%;
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: var(--border-radius);
-        padding: 2% 4%;
-    }
-
-    .iqamah-label {
-        font-size: clamp(8px, 0.85vw, 16px);
-        color: var(--text-muted);
-        letter-spacing: 0.1em;
-    }
-
-    .iqamah-val {
-        font-size: clamp(14px, 1.9vw, 36px);
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-
-    .yt-prayer-list {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 2%;
-        margin-top: 2%;
-    }
-
-    .yt-prayer-row {
-        display: flex;
-        align-items: center;
-        gap: 4%;
-        padding: 2% 4%;
-        border-radius: var(--border-radius);
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.07);
-    }
-
-    .yt-prayer-row--active {
-        background: var(--prayer-active-bg);
-        border-color: var(--prayer-active-border);
-    }
-
-    .yt-prayer-icon {
-        font-size: clamp(10px, 1.2vw, 18px);
-        width: 10%;
-        text-align: center;
-    }
-
-    .yt-prayer-name {
-        flex: 1;
-        font-size: clamp(9px, 1vw, 15px);
-        color: var(--text-secondary);
-        letter-spacing: 0.06em;
-    }
-
-    .yt-prayer-row--active .yt-prayer-name {
-        color: var(--accent-primary);
-    }
-
-    .yt-prayer-time {
-        font-size: clamp(11px, 1.3vw, 19px);
-        font-weight: 700;
-        color: var(--text-primary);
-        font-variant-numeric: tabular-nums;
-    }
-
-    .yt-imsak-card {
-        width: 100%;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        padding: 4% 6%;
-        margin-top: 2%;
-    }
-
-    .info-card-title {
-        font-size: clamp(10px, 1.1vw, 16px);
-        color: var(--accent-muted);
-        letter-spacing: 0.12em;
-        margin-bottom: 4%;
-    }
-
-    .info-card-value {
-        font-size: clamp(16px, 2vw, 28px);
-        font-weight: 600;
-        color: var(--text-primary);
-        line-height: 1.3;
-    }
-
-    .info-card-sub {
-        font-size: clamp(11px, 1.2vw, 17px);
-        color: var(--text-muted);
-        margin-top: 2%;
-    }
-
-    .imsakiyah-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 4%;
-    }
-
-    .imsakiyah-time {
-        font-size: clamp(18px, 2.2vw, 32px);
-    }
-
-    .imsakiyah-sep {
-        color: var(--accent-muted);
-        font-size: clamp(18px, 2.2vw, 32px);
-    }
-
-    .yt-video-panel {
-        flex: 1;
-        position: relative;
+    /* ─── VIDEO BACKDROP ─── */
+    .yt-video-backdrop {
+        position: absolute;
+        inset: 0;
         display: flex;
         flex-direction: column;
         background: #000;
@@ -339,10 +156,235 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(transparent, var(--bg-secondary));
-        color: var(--text-secondary);
-        font-size: clamp(12px, 1.4vw, 22px);
-        padding: 3% 4% 2%;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        color: #fff;
+        font-size: clamp(14px, 1.2vw, 24px);
+        padding: 4% 4% 2%;
         text-align: center;
+        pointer-events: none;
+    }
+
+    /* ─── INFO OVERLAY ─── */
+    .yt-info-overlay {
+        position: absolute;
+        top: 2.5%;
+        left: 2.5%;
+        width: 24%;
+        max-height: 95%;
+        display: flex;
+        flex-direction: column;
+        padding: 1.8% 2.2%;
+        gap: 0.6%;
+        background: rgba(0, 0, 0, 0.72);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    /* ─── NEXT PRAYER ─── */
+    .ov-next-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+    }
+
+    .ov-next-label {
+        font-size: clamp(12px, 1vw, 20px);
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        line-height: 1;
+    }
+
+    .ov-next-name {
+        font-family: var(--font-heading), serif;
+        font-size: clamp(22px, 2.2vw, 44px);
+        font-weight: 700;
+        color: #fbbf24;
+        text-align: center;
+        line-height: 1.15;
+        margin-top: 2px;
+    }
+
+    .ov-next-time {
+        font-size: clamp(36px, 4vw, 80px);
+        font-weight: 700;
+        color: #fff;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.05em;
+        line-height: 1;
+        margin-top: 2px;
+    }
+
+    /* ─── COUNTDOWN ─── */
+    .ov-countdown-box {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1% 5%;
+        text-align: center;
+        width: 100%;
+        flex-shrink: 0;
+        box-sizing: border-box;
+    }
+
+    .ov-countdown-label {
+        font-size: clamp(10px, 0.8vw, 16px);
+        color: rgba(255, 255, 255, 0.45);
+        letter-spacing: 0.14em;
+        line-height: 1.2;
+    }
+
+    .ov-countdown-val {
+        font-size: clamp(18px, 1.8vw, 36px);
+        font-weight: 700;
+        color: #34d399;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.3;
+    }
+
+    .ov-progress-track {
+        margin-top: 4px;
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .ov-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #34d399, #10b981);
+        border-radius: 2px;
+        transition: width 1s linear;
+    }
+
+    /* ─── IQAMAH ─── */
+    .ov-iqamah-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3%;
+        background: rgba(251, 191, 36, 0.12);
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        border-radius: 10px;
+        padding: 0.6% 4%;
+        width: 100%;
+        flex-shrink: 0;
+        box-sizing: border-box;
+    }
+
+    .ov-iqamah-label {
+        font-size: clamp(10px, 0.8vw, 36px);
+        color: rgba(251, 191, 36, 0.7);
+        letter-spacing: 0.12em;
+        line-height: 1.2;
+    }
+
+    .ov-iqamah-val {
+        font-size: clamp(16px, 1.6vw, 42px);
+        color: #fbbf24;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    /* ─── PRAYER LIST ─── */
+    .ov-prayer-list {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5%;
+        flex: 1;
+        min-height: 0;
+        justify-content: center;
+    }
+
+    .ov-prayer-row {
+        display: flex;
+        align-items: center;
+        gap: 3%;
+        padding: 0.4% 3%;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .ov-prayer-row--active {
+        background: rgba(52, 211, 153, 0.15);
+        border-color: rgba(52, 211, 153, 0.35);
+    }
+
+    .ov-prayer-icon {
+        font-size: clamp(11px, 0.9vw, 18px);
+        width: 10%;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .ov-prayer-name {
+        flex: 1;
+        font-size: clamp(11px, 0.9vw, 18px);
+        color: rgba(255, 255, 255, 0.85);
+        letter-spacing: 0.04em;
+        line-height: 1.3;
+    }
+
+    .ov-prayer-row--active .ov-prayer-name {
+        color: #34d399;
+        font-weight: 600;
+    }
+
+    .ov-prayer-time {
+        font-size: clamp(12px, 1.1vw, 32px);
+        font-weight: 700;
+        color: #fff;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.3;
+    }
+
+    /* ─── IMSAKIYAH ─── */
+    .ov-imsak-card {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.2% 4%;
+        flex-shrink: 0;
+        box-sizing: border-box;
+    }
+
+    .ov-imsak-title {
+        font-size: clamp(9px, 0.7vw, 14px);
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 0.14em;
+        line-height: 1.1;
+    }
+
+    .ov-imsak-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1%;
+    }
+
+    .ov-imsak-sub {
+        font-size: clamp(9px, 0.7vw, 14px);
+        color: rgba(255, 255, 255, 0.5);
+        line-height: 1.1;
+    }
+
+    .ov-imsak-val {
+        font-size: clamp(14px, 1.4vw, 28px);
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.2;
+    }
+
+    .ov-imsak-sep {
+        color: rgba(255, 255, 255, 0.25);
+        font-size: clamp(14px, 1.4vw, 28px);
     }
 </style>

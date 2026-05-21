@@ -14,7 +14,7 @@ import {
 } from "$lib/server/db/schema";
 import {
   resolvePrayerScheduleForMasjid,
-  todayYmdInJakarta,
+  todayYmdInTimezone,
 } from "$lib/server/prayer/resolver";
 import { getCachedSchedule, setCachedSchedule } from "$lib/server/prayer/cache";
 
@@ -62,7 +62,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
     })
     .where(eq(devices.id, device.id));
 
-  const today = todayYmdInJakarta();
+  const today = todayYmdInTimezone(masjid.timezone ?? "Asia/Makassar");
   const todayDate = new Date(`${today}T00:00:00.000Z`);
 
   // Baca dari cache dulu, jika miss fetch dari DB dan simpan ke cache
@@ -214,6 +214,10 @@ export const GET: RequestHandler = async ({ params, request }) => {
         latitude: masjid.latitude,
         longitude: masjid.longitude,
         hijriOffset: masjid.hijriOffset ?? 0,
+        adzanScreenDuration: masjid.adzanScreenDuration ?? 4,
+        khusukScreenDuration: masjid.khusukScreenDuration ?? 10,
+        screensaverDelayMinutes: masjid.screensaverDelayMinutes ?? 120,
+        screensaverWakeMinutes: masjid.screensaverWakeMinutes ?? 60,
         logoUrl: masjid.logoUrl ?? null,
       },
       schedule,

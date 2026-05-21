@@ -81,7 +81,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        padding: 1.5% 2% 0 2%;
+        padding: 1.5% 1% 1.5%;
         gap: 1.5%;
     }
 
@@ -89,7 +89,7 @@
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         gap: 1%;
-        height: 45%;
+        height: 50%;
     }
 
     .prayer-card {
@@ -100,8 +100,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 3%;
-        padding: 3% 2%;
+        gap: 2%;
+        padding: 2% 2%;
         transition: all 0.3s;
         position: relative;
         overflow: hidden;
@@ -138,7 +138,7 @@
     }
 
     .prayer-card-name {
-        font-size: clamp(14px, 2.1vw, 40px);
+        font-size: clamp(14px, 2.1vw, 46px);
         color: var(--text-secondary);
         letter-spacing: 0.08em;
         font-weight: 500;
@@ -149,7 +149,7 @@
     }
 
     .prayer-card-time {
-        font-size: clamp(28px, 4.2vw, 80px);
+        font-size: clamp(28px, 4.2vw, 92px);
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;
@@ -158,7 +158,7 @@
     }
 
     .prayer-iqamah {
-        font-size: clamp(10px, 1.3vw, 24px);
+        font-size: clamp(10px, 1.3vw, 46px);
         color: var(--text-muted);
         white-space: nowrap;
     }
@@ -202,7 +202,7 @@
 
     .slide-arabic {
         font-family: var(--font-arabic), serif;
-        font-size: clamp(18px, 3vw, 56px);
+        font-size: clamp(28px, 3vw, 56px);
         color: var(--accent-primary);
         line-height: 1.8;
         margin-bottom: 3%;

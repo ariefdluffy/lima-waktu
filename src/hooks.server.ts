@@ -48,6 +48,7 @@ const securityHandle: Handle = async ({ event, resolve }) => {
         "img-src 'self' data: blob: https:",
         "font-src 'self' https://fonts.gstatic.com",
         "connect-src 'self' https://api.open-meteo.com",
+        "frame-src 'self' https://www.youtube.com",
         "frame-ancestors 'self'",
       ].join("; "),
     );

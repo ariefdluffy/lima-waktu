@@ -272,6 +272,28 @@ export async function resolvePrayerScheduleForMasjid(
   };
 }
 
+// Map timezone string → UTC offset jam
+const TZ_OFFSETS: Record<string, number> = {
+  "Asia/Jakarta": 7, // WIB
+  "Asia/Pontianak": 7, // WIB
+  "Asia/Makassar": 8, // WITA
+  "Asia/Ujung_Pandang": 8, // WITA
+  "Asia/Jayapura": 9, // WIT
+};
+
+function getTZOffsetHours(timezone: string): number {
+  return TZ_OFFSETS[timezone] ?? 7; // default WIB
+}
+
+// Dapatkan tanggal YYYY-MM-DD dalam timezone tertentu
+export function todayYmdInTimezone(timezone: string, now = new Date()): string {
+  const offsetHours = getTZOffsetHours(timezone);
+  const offsetMs = offsetHours * 60 * 60 * 1000;
+  const localTime = new Date(now.getTime() + offsetMs);
+  return dateToYmd(localTime);
+}
+
+// Deprecated — jangan pakai untuk masjid-specific. Gunakan todayYmdInTimezone(timezone).
 export function todayYmdInJakarta(now = new Date()): string {
   const timezoneOffsetMs = 8 * 60 * 60 * 1000; // WITA (UTC+8)
   const localTime = new Date(now.getTime() + timezoneOffsetMs);

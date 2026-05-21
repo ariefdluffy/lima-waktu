@@ -31,6 +31,7 @@
     let theme = $derived.by(() => payload?.theme ?? null);
     let loading = $state(true);
     let error: string | null = $state(null);
+    let errorCountdown = $state(15);
 
     // Time state
     let now = $state(new Date());
@@ -49,12 +50,27 @@
     let currentSlide = $state(0);
     let slideFading = $state(false);
 
+    // Audio context — shared, resume on user gesture
+    let audioCtx: AudioContext | null = null;
+
+    function getAudioContext(): AudioContext {
+        if (!audioCtx) {
+            audioCtx = new (
+                window.AudioContext || (window as any).webkitAudioContext
+            )();
+        }
+        return audioCtx;
+    }
+
     // Beep state
     let lastTriggeredPrayer = $state("");
+    let lastTriggeredIqamah = $state("");
 
-    // Mood: normal | iqamah | khusuk
-    let mood = $state<"normal" | "iqamah" | "khusuk">("normal");
+    // Mood: normal | adzan | iqamah | khusuk
+    let mood = $state<"normal" | "adzan" | "iqamah" | "khusuk">("normal");
     let moodPrayerName = $state("");
+    let moodCountdown = $state("");
+    let moodCountdownLabel = $state("");
 
     // Hijriyah
     let hijriyahDate = $state("");
@@ -63,7 +79,8 @@
     let weatherTemp = $state<number | null>(null);
     let weatherCode = $state<number | null>(null);
     let weatherLoading = $state(true);
-    let weatherFetched = false;
+    let weatherFetched = $state(false);
+    let weatherLastFetched = $state(0);
 
     // Screen saver (mode hemat)
     let screensaver = $state(false);
@@ -89,7 +106,9 @@
     // Timezone offset & label dari payload masjid
     let tzLabel = $derived.by(() => {
         const tz = payload?.masjid?.timezone ?? "Asia/Makassar";
-        return getTZLabel(tz);
+        const label = getTZLabel(tz);
+        const city = payload?.masjid?.city;
+        return city ? `${label} \u2022 ${city}` : label;
     });
     function getTZOffset(): number {
         return getTZOffsetHours(payload?.masjid?.timezone ?? "Asia/Makassar");
@@ -115,17 +134,34 @@
     }
 
     // ── Cuaca ─────────────────────────────────────────────────────────────
+    const WEATHER_CACHE_MS = 30 * 60 * 1000; // 30 menit
+
     async function fetchWeather(lat: string, lon: string) {
+        const now = Date.now();
+        if (weatherFetched && now - weatherLastFetched < WEATHER_CACHE_MS) {
+            weatherLoading = false;
+            return;
+        }
         try {
-            const res = await fetch(
-                `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&timezone=auto&forecast_days=1`,
-            );
+            const res = await fetch(`/api/v1/weather?lat=${lat}&lon=${lon}`);
             const json = await res.json();
-            weatherTemp = Math.round(json.current.temperature_2m);
-            weatherCode = json.current.weathercode;
+            if (json.ok) {
+                weatherTemp = json.temp;
+                weatherCode = json.code;
+                weatherLastFetched = now;
+                weatherFetched = true;
+            } else {
+                // Jaga data lama jika sudah pernah fetch
+                if (!weatherFetched) {
+                    weatherTemp = null;
+                    weatherCode = null;
+                }
+            }
         } catch {
-            weatherTemp = null;
-            weatherCode = null;
+            if (!weatherFetched) {
+                weatherTemp = null;
+                weatherCode = null;
+            }
         } finally {
             weatherLoading = false;
         }
@@ -152,14 +188,54 @@
 
     function playAdzanBeep() {
         try {
-            const ctx = new (
-                window.AudioContext || (window as any).webkitAudioContext
-            )();
+            const ctx = getAudioContext();
+            if (ctx.state === "suspended") {
+                ctx.resume();
+            }
             const sequence = [
                 { freq: 880, duration: 0.15, start: 0.0 },
                 { freq: 880, duration: 0.15, start: 0.25 },
                 { freq: 1100, duration: 0.15, start: 0.5 },
                 { freq: 1100, duration: 0.6, start: 0.8 },
+            ];
+            sequence.forEach(({ freq, duration, start }) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = "sine";
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, ctx.currentTime + start);
+                gain.gain.linearRampToValueAtTime(
+                    0.4,
+                    ctx.currentTime + start + 0.01,
+                );
+                gain.gain.linearRampToValueAtTime(
+                    0,
+                    ctx.currentTime + start + duration,
+                );
+                osc.start(ctx.currentTime + start);
+                osc.stop(ctx.currentTime + start + duration + 0.05);
+            });
+            setTimeout(() => ctx.close(), 3000);
+        } catch (e) {
+            console.warn("Web Audio API tidak tersedia:", e);
+        }
+    }
+
+    function playIqamahBeep() {
+        try {
+            const ctx = getAudioContext();
+            if (ctx.state === "suspended") {
+                ctx.resume();
+            }
+            // Iqamah pattern: rapid double-beep (lebih cepat & pendek)
+            const sequence = [
+                { freq: 1000, duration: 0.08, start: 0.0 },
+                { freq: 1000, duration: 0.08, start: 0.12 },
+                { freq: 1200, duration: 0.08, start: 0.28 },
+                { freq: 1200, duration: 0.08, start: 0.4 },
+                { freq: 1400, duration: 0.5, start: 0.55 },
             ];
             sequence.forEach(({ freq, duration, start }) => {
                 const osc = ctx.createOscillator();
@@ -236,7 +312,7 @@
             countdown = `${String(hh).padStart(2, "0")} : ${String(mm).padStart(2, "0")} : ${String(ss).padStart(2, "0")}`;
 
             // Trigger beep saat adzan tiba
-            if (diffSeconds === 0 && lastTriggeredPrayer !== nextPrayer) {
+            if (diffSeconds <= 1 && lastTriggeredPrayer !== nextPrayer) {
                 lastTriggeredPrayer = nextPrayer;
                 playAdzanBeep();
             }
@@ -261,9 +337,11 @@
             );
         }
 
-        // --- Mode Iqamah & Khusuk Detection ---
-        let newMood: "normal" | "iqamah" | "khusuk" = "normal";
+        // --- Mode Adzan, Iqamah & Khusuk Detection ---
+        let newMood: "normal" | "adzan" | "iqamah" | "khusuk" = "normal";
         let newMoodPrayerName = "";
+        const ADZAN_DURATION = payload?.masjid?.adzanScreenDuration ?? 2;
+        const KHUSUK_DURATION = payload?.masjid?.khusukScreenDuration ?? 10;
 
         // Cari sholat yg adzan-nya sudah lewat (current/active prayer)
         let currentPrayerIdx = -1;
@@ -279,47 +357,104 @@
         if (currentPrayerIdx >= 0) {
             const cp = PRAYER_ORDER[currentPrayerIdx];
             const adzanMin = timeToMinutes(resolved[cp]);
+            const adzanEndMin = adzanMin + ADZAN_DURATION;
             const iqData = payload.schedule.iqamah[cp];
-            const KHUSUK_DURATION = 10; // menit setelah adzan
 
-            if (iqData?.enabled && iqData?.time) {
-                const iqamahMin = timeToMinutes(iqData.time);
-                if (
-                    currentMinutes >= iqamahMin &&
-                    currentMinutes < iqamahMin + 1
-                ) {
-                    newMood = "iqamah";
-                    newMoodPrayerName = PRAYER_LABELS[cp];
-                } else if (
-                    currentMinutes >= iqamahMin + 3 &&
-                    currentMinutes < adzanMin + KHUSUK_DURATION
-                ) {
+            // Dalam jendela adzan + khusuk (KHUSUK_DURATION menit dari adzan)
+            if (
+                currentMinutes >= adzanMin &&
+                currentMinutes < adzanMin + KHUSUK_DURATION
+            ) {
+                if (currentMinutes < adzanEndMin) {
+                    // Fase awal: layar adzan
+                    newMood = "adzan";
+                } else if (iqData?.enabled && iqData?.time) {
+                    const iqamahMin = timeToMinutes(iqData.time);
+                    if (
+                        currentMinutes >= iqamahMin &&
+                        currentMinutes < iqamahMin + 1
+                    ) {
+                        newMood = "iqamah";
+                        // Trigger iqamah beep once per prayer
+                        if (lastTriggeredIqamah !== cp) {
+                            lastTriggeredIqamah = cp;
+                            playIqamahBeep();
+                        }
+                    } else {
+                        newMood = "khusuk";
+                    }
+                } else {
+                    // Tidak ada iqamah: khusuk setelah layar adzan
                     newMood = "khusuk";
-                    newMoodPrayerName = PRAYER_LABELS[cp];
                 }
-            } else {
-                // Jika tidak ada iqamah: mode khusuk langsung setelah adzan
-                if (
-                    currentMinutes >= adzanMin &&
-                    currentMinutes < adzanMin + KHUSUK_DURATION
-                ) {
-                    newMood = "khusuk";
-                    newMoodPrayerName = PRAYER_LABELS[cp];
-                }
+                newMoodPrayerName = PRAYER_LABELS[cp];
             }
+        }
+
+        // Reset iqamah tracker when leaving iqamah mood
+        if (newMood !== "iqamah" && lastTriggeredIqamah) {
+            lastTriggeredIqamah = "";
         }
 
         mood = newMood;
         moodPrayerName = newMoodPrayerName;
 
+        // --- Mood Countdown ---
+        {
+            let remainingSec = 0;
+            let label = "";
+            if (newMood === "adzan" && currentPrayerIdx >= 0) {
+                const cp = PRAYER_ORDER[currentPrayerIdx];
+                const adzanMin = timeToMinutes(resolved[cp]);
+                const adzanEndMin = adzanMin + ADZAN_DURATION;
+                remainingSec = adzanEndMin * 60 - currentTotalSeconds;
+                label = "ADZAN BERAKHIR DALAM";
+            } else if (newMood === "iqamah" && currentPrayerIdx >= 0) {
+                const cp = PRAYER_ORDER[currentPrayerIdx];
+                const iqData = payload.schedule.iqamah[cp];
+                if (iqData?.enabled && iqData?.time) {
+                    const iqamahMin = timeToMinutes(iqData.time);
+                    remainingSec = (iqamahMin + 1) * 60 - currentTotalSeconds;
+                    label = "IQAMAH BERAKHIR DALAM";
+                }
+            } else if (newMood === "khusuk" && currentPrayerIdx >= 0) {
+                const cp = PRAYER_ORDER[currentPrayerIdx];
+                const adzanMin = timeToMinutes(resolved[cp]);
+                remainingSec =
+                    (adzanMin + KHUSUK_DURATION) * 60 - currentTotalSeconds;
+                label = "WAKTU KHUSYUK TERSISA";
+            }
+            if (remainingSec > 0) {
+                const mm = Math.floor(remainingSec / 60);
+                const ss = remainingSec % 60;
+                moodCountdown = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+                moodCountdownLabel = label;
+            } else {
+                moodCountdown = "";
+                moodCountdownLabel = "";
+            }
+        }
+
         // --- Screen Saver & Tahajud Mode ---
         const isyaMin = timeToMinutes(resolved.isya);
         const subuhMin = timeToMinutes(resolved.subuh);
-        const SCREENSAVER_DELAY = 120; // menit setelah Isya
-        const SCREENSAVER_WAKE = 60; // menit sebelum Subuh
-        const dalamJendelaScreensaver =
+        const syuruqMin = timeToMinutes(resolved.sunrise);
+        const dzuhurMin = timeToMinutes(resolved.dzuhur);
+        const SCREENSAVER_DELAY =
+            payload?.masjid?.screensaverDelayMinutes ?? 120;
+        const SCREENSAVER_WAKE = payload?.masjid?.screensaverWakeMinutes ?? 60;
+
+        // Jendela malam: X menit setelah Isya s/d Y menit sebelum Subuh
+        const dalamJendelaMalam =
             currentMinutes >= isyaMin + SCREENSAVER_DELAY ||
             currentMinutes < subuhMin - SCREENSAVER_WAKE;
+
+        // Jendela pagi: 1 jam setelah Syuruq s/d 2 jam sebelum Dzuhur
+        const dalamJendelaPagi =
+            currentMinutes >= syuruqMin + 60 &&
+            currentMinutes < dzuhurMin - 120;
+
+        const dalamJendelaScreensaver = dalamJendelaMalam || dalamJendelaPagi;
         const dalamJendelaTahajud =
             currentMinutes >= subuhMin - SCREENSAVER_WAKE &&
             currentMinutes < subuhMin;
@@ -431,6 +566,21 @@
         };
     });
 
+    // Auto-reload countdown saat error
+    $effect(() => {
+        if (error) {
+            errorCountdown = 15;
+            const timer = setInterval(() => {
+                errorCountdown -= 1;
+                if (errorCountdown <= 0) {
+                    clearInterval(timer);
+                    window.location.reload();
+                }
+            }, 1000);
+            return () => clearInterval(timer);
+        }
+    });
+
     $effect(() => {
         if (payload) {
             updatePrayerState();
@@ -472,7 +622,7 @@
         // autoplay=1 + mute=1 wajib agar browser mengizinkan autoplay
         // enablejsapi=1 untuk kontrol via JS jika diperlukan
         // playsinline=1 agar tidak fullscreen otomatis di mobile
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&loop=1&playlist=${videoId}&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
     }
 
     function getRunningTextContent(): string {
@@ -507,8 +657,11 @@
         <p>Memuat display...</p>
     </div>
 {:else if error}
-    <div class="display-error-screen">
-        <div class="display-error-card">
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="display-error-screen" onclick={() => window.location.reload()}>
+        <div class="display-error-card" onclick={(e) => e.stopPropagation()}>
             <div class="display-error-icon">⚠️</div>
             <div class="display-error-title">Gangguan Data</div>
             <p class="display-error-msg">{error}</p>
@@ -518,17 +671,41 @@
                     masjid.
                 </p>
             </div>
+            <div class="display-error-timer">
+                <svg class="display-error-ring" viewBox="0 0 40 40">
+                    <circle
+                        class="display-error-ring-bg"
+                        cx="20"
+                        cy="20"
+                        r="17"
+                    />
+                    <circle
+                        class="display-error-ring-fg"
+                        cx="20"
+                        cy="20"
+                        r="17"
+                        style="--pct: {((15 - errorCountdown) / 15) * 100}%"
+                    />
+                </svg>
+                <span class="display-error-timer-text">{errorCountdown}s</span>
+            </div>
             <button
                 class="display-error-btn"
-                onclick={() => window.location.reload()}
+                onclick={(e) => {
+                    e.stopPropagation();
+                    window.location.reload();
+                }}
             >
-                🔄 Refresh
+                🔄 Refresh Sekarang
             </button>
         </div>
     </div>
 {:else if payload}
     {#if screensaver}
-        <div class="screensaver">
+        <div
+            class="screensaver"
+            style={themeCssVars(payload?.theme?.palette ?? null)}
+        >
             <div class="screensaver-bg"></div>
             <div class="screensaver-body">
                 <div class="screensaver-logo">
@@ -556,7 +733,10 @@
             </div>
         </div>
     {:else if tahajudMode}
-        <div class="tahajud">
+        <div
+            class="tahajud"
+            style={themeCssVars(payload?.theme?.palette ?? null)}
+        >
             <div class="tahajud-bg"></div>
             <div class="tahajud-body">
                 <div class="tahajud-badge">★ QIYAMUL LAIL ★</div>
@@ -595,10 +775,8 @@
                 class="sound-unlock-btn"
                 onclick={() => {
                     try {
-                        new (
-                            window.AudioContext ||
-                            (window as any).webkitAudioContext
-                        )();
+                        const ctx = getAudioContext();
+                        if (ctx.state === "suspended") ctx.resume();
                     } catch (e) {}
                 }}
                 title="Aktifkan suara adzan">🔔</button
@@ -682,7 +860,12 @@
             <RunningBar content={getRunningTextContent()} />
 
             <!-- MOOD OVERLAY -->
-            <MoodOverlay {mood} {moodPrayerName} />
+            <MoodOverlay
+                {mood}
+                {moodPrayerName}
+                countdown={moodCountdown}
+                countdownLabel={moodCountdownLabel}
+            />
         </div>
     {/if}
 {/if}
@@ -705,6 +888,162 @@
         font-family: var(--font-body);
     }
 
+    /* ============= ERROR SCREEN ============= */
+    .display-error-screen {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(
+            135deg,
+            #0a0f1e 0%,
+            #1a1f2e 50%,
+            #0f1525 100%
+        );
+        font-family: var(--font-body, "Segoe UI", system-ui, sans-serif);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .display-error-screen::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(
+                ellipse at 20% 50%,
+                rgba(239, 68, 68, 0.08) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                ellipse at 80% 50%,
+                rgba(245, 158, 11, 0.06) 0%,
+                transparent 50%
+            );
+        pointer-events: none;
+    }
+
+    .display-error-card {
+        position: relative;
+        z-index: 1;
+        max-width: 420px;
+        width: 100%;
+        background: rgba(255, 255, 255, 0.04);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 48px 32px 36px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .display-error-icon {
+        font-size: 56px;
+        margin-bottom: 12px;
+        line-height: 1;
+        filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.25));
+    }
+
+    .display-error-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #f1f5f9;
+        margin-bottom: 8px;
+        letter-spacing: -0.3px;
+    }
+
+    .display-error-msg {
+        font-size: 14px;
+        color: #94a3b8;
+        margin: 0 0 24px;
+        line-height: 1.5;
+    }
+
+    .display-error-hint {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+
+    .display-error-hint p {
+        font-size: 13px;
+        color: #94a3b8;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .display-error-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 32px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+    }
+
+    .display-error-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 24px rgba(5, 150, 105, 0.4);
+    }
+
+    .display-error-btn:active {
+        transform: translateY(0);
+    }
+
+    .display-error-timer {
+        position: relative;
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 20px;
+    }
+
+    .display-error-ring {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
+
+    .display-error-ring-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.06);
+        stroke-width: 3;
+    }
+
+    .display-error-ring-fg {
+        fill: none;
+        stroke: #10b981;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-dasharray: 106.8;
+        stroke-dashoffset: calc(106.8 - (var(--pct, 0%) * 106.8 / 100));
+        transition: stroke-dashoffset 1s linear;
+    }
+
+    .display-error-timer-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        font-variant-numeric: tabular-nums;
+    }
+
     /* SCREENSAVER (MODE HEMAT) */
     .screensaver {
         width: 100vw;
@@ -714,10 +1053,10 @@
         justify-content: center;
         background: linear-gradient(
             135deg,
-            #05080f 0%,
+            var(--bg-primary) 0%,
             var(--bg-primary) 30%,
-            #0d1520 60%,
-            #080c18 100%
+            var(--bg-overlay) 60%,
+            var(--bg-primary) 100%
         );
         font-family: var(--font-body);
         color: var(--text-primary);
@@ -762,8 +1101,8 @@
         justify-content: center;
         font-size: 64px;
         margin-bottom: 8px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
         border-radius: 50%;
         overflow: hidden;
     }
@@ -788,7 +1127,11 @@
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.02em;
-        background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+        background: linear-gradient(
+            135deg,
+            var(--text-primary) 0%,
+            var(--text-muted) 100%
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -825,10 +1168,10 @@
         justify-content: center;
         background: linear-gradient(
             135deg,
-            #05080f 0%,
+            var(--bg-primary) 0%,
             var(--bg-primary) 40%,
-            #0f1a2e 70%,
-            #080c18 100%
+            var(--bg-overlay) 70%,
+            var(--bg-primary) 100%
         );
         font-family: var(--font-body);
         color: var(--text-primary);
@@ -889,7 +1232,11 @@
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.03em;
-        background: linear-gradient(135deg, #e2e8f0 0%, #64748b 100%);
+        background: linear-gradient(
+            135deg,
+            var(--text-primary) 0%,
+            var(--text-muted) 100%
+        );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -919,8 +1266,8 @@
     .tahajud-countdown-val {
         font-size: clamp(28px, 3.5vw, 52px);
         font-weight: 700;
-        color: #fbbf24;
-        text-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+        color: var(--accent-primary);
+        text-shadow: 0 0 20px var(--prayer-active-glow);
     }
 
     .tahajud-masjid {
@@ -950,13 +1297,30 @@
     .bg-stars {
         position: absolute;
         inset: 0;
-        background: var(--bg-stars);
+        background:
+            radial-gradient(
+                ellipse at 20% 50%,
+                var(--bg-secondary),
+                transparent 60%
+            ),
+            radial-gradient(
+                ellipse at 80% 20%,
+                var(--bg-secondary),
+                transparent 60%
+            ),
+            radial-gradient(
+                ellipse at 50% 100%,
+                var(--bg-secondary),
+                transparent 60%
+            );
     }
 
     .bg-grid {
         position: absolute;
         inset: 0;
-        background-image: var(--bg-grid);
+        background-image:
+            linear-gradient(var(--bg-grid) 1px, transparent 1px),
+            linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
         background-size: 40px 40px;
     }
 
@@ -1059,8 +1423,8 @@
     /* MAIN BODY */
     .main-body {
         position: absolute;
-        top: calc(14% + 3px);
-        bottom: 12%;
+        top: calc(13% + 2px);
+        bottom: 8%;
         left: 0;
         right: 0;
         display: flex;

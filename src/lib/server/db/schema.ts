@@ -134,6 +134,12 @@ export const masjids = mysqlTable("masjids", {
     .default("Asia/Jakarta")
     .notNull(),
   hijriOffset: int("hijri_offset").default(0).notNull(),
+  adzanScreenDuration: int("adzan_screen_duration").default(4).notNull(),
+  khusukScreenDuration: int("khusuk_screen_duration").default(10).notNull(),
+  screensaverDelayMinutes: int("screensaver_delay_minutes")
+    .default(120)
+    .notNull(),
+  screensaverWakeMinutes: int("screensaver_wake_minutes").default(60).notNull(),
   logoUrl: varchar("logo_url", { length: 500 }),
   isActive: int("is_active").default(1).notNull(),
   ...timestamps,

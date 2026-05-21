@@ -15,6 +15,13 @@
       "when": 1779327383502,
       "tag": "0001_slimy_exiles",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1779359404160,
+      "tag": "0002_blushing_sentinel",
+      "breakpoints": true
     }
   ]
 }

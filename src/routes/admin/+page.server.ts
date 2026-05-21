@@ -17,7 +17,8 @@ import {
   youtubeItems,
 } from "$lib/server/db/schema";
 import { fail } from "@sveltejs/kit";
-import { todayYmdInJakarta } from "$lib/server/prayer/resolver";
+import { todayYmdInTimezone } from "$lib/server/prayer/resolver";
+import { invalidateCache } from "$lib/server/prayer/cache";
 
 const PAGE_SIZE = 10;
 
@@ -99,12 +100,13 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     };
   }
 
-  const today = todayYmdInJakarta();
   const [masjid] = await db
     .select()
     .from(masjids)
     .where(eq(masjids.id, masjidId))
     .limit(1);
+
+  const today = todayYmdInTimezone(masjid?.timezone ?? "Asia/Jakarta");
   const [todaySchedule] = await db
     .select()
     .from(prayerSchedules)
@@ -534,6 +536,11 @@ export const actions: Actions = {
       saved++;
     }
 
+    // Clear cache untuk semua tanggal yang diimport
+    for (const s of schedules) {
+      invalidateCache(masjidId, s.date);
+    }
+
     return { bulkSuccess: true, saved };
   },
 
@@ -629,6 +636,9 @@ export const actions: Actions = {
         isManualOverride: 1,
       });
     }
+
+    // Clear cache supaya display langsung kebaca
+    invalidateCache(masjidId, dateStr);
   },
 
   updateDeviceTheme: async ({ request }) => {

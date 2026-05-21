@@ -73,6 +73,9 @@
                         </div>
                     </div>
                 </div>
+                {#if payload.masjid.city}
+                    <div class="weather-city">{payload.masjid.city}</div>
+                {/if}
             {:else}
                 <div class="weather-loading">Tidak tersedia</div>
             {/if}
@@ -104,7 +107,7 @@
 
     <!-- IMSAKIYAH -->
     <div class="info-card">
-        <div class="info-card-title">IMSAKIYAH HARI INI</div>
+        <div class="info-card-title">IMSAKIYAH</div>
         <div class="imsakiyah-row">
             <div>
                 <div class="info-card-sub">Imsak</div>
@@ -165,10 +168,10 @@
         width: 20%;
         display: flex;
         flex-direction: column;
-        padding: 3% 2.5% 0.3% 2.5%;
+        padding: 1% 1.5% 0.3% 2.5%;
         border-left: 1px solid var(--border-accent);
         background: var(--bg-secondary);
-        gap: 2.5%;
+        gap: 1.5%;
         justify-content: flex-start;
         align-self: stretch;
         overflow-y: auto;
@@ -179,7 +182,7 @@
         background: var(--card-bg);
         border: 1px solid var(--border-color);
         border-radius: var(--border-radius);
-        padding: 6% 7%;
+        padding: 3% 7%;
     }
 
     .info-card-title {
@@ -197,7 +200,7 @@
     }
 
     .info-card-sub {
-        font-size: clamp(11px, 1.2vw, 17px);
+        font-size: clamp(11px, 1.2vw, 32px);
         color: var(--text-muted);
         margin-top: 2%;
     }
@@ -250,6 +253,13 @@
         color: var(--text-muted);
     }
 
+    .weather-city {
+        font-size: clamp(9px, 1vw, 58px);
+        color: var(--accent-muted);
+        margin-top: 3%;
+        text-align: center;
+    }
+
     .event-card {
         text-align: center;
     }
@@ -261,7 +271,7 @@
     }
 
     .event-label {
-        font-size: clamp(11px, 1.2vw, 17px);
+        font-size: clamp(11px, 1.2vw, 24px);
         color: var(--text-secondary);
         margin-top: 2%;
         line-height: 1.4;
@@ -275,12 +285,12 @@
     }
 
     .imsakiyah-time {
-        font-size: clamp(18px, 2.2vw, 32px);
+        font-size: clamp(18px, 2.2vw, 42px);
     }
 
     .imsakiyah-sep {
         color: var(--accent-muted);
-        font-size: clamp(18px, 2.2vw, 32px);
+        font-size: clamp(18px, 2.2vw, 42px);
     }
 
     .jumat-card {

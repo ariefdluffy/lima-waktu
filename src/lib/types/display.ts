@@ -54,6 +54,7 @@ export type ThemePalette = {
   progressFill: string;
   screensaverBg: string;
   tahajudBg: string;
+  moodAdzanBg: string;
   moodIqamahBg: string;
   moodKhusukBg: string;
   topBarColor: string;
@@ -104,6 +105,10 @@ export type DisplayPayload = {
     latitude: string | null;
     longitude: string | null;
     hijriOffset: number;
+    adzanScreenDuration: number;
+    khusukScreenDuration: number;
+    screensaverDelayMinutes: number;
+    screensaverWakeMinutes: number;
     logoUrl: string | null;
   };
   schedule: {

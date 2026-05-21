@@ -100,6 +100,14 @@
                             >
                         {/each}
                     </select>
+                    <select
+                        name="timezone"
+                        class="rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                    >
+                        <option value="Asia/Jakarta">WIB — Jakarta, Sumatra, Jawa Barat, Kalimantan Barat</option>
+                        <option value="Asia/Makassar">WITA — Sulawesi, Bali, Nusa Tenggara, Kalimantan Selatan & Timur</option>
+                        <option value="Asia/Jayapura">WIT — Maluku, Papua</option>
+                    </select>
                     <div class="sm:col-span-2">
                         <button
                             class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
