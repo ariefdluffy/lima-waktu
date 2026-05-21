@@ -17,7 +17,11 @@
     "db:reset:local": "node --env-file=.env.local scripts/db-reset.mjs",
     "db:push:local": "node --env-file=.env.local ./node_modules/drizzle-kit/bin.cjs push --force",
     "db:seed:local": "node --env-file=.env.local scripts/db-seed.mjs",
-    "db:rebuild:local": "npm run db:reset:local && npm run db:push:local && npm run db:seed:local"
+    "db:rebuild:local": "npm run db:reset:local && npm run db:push:local && npm run db:seed:local",
+    "db:backup:local": "node --env-file=.env.local scripts/db-backup.mjs",
+    "db:restore:local": "node --env-file=.env.local scripts/db-restore.mjs",
+    "db:backup": "node --env-file=.env scripts/db-backup.mjs",
+    "db:restore": "node --env-file=.env scripts/db-restore.mjs"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.5.4",
