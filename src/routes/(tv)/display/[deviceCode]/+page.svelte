@@ -728,7 +728,8 @@
                     {hijriyahDate || "—"}
                 </div>
                 <div class="screensaver-sub">
-                    Display dalam mode hemat • Akan aktif kembali saat Subuh
+                    Display dalam mode hemat • Akan aktif kembali 1 Jam sebelum
+                    waktu sholat
                 </div>
             </div>
         </div>
@@ -1116,14 +1117,14 @@
 
     .screensaver-masjid-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(18px, 2.5vw, 36px);
+        font-size: clamp(18px, 3.5vw, 106px);
         font-weight: 600;
         color: var(--text-secondary);
         letter-spacing: 0.05em;
     }
 
     .screensaver-time {
-        font-size: clamp(48px, 8vw, 120px);
+        font-size: clamp(48px, 16vw, 320px);
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.02em;
@@ -1139,20 +1140,18 @@
     }
 
     .screensaver-date {
-        font-size: clamp(14px, 1.6vw, 24px);
+        font-size: clamp(14px, 16vw, 104px);
         color: var(--text-muted);
     }
 
     .screensaver-hijri {
-        font-size: clamp(12px, 1.3vw, 18px);
+        font-size: clamp(12px, 13vw, 84px);
         color: var(--accent-muted);
         margin-top: 4px;
     }
 
     .screensaver-sub {
-        position: absolute;
-        bottom: 40px;
-        font-size: clamp(10px, 0.9vw, 14px);
+        font-size: clamp(10px, 0.9vw, 38px);
         color: var(--text-muted);
         text-align: center;
         width: 100%;
