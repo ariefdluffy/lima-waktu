@@ -15,6 +15,7 @@ type UpdateProfileBody = {
   longitude?: number;
   timezone?: string;
   hijriOffset?: number;
+  logoUrl?: string;
   isActive?: boolean;
 };
 
@@ -81,6 +82,7 @@ export const PUT: RequestHandler = async (event) => {
       timezone: body.timezone,
       hijriOffset:
         body.hijriOffset !== undefined ? body.hijriOffset : undefined,
+      logoUrl: body.logoUrl !== undefined ? body.logoUrl : undefined,
       isActive:
         body.isActive !== undefined ? (body.isActive ? 1 : 0) : undefined,
     })

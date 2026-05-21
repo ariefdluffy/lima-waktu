@@ -3,8 +3,36 @@
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
     import Pagination from "$lib/components/Pagination.svelte";
+    import AdminSidebar from "$lib/components/admin/AdminSidebar.svelte";
 
     let { data } = $props();
+
+    // Type helper: slide dari server sudah include fileUrl via join
+    function getSlideUrl(slide: any): string | null {
+        return slide?.fileUrl ?? null;
+    }
+
+    // ----------------------------------------------------------------
+    // Section navigation
+    // ----------------------------------------------------------------
+    type Section =
+        | "dashboard"
+        | "profile"
+        | "runningtext"
+        | "devices"
+        | "iqamah"
+        | "hijri"
+        | "weather"
+        | "jumbotron"
+        | "youtube"
+        | "schedule"
+        | "slides";
+    let activeSection = $state<Section>("dashboard");
+    let mobileOpen = $state(false);
+
+    function navigateTo(section: string) {
+        activeSection = section as Section;
+    }
 
     // ----------------------------------------------------------------
     // Pagination helper
@@ -141,7 +169,7 @@
     // ----------------------------------------------------------------
     // Hijri offset
     // ----------------------------------------------------------------
-    let hijriOffset = $state(data.masjid?.hijriOffset ?? 0);
+    let hijriOffset = $state((() => { const v = data.masjid?.hijriOffset; return v ?? 0; })());
     let hijriOffsetSaving = $state(false);
     let hijriOffsetSuccess = $state("");
     let hijriOffsetError = $state("");
@@ -272,6 +300,7 @@
                         latitude: Number(lat),
                         longitude: Number(lon),
                         city: cityName,
+                        timezone: result.timezone ?? "Asia/Jakarta",
                     }),
                 });
             }
@@ -283,8 +312,8 @@
     // ----------------------------------------------------------------
     // Cuaca: update lat/lon manual
     // ----------------------------------------------------------------
-    let weatherLat = $state(data.masjid?.latitude ?? "");
-    let weatherLon = $state(data.masjid?.longitude ?? "");
+    let weatherLat = $state((() => { const v = data.masjid?.latitude; return v ?? ""; })());
+    let weatherLon = $state((() => { const v = data.masjid?.longitude; return v ?? ""; })());
     let weatherLocSaving = $state(false);
     let weatherLocSuccess = $state("");
     let weatherLocError = $state("");
@@ -319,11 +348,11 @@
     // ----------------------------------------------------------------
     // Profil Masjid
     // ----------------------------------------------------------------
-    let profileName = $state(data.masjid?.name ?? "");
-    let profileAddress = $state(data.masjid?.address ?? "");
-    let profileCity = $state(data.masjid?.city ?? "");
-    let profileDistrict = $state(data.masjid?.district ?? "");
-    let profileProvince = $state(data.masjid?.province ?? "");
+    let profileName = $state((() => { const v = data.masjid?.name; return v ?? ""; })());
+    let profileAddress = $state((() => { const v = data.masjid?.address; return v ?? ""; })());
+    let profileCity = $state((() => { const v = data.masjid?.city; return v ?? ""; })());
+    let profileDistrict = $state((() => { const v = data.masjid?.district; return v ?? ""; })());
+    let profileProvince = $state((() => { const v = data.masjid?.province; return v ?? ""; })());
     let profileSaving = $state(false);
     let profileSuccess = $state("");
     let profileError = $state("");
@@ -362,7 +391,7 @@
     // Logo Masjid
     // ----------------------------------------------------------------
     let logoFile = $state<File | null>(null);
-    let logoPreview = $state(data.masjid?.logoUrl ?? "");
+    let logoPreview = $state((() => { const v = data.masjid?.logoUrl; return v ?? ""; })());
     let logoSaving = $state(false);
     let logoSuccess = $state("");
     let logoError = $state("");
@@ -561,62 +590,162 @@
     }
 </script>
 
-<div
-    class="bg-linear-to-br from-emerald-100 via-green-50 to-white px-4 py-6 sm:px-6 lg:px-8"
->
-    <div class="mx-auto w-full max-w-7xl space-y-6">
-        <header class="rounded-2xl bg-white p-6 shadow-sm">
-            <p
-                class="text-xs font-semibold uppercase tracking-wider text-emerald-700"
-            >
-                Admin Masjid
-            </p>
-            <h1 class="mt-1 text-2xl font-bold text-emerald-900">
-                Dashboard Operasional Masjid
-            </h1>
-            <p class="mt-2 text-sm text-slate-600">
-                {#if data.masjid}
-                    {data.masjid.name} • {data.masjid.city ?? "-"}
-                {:else}
-                    Belum ada masjid terhubung ke akun ini.
-                {/if}
-            </p>
+<div class="flex min-h-screen bg-slate-50">
+    <AdminSidebar activeSection={activeSection} onNavigate={navigateTo} bind:mobileOpen />
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 flex-col xl:ml-72">
+        <!-- Top Header Bar -->
+        <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md px-4 py-3 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-emerald-500 to-emerald-700 text-white text-xs font-bold">LW</div>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800">
+                            {activeSection === "dashboard" ? "Dashboard" : activeSection === "profile" ? "Profil Masjid" : activeSection === "runningtext" ? "Running Text" : activeSection === "devices" ? "Perangkat" : activeSection === "iqamah" ? "Iqamah" : activeSection === "hijri" ? "Hijri Offset" : activeSection === "weather" ? "Cuaca" : activeSection === "jumbotron" ? "Jumbotron" : activeSection === "youtube" ? "YouTube" : activeSection === "schedule" ? "Jadwal Sholat" : activeSection === "slides" ? "Slide Foto" : "Dashboard"}
+                        </p>
+                        {#if data.masjid}
+                            <p class="text-xs text-slate-400">{data.masjid.name} • {data.masjid.city ?? "-"}</p>
+                        {/if}
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="hidden sm:inline text-xs text-slate-400">{data.user?.fullName ?? "Admin"}</span>
+                    <form method="POST" action="/auth/logout" class="hidden sm:block">
+                        <button class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all">Keluar</button>
+                    </form>
+                </div>
+            </div>
         </header>
 
-        {#if data.masjid}
-            <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                <div class="rounded-xl bg-white p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Running Text</p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-700">
-                        {data.runningTexts.length}
-                    </p>
-                </div>
-                <div class="rounded-xl bg-white p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Devices</p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-700">
-                        {data.devices.length}
-                    </p>
-                </div>
-                <div class="rounded-xl bg-white p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Slides</p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-700">
-                        {data.slides.length}
-                    </p>
-                </div>
-                <div class="rounded-xl bg-white p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">Jumbotrons</p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-700">
-                        {data.jumbotrons.length}
-                    </p>
-                </div>
-                <div class="rounded-xl bg-white p-4 shadow-sm">
-                    <p class="text-xs text-slate-500">YouTube</p>
-                    <p class="mt-1 text-2xl font-bold text-emerald-700">
-                        {data.youtubeItems.length}
-                    </p>
-                </div>
-            </section>
+        <!-- Content Area -->
+        <div class="flex-1 px-4 py-4 sm:px-6 lg:px-8">
+            <div class="mx-auto w-full max-w-7xl space-y-6">
 
+                {#if !data.masjid}
+                    <div class="rounded-2xl bg-white p-12 text-center shadow-sm">
+                        <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                            <svg class="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        </div>
+                        <h2 class="text-lg font-bold text-slate-700">Belum Ada Masjid</h2>
+                        <p class="mt-1 text-sm text-slate-500">Hubungi superadmin untuk menghubungkan akun ini dengan masjid.</p>
+                    </div>
+                {:else}
+
+                <!-- ========== DASHBOARD ========== -->
+                {#if activeSection === "dashboard"}
+                    <!-- Stats Cards -->
+                    <section class="grid gap-3 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+                        <button class="group cursor-pointer w-full text-left rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition-all" onclick={() => navigateTo("runningtext")}>
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                                </span>
+                                <div>
+                                    <p class="text-[11px] font-medium text-slate-400">Running Text</p>
+                                    <p class="text-xl font-bold text-slate-700">{data.runningTexts.length}</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="group cursor-pointer w-full text-left rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition-all" onclick={() => navigateTo("devices")}>
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
+                                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                </span>
+                                <div>
+                                    <p class="text-[11px] font-medium text-slate-400">Devices</p>
+                                    <p class="text-xl font-bold text-slate-700">{data.devices.length}</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="group cursor-pointer w-full text-left rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition-all" onclick={() => navigateTo("slides")}>
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </span>
+                                <div>
+                                    <p class="text-[11px] font-medium text-slate-400">Slides</p>
+                                    <p class="text-xl font-bold text-slate-700">{data.slides.length}</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="group cursor-pointer w-full text-left rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition-all" onclick={() => navigateTo("jumbotron")}>
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+                                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                </span>
+                                <div>
+                                    <p class="text-[11px] font-medium text-slate-400">Jumbotrons</p>
+                                    <p class="text-xl font-bold text-slate-700">{data.jumbotrons.length}</p>
+                                </div>
+                            </div>
+                        </button>
+                        <button class="group cursor-pointer w-full text-left rounded-xl bg-white p-4 shadow-sm hover:shadow-md transition-all" onclick={() => navigateTo("youtube")}>
+                            <div class="flex items-center gap-3">
+                                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                </span>
+                                <div>
+                                    <p class="text-[11px] font-medium text-slate-400">YouTube</p>
+                                    <p class="text-xl font-bold text-slate-700">{data.youtubeItems.length}</p>
+                                </div>
+                            </div>
+                        </button>
+                    </section>
+
+                    <!-- Today's Schedule Quick View -->
+                    {#if data.todaySchedule}
+                        {@const times = [
+                            { label: "Subuh", time: data.todaySchedule.subuhTime, icon: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" },
+                            { label: "Dzuhur", time: data.todaySchedule.dzuhurTime, icon: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" },
+                            { label: "Ashar", time: data.todaySchedule.asharTime, icon: "M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" },
+                            { label: "Maghrib", time: data.todaySchedule.maghribTime, icon: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" },
+                            { label: "Isya", time: data.todaySchedule.isyaTime, icon: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }
+                        ]}
+                        <section class="rounded-2xl bg-white p-5 shadow-sm">
+                            <h3 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                                <svg class="h-4 w-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Jadwal Hari Ini
+                            </h3>
+                            <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                                {#each times as t}
+                                    <div class="rounded-xl bg-linear-to-b from-emerald-50 to-white border border-emerald-100 p-3 text-center">
+                                        <p class="text-[10px] font-medium text-slate-500 mb-1">{t.label}</p>
+                                        <p class="text-sm font-bold text-emerald-700">{t.time}</p>
+                                    </div>
+                                {/each}
+                            </div>
+                        </section>
+                    {:else}
+                        <div class="rounded-2xl bg-white p-5 shadow-sm text-center">
+                            <p class="text-sm text-slate-400">📅 Belum ada jadwal untuk hari ini. <button class="text-emerald-600 underline font-medium" onclick={() => navigateTo("schedule")}>Import jadwal</button></p>
+                        </div>
+                    {/if}
+
+                    <!-- Quick Action Buttons -->
+                    {@const quickActions = [
+                        {id:"profile", label:"Profil", icon:"M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4", color:"bg-emerald-50 text-emerald-600"},
+                        {id:"schedule", label:"Jadwal", icon:"M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 4h.01M9 13h.01M13 9h.01M13 13h.01", color:"bg-blue-50 text-blue-600"},
+                        {id:"devices", label:"Perangkat", icon:"M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", color:"bg-purple-50 text-purple-600"},
+                        {id:"runningtext", label:"Running Text", icon:"M4 6h16M4 12h16M4 18h7", color:"bg-amber-50 text-amber-600"},
+                        {id:"slides", label:"Slide", icon:"M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z", color:"bg-rose-50 text-rose-600"},
+                    ]}
+                    <section class="rounded-2xl bg-white p-5 shadow-sm">
+                        <h3 class="text-sm font-semibold text-slate-700 mb-3">⚡ Aksi Cepat</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                            {#each quickActions as qa}
+                                <button onclick={() => navigateTo(qa.id)} class="flex flex-col items-center gap-1.5 rounded-xl border border-slate-100 bg-slate-50 p-3 text-xs font-medium text-slate-600 hover:bg-white hover:border-emerald-200 hover:shadow-sm transition-all">
+                                    <span class="flex h-8 w-8 items-center justify-center rounded-lg {qa.color}">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d={qa.icon}/></svg>
+                                    </span>
+                                    {qa.label}
+                                </button>
+                            {/each}
+                        </div>
+                    </section>
+        {/if}
+
+        {#if activeSection === "profile"}
             <!-- PROFIL MASJID -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
@@ -776,8 +905,9 @@
                     </div>
                 </div>
             </section>
+        {/if}
 
-            <section class="grid gap-6 lg:grid-cols-2">
+        {#if activeSection === "runningtext"}
                 <article class="rounded-2xl bg-white p-5 shadow-sm">
                     <h2 class="text-lg font-semibold text-emerald-900">
                         Tambah Running Text
@@ -912,7 +1042,9 @@
                         paramName="pageRT"
                     />
                 </article>
+        {/if}
 
+        {#if activeSection === "devices"}
                 <article class="rounded-2xl bg-white p-5 shadow-sm">
                     <h2 class="text-lg font-semibold text-emerald-900">
                         Tambah Device
@@ -972,16 +1104,27 @@
                                                 {item.orientation} · {item.status}
                                             </p>
                                         </div>
-                                        <span
-                                            class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium
-                                            {item.layoutMode === 'youtube'
-                                                ? 'bg-red-100 text-red-700'
-                                                : 'bg-emerald-100 text-emerald-700'}"
-                                        >
-                                            {item.layoutMode === "youtube"
-                                                ? "▶ YouTube"
-                                                : "⊞ Default"}
-                                        </span>
+                                        <div class="flex items-center gap-1.5">
+                                            <a
+                                                href="/display/{item.deviceCode}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="shrink-0 rounded-lg bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                                title="Buka display di tab baru"
+                                            >
+                                                📺 Buka
+                                            </a>
+                                            <span
+                                                class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium
+                                                {item.layoutMode === 'youtube'
+                                                    ? 'bg-red-100 text-red-700'
+                                                    : 'bg-emerald-100 text-emerald-700'}"
+                                            >
+                                                {item.layoutMode === "youtube"
+                                                    ? "▶ YouTube"
+                                                    : "⊞ Default"}
+                                            </span>
+                                        </div>
                                     </summary>
                                     <div
                                         class="mt-3 space-y-2 border-t border-emerald-100 pt-3"
@@ -1097,8 +1240,9 @@
                         paramName="pageDV"
                     />
                 </article>
-            </section>
+        {/if}
 
+        {#if activeSection === "iqamah"}
             <!-- IQAMAH SETTINGS -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
@@ -1198,7 +1342,9 @@
                     {/if}
                 </div>
             </section>
+        {/if}
 
+        {#if activeSection === "hijri"}
             <!-- HIJRI OFFSET -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
@@ -1255,7 +1401,9 @@
                     </p>
                 </div>
             </section>
+        {/if}
 
+        {#if activeSection === "weather"}
             <!-- CUACA: SET LOKASI -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
@@ -1320,7 +1468,9 @@
                     {/if}
                 </div>
             </section>
+        {/if}
 
+        {#if activeSection === "jumbotron"}
             <!-- JUMBOTRON -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
                 <div class="flex items-center justify-between gap-3">
@@ -1424,8 +1574,9 @@
                     paramName="pageJB"
                 />
             </section>
+        {/if}
 
-            <section class="grid gap-6 lg:grid-cols-2">
+        {#if activeSection === "youtube"}
                 <article class="rounded-2xl bg-white p-5 shadow-sm">
                     <h2 class="text-lg font-semibold text-emerald-900">
                         Tambah YouTube Item
@@ -1546,232 +1697,163 @@
                         paramName="pageYT"
                     />
                 </article>
+        {/if}
 
-                <article class="rounded-2xl bg-white p-5 shadow-sm">
-                    <h2 class="text-lg font-semibold text-emerald-900">
-                        Jadwal Hari Ini
-                    </h2>
-                    {#if data.todaySchedule}
-                        <div
-                            class="mt-4 rounded-xl bg-emerald-50 p-4 text-sm text-slate-700"
-                        >
-                            <p>Subuh: {data.todaySchedule.subuhTime}</p>
-                            <p>Dzuhur: {data.todaySchedule.dzuhurTime}</p>
-                            <p>Ashar: {data.todaySchedule.asharTime}</p>
-                            <p>Maghrib: {data.todaySchedule.maghribTime}</p>
-                            <p>Isya: {data.todaySchedule.isyaTime}</p>
-                        </div>
-                    {:else}
-                        <p class="mt-3 text-sm text-slate-600">
-                            Belum ada jadwal untuk hari ini.
-                        </p>
-                    {/if}
-
-                    <!-- Daftar Jadwal Tersimpan -->
-                    <h3 class="mt-5 text-sm font-semibold text-emerald-800">
-                        Jadwal Tersimpan
-                    </h3>
-                    <div class="mt-2 overflow-x-auto">
-                        <table class="w-full text-xs">
-                            <thead>
-                                <tr
-                                    class="border-b border-emerald-100 text-left text-slate-500"
-                                >
-                                    <th class="pb-1 pr-2 font-medium"
-                                        >Tanggal</th
-                                    >
-                                    <th class="pb-1 pr-2 font-medium">Imsak</th>
-                                    <th class="pb-1 pr-2 font-medium">Subuh</th>
-                                    <th class="pb-1 pr-2 font-medium">Dzuhur</th
-                                    >
-                                    <th class="pb-1 pr-2 font-medium">Ashar</th>
-                                    <th class="pb-1 pr-2 font-medium"
-                                        >Maghrib</th
-                                    >
-                                    <th class="pb-1 font-medium">Isya</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {#each data.prayerScheduleList as s}
-                                    <tr
-                                        class="border-b border-emerald-50 hover:bg-emerald-50"
-                                    >
-                                        <td
-                                            class="py-1 pr-2 font-medium text-slate-700"
-                                        >
-                                            {new Date(
-                                                s.scheduleDate,
-                                            ).toLocaleDateString("id-ID", {
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric",
-                                            })}
-                                        </td>
-                                        <td class="py-1 pr-2 text-slate-600"
-                                            >{s.imsakTime}</td
-                                        >
-                                        <td class="py-1 pr-2 text-slate-600"
-                                            >{s.subuhTime}</td
-                                        >
-                                        <td class="py-1 pr-2 text-slate-600"
-                                            >{s.dzuhurTime}</td
-                                        >
-                                        <td class="py-1 pr-2 text-slate-600"
-                                            >{s.asharTime}</td
-                                        >
-                                        <td class="py-1 pr-2 text-slate-600"
-                                            >{s.maghribTime}</td
-                                        >
-                                        <td class="py-1 text-slate-600"
-                                            >{s.isyaTime}</td
-                                        >
-                                    </tr>
-                                {/each}
-                                {#if data.prayerScheduleList.length === 0}
-                                    <tr>
-                                        <td
-                                            colspan="7"
-                                            class="py-3 text-center text-slate-400"
-                                            >Belum ada jadwal tersimpan.</td
-                                        >
-                                    </tr>
-                                {/if}
-                            </tbody>
-                        </table>
-                    </div>
-                    <Pagination
-                        currentPage={data.prayerPage}
-                        totalPages={data.prayerTotalPages}
-                        totalItems={data.prayerTotal}
-                        paramName="pagePR"
-                    />
-                </article>
-            </section>
-
+        {#if activeSection === "slides"}
             <!-- SECTION SLIDE FOTO -->
             <section class="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-emerald-900">
-                    🖼️ Slide Foto Display TV
-                </h2>
-                <p class="mt-1 text-xs text-slate-500">
-                    Upload foto untuk ditampilkan sebagai slideshow di layar TV
-                    masjid. Format: JPEG, PNG. Maks 1MB.
-                </p>
-
-                <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                    <!-- Form Upload -->
-                    <div class="space-y-3">
-                        <div>
-                            <label
-                                for="slide-title"
-                                class="block text-xs font-medium text-slate-600 mb-1"
-                                >Judul Slide (opsional)</label
-                            >
-                            <input
-                                id="slide-title"
-                                type="text"
-                                bind:value={slideTitle}
-                                placeholder="cth: Pengumuman Ramadan"
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                for="slide-file"
-                                class="block text-xs font-medium text-slate-600 mb-1"
-                                >File Foto</label
-                            >
-                            <input
-                                id="slide-file"
-                                type="file"
-                                accept=".jpg,.jpeg,.png"
-                                onchange={(e) => {
-                                    slideFile = (e.target as HTMLInputElement)
-                                        .files;
-                                }}
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none"
-                            />
-                        </div>
-                        <button
-                            onclick={uploadSlide}
-                            disabled={slideUploading}
-                            class="w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
-                        >
-                            {#if slideUploading}Mengupload...{:else}⬆️ Upload
-                                Foto{/if}
-                        </button>
-                        {#if slideUploadError}
-                            <p class="text-xs text-red-500">
-                                {slideUploadError}
-                            </p>
-                        {/if}
-                        {#if slideUploadSuccess}
-                            <p class="text-xs text-emerald-600 font-medium">
-                                ✅ Foto berhasil diupload!
-                            </p>
-                        {/if}
-                    </div>
-
-                    <!-- Daftar Slide -->
+                <div class="flex items-center justify-between gap-3">
                     <div>
-                        <p class="text-xs font-medium text-slate-600 mb-2">
-                            Slide Terdaftar ({data.slides.length})
-                        </p>
-                        {#if data.slides.length === 0}
-                            <p class="text-xs text-slate-400 italic">
-                                Belum ada slide foto.
-                            </p>
-                        {:else}
-                            <div class="space-y-2 max-h-64 overflow-y-auto">
-                                {#each data.slides as slide}
-                                    <div
-                                        class="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
-                                    >
-                                        <div>
-                                            <p
-                                                class="text-sm font-medium text-slate-700"
-                                            >
-                                                {slide.title ?? "Tanpa judul"}
-                                            </p>
-                                            <p class="text-xs text-slate-400">
-                                                Order: {slide.orderIndex} • {slide.isActive
-                                                    ? "Aktif"
-                                                    : "Nonaktif"}
-                                            </p>
-                                        </div>
-                                        <form
-                                            method="POST"
-                                            action="?/deleteSlide"
-                                        >
-                                            <input
-                                                type="hidden"
-                                                name="slide_id"
-                                                value={slide.id}
-                                            />
-                                            <button
-                                                type="submit"
-                                                class="rounded-lg bg-red-50 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
-                                                onclick={(e) => {
-                                                    if (
-                                                        !confirm(
-                                                            "Hapus slide ini?",
-                                                        )
-                                                    )
-                                                        e.preventDefault();
-                                                }}>Hapus</button
-                                            >
-                                        </form>
-                                    </div>
-                                {/each}
-                            </div>
-                        {/if}
+                        <h2 class="text-lg font-semibold text-emerald-900">🖼️ Slide Foto Display TV</h2>
+                        <p class="mt-0.5 text-xs text-slate-500">Upload foto untuk slideshow di layar TV masjid. Format: JPEG, PNG.</p>
                     </div>
+                    <span class="text-xs text-slate-400">{data.slides.length} slide</span>
+                </div>
+
+                <!-- Form Upload -->
+                <div class="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
+                    <div class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-50">
+                            <label for="slide-title" class="mb-1 block text-xs font-medium text-slate-600">Judul (opsional)</label>
+                            <input id="slide-title" type="text" bind:value={slideTitle} placeholder="cth: Pengumuman Ramadan" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-400 focus:outline-none" />
+                        </div>
+                        <div class="flex-1 min-w-50">
+                            <label for="slide-file" class="mb-1 block text-xs font-medium text-slate-600">File Foto</label>
+                            <input id="slide-file" type="file" accept=".jpg,.jpeg,.png" onchange={(e) => { slideFile = (e.target as HTMLInputElement).files; }} class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm file:mr-2 file:rounded file:border-0 file:bg-emerald-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-emerald-700 focus:border-emerald-400 focus:outline-none" />
+                        </div>
+                        <button onclick={uploadSlide} disabled={slideUploading} class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+                            {#if slideUploading}Mengupload...{:else}⬆️ Upload{/if}
+                        </button>
+                    </div>
+                    {#if slideUploadError}<p class="mt-2 text-xs text-red-500">{slideUploadError}</p>{/if}
+                    {#if slideUploadSuccess}<p class="mt-2 text-xs font-medium text-emerald-600">✅ Foto berhasil diupload!</p>{/if}
+                </div>
+
+                <!-- Gallery Grid -->
+                <div class="mt-5">
+                    {#if data.slides.length === 0}
+                        <div class="rounded-xl border-2 border-dashed border-slate-200 p-12 text-center">
+                            <svg class="mx-auto h-10 w-10 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <p class="mt-3 text-sm text-slate-400">Belum ada slide foto</p>
+                            <p class="text-xs text-slate-300">Upload foto pertama Anda di atas</p>
+                        </div>
+                    {:else}
+                        <div class="grid gap-4 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
+                            {#each data.slides as slide}
+                                <div class="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all">
+                                    <!-- Thumbnail -->
+                                    <div class="aspect-4/3 bg-slate-100">
+                                        {#if getSlideUrl(slide)}
+                                            <img src={getSlideUrl(slide)!} alt={slide.title ?? "Slide"} class="h-full w-full object-cover" loading="lazy" />
+                                        {:else}
+                                            <div class="flex h-full items-center justify-center">
+                                                <svg class="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            </div>
+                                        {/if}
+                                    </div>
+                                    <!-- Overlay info -->
+                                    <div class="p-2.5">
+                                        <p class="truncate text-xs font-medium text-slate-700">{slide.title ?? "Tanpa judul"}</p>
+                                        <div class="mt-1 flex items-center justify-between gap-2">
+                                            <span class="text-[10px] text-slate-400">#{slide.orderIndex}</span>
+                                            <span class="rounded-full px-1.5 py-0.5 text-[10px] font-medium {slide.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">{slide.isActive ? 'Aktif' : 'Nonaktif'}</span>
+                                        </div>
+                                    </div>
+                                    <!-- Hover delete -->
+                                    <form method="POST" action="?/deleteSlide" class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <input type="hidden" name="slide_id" value={slide.id} />
+                                        <button type="submit" onclick={(e) => { if (!confirm("Hapus slide ini?")) e.preventDefault(); }} class="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white shadow hover:bg-red-600" title="Hapus slide">
+                                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            {/each}
+                        </div>
+                    {/if}
+                </div>
+                <Pagination currentPage={data.slidePage} totalPages={data.slideTotalPages} totalItems={data.slideTotal} paramName="pageSL" />
+            </section>
+        {/if}
+
+        {#if activeSection === "schedule"}
+            <!-- Daftar Jadwal Tersimpan -->
+            <section class="rounded-2xl bg-white p-5 shadow-sm">
+                <h2 class="text-lg font-semibold text-emerald-900">
+                    Jadwal Tersimpan
+                </h2>
+                <div class="mt-4 overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr
+                                class="border-b border-emerald-100 text-left text-slate-500"
+                            >
+                                <th class="pb-1 pr-2 font-medium"
+                                    >Tanggal</th
+                                >
+                                <th class="pb-1 pr-2 font-medium">Imsak</th>
+                                <th class="pb-1 pr-2 font-medium">Subuh</th>
+                                <th class="pb-1 pr-2 font-medium">Dzuhur</th
+                                >
+                                <th class="pb-1 pr-2 font-medium">Ashar</th>
+                                <th class="pb-1 pr-2 font-medium"
+                                    >Maghrib</th
+                                >
+                                <th class="pb-1 font-medium">Isya</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#each data.prayerScheduleList as s}
+                                <tr
+                                    class="border-b border-emerald-50 hover:bg-emerald-50"
+                                >
+                                    <td
+                                        class="py-1 pr-2 font-medium text-slate-700"
+                                    >
+                                        {new Date(
+                                            s.scheduleDate,
+                                        ).toLocaleDateString("id-ID", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                        })}
+                                    </td>
+                                    <td class="py-1 pr-2 text-slate-600"
+                                        >{s.imsakTime}</td
+                                    >
+                                    <td class="py-1 pr-2 text-slate-600"
+                                        >{s.subuhTime}</td
+                                    >
+                                    <td class="py-1 pr-2 text-slate-600"
+                                        >{s.dzuhurTime}</td
+                                    >
+                                    <td class="py-1 pr-2 text-slate-600"
+                                        >{s.asharTime}</td
+                                    >
+                                    <td class="py-1 pr-2 text-slate-600"
+                                        >{s.maghribTime}</td
+                                    >
+                                    <td class="py-1 text-slate-600"
+                                        >{s.isyaTime}</td
+                                    >
+                                </tr>
+                            {/each}
+                            {#if data.prayerScheduleList.length === 0}
+                                <tr>
+                                    <td
+                                        colspan="7"
+                                        class="py-3 text-center text-slate-400"
+                                        >Belum ada jadwal tersimpan.</td
+                                    >
+                                </tr>
+                            {/if}
+                        </tbody>
+                    </table>
                 </div>
                 <Pagination
-                    currentPage={data.slidePage}
-                    totalPages={data.slideTotalPages}
-                    totalItems={data.slideTotal}
-                    paramName="pageSL"
+                    currentPage={data.prayerPage}
+                    totalPages={data.prayerTotalPages}
+                    totalItems={data.prayerTotal}
+                    paramName="pagePR"
                 />
             </section>
 
@@ -2535,5 +2617,37 @@
                 {/if}
             </section>
         {/if}
+            {/if}
+
+            {#snippet mobileNavSnippet()}
+                <nav class="fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-md xl:hidden pb-safe">
+                    <div class="flex items-center justify-around px-2 py-1.5">
+                        <button onclick={() => navigateTo("dashboard")} class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection === 'dashboard' ? 'text-emerald-600' : 'text-slate-400'}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3"/></svg>
+                            <span class="text-[10px] font-medium leading-none">Home</span>
+                        </button>
+                        <button onclick={() => navigateTo("schedule")} class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection === 'schedule' ? 'text-emerald-600' : 'text-slate-400'}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2m-6 4h.01M9 13h.01M13 9h.01M13 13h.01"/></svg>
+                            <span class="text-[10px] font-medium leading-none">Jadwal</span>
+                        </button>
+                        <button onclick={() => navigateTo("runningtext")} class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection === 'runningtext' ? 'text-emerald-600' : 'text-slate-400'}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                            <span class="text-[10px] font-medium leading-none">Text</span>
+                        </button>
+                        <button onclick={() => navigateTo("devices")} class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection === 'devices' ? 'text-emerald-600' : 'text-slate-400'}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5"/></svg>
+                            <span class="text-[10px] font-medium leading-none">Device</span>
+                        </button>
+                        <button onclick={() => navigateTo("profile")} class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection === 'profile' ? 'text-emerald-600' : 'text-slate-400'}">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5"/></svg>
+                            <span class="text-[10px] font-medium leading-none">Profil</span>
+                        </button>
+                    </div>
+                </nav>
+            {/snippet}
+
+            {@render mobileNavSnippet()}
+        </div>
     </div>
+</div>
 </div>

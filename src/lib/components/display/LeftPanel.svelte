@@ -3,11 +3,17 @@
         nextPrayerName: string;
         nextPrayerTime: string;
         countdown: string;
+        countdownProgress: number;
         iqamahTime: string;
     }
 
-    let { nextPrayerName, nextPrayerTime, countdown, iqamahTime }: Props =
-        $props();
+    let {
+        nextPrayerName,
+        nextPrayerTime,
+        countdown,
+        countdownProgress,
+        iqamahTime,
+    }: Props = $props();
 </script>
 
 <aside class="left-panel">
@@ -17,6 +23,13 @@
     <div class="countdown-box">
         <span class="countdown-label">MENUJU ADZAN</span>
         <div class="countdown-val">{countdown}</div>
+        <!-- Progress Bar -->
+        <div class="progress-track">
+            <div
+                class="progress-fill"
+                style="width: {countdownProgress}%"
+            ></div>
+        </div>
     </div>
     {#if iqamahTime}
         <div class="iqamah-box">
@@ -88,6 +101,22 @@
         font-weight: 700;
         color: #c8a84b;
         font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+        margin-top: 6px;
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #c8a84b, #f0d080);
+        border-radius: 2px;
+        transition: width 1s linear;
     }
 
     .iqamah-box {

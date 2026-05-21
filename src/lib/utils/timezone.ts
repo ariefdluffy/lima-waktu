@@ -10,6 +10,18 @@ export function getTZOffsetHours(timezone: string): number {
   return offsets[timezone] ?? 7; // default WIB
 }
 
+// Dapatkan label timezone (WIB/WITA/WIT)
+export function getTZLabel(timezone: string): string {
+  const labels: Record<string, string> = {
+    "Asia/Jakarta": "WIB",
+    "Asia/Pontianak": "WIB",
+    "Asia/Makassar": "WITA",
+    "Asia/Ujung_Pandang": "WITA",
+    "Asia/Jayapura": "WIT",
+  };
+  return labels[timezone] ?? "WIB";
+}
+
 // Ambil komponen waktu dalam timezone tertentu (tanpa bergantung pada timezone browser)
 export function getTZParts(date: Date, offsetHours: number) {
   const tzMs = date.getTime() + offsetHours * 60 * 60 * 1000;

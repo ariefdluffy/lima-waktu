@@ -51,22 +51,26 @@
 <aside class="right-panel">
     <!-- TANGGAL HIJRIYAH -->
     <div class="info-card hijriyah-card">
-        <div class="info-card-title">📅 KALENDER HIJRIYAH</div>
+        <div class="info-card-title">KALENDER HIJRIYAH</div>
         <div class="hijriyah-value">{hijriyahDate || "—"}</div>
     </div>
 
     <!-- CUACA LOKAL -->
     {#if payload.masjid.latitude && payload.masjid.longitude}
         <div class="info-card weather-card">
-            <div class="info-card-title">🌡️ CUACA LOKAL</div>
+            <div class="info-card-title">CUACA LOKAL</div>
             {#if weatherLoading}
                 <div class="weather-loading">Memuat...</div>
             {:else if weatherTemp !== null && weatherCode !== null}
                 <div class="weather-body">
-                    <div class="weather-icon">{getWeatherIcon(weatherCode)}</div>
+                    <div class="weather-icon">
+                        {getWeatherIcon(weatherCode)}
+                    </div>
                     <div class="weather-info">
                         <div class="weather-temp">{weatherTemp}°C</div>
-                        <div class="weather-desc">{getWeatherDesc(weatherCode)}</div>
+                        <div class="weather-desc">
+                            {getWeatherDesc(weatherCode)}
+                        </div>
                     </div>
                 </div>
             {:else}
@@ -91,14 +95,16 @@
             </div>
             <div class="event-label">
                 Hari lagi menuju<br />
-                <span style="color: #c8a84b; font-weight: 600;">{event.title}</span>
+                <span style="color: #c8a84b; font-weight: 600;"
+                    >{event.title}</span
+                >
             </div>
         </div>
     {/if}
 
     <!-- IMSAKIYAH -->
     <div class="info-card">
-        <div class="info-card-title">🌙 IMSAKIYAH HARI INI</div>
+        <div class="info-card-title">IMSAKIYAH HARI INI</div>
         <div class="imsakiyah-row">
             <div>
                 <div class="info-card-sub">Imsak</div>
@@ -140,7 +146,8 @@
 
     <!-- JUMBOTRON / PENGUMUMAN -->
     {#if payload.jumbotrons.length > 0}
-        {@const jumbotron = payload.jumbotrons[currentJumbotron % payload.jumbotrons.length]}
+        {@const jumbotron =
+            payload.jumbotrons[currentJumbotron % payload.jumbotrons.length]}
         <div class="info-card jumbotron-card">
             <div class="info-card-title">📢 PENGUMUMAN</div>
             {#if jumbotron.title}
@@ -176,14 +183,14 @@
     }
 
     .info-card-title {
-        font-size: clamp(10px, 1.1vw, 16px);
+        font-size: clamp(10px, 1.1vw, 32px);
         color: rgba(200, 168, 75, 0.7);
         letter-spacing: 0.12em;
         margin-bottom: 4%;
     }
 
     .info-card-value {
-        font-size: clamp(16px, 2vw, 28px);
+        font-size: clamp(16px, 2vw, 32px);
         font-weight: 600;
         color: #fff;
         line-height: 1.3;
@@ -200,7 +207,7 @@
     }
 
     .hijriyah-value {
-        font-size: clamp(11px, 1.3vw, 18px);
+        font-size: clamp(11px, 1.3vw, 28px);
         font-weight: 600;
         color: #c8a84b;
         margin-top: 4%;
@@ -296,7 +303,7 @@
     }
 
     .jumbotron-title {
-        font-size: clamp(11px, 1.3vw, 18px);
+        font-size: clamp(11px, 1.3vw, 34px);
         font-weight: 700;
         color: #7dd3fc;
         margin-top: 4%;
@@ -304,7 +311,7 @@
     }
 
     .jumbotron-content {
-        font-size: clamp(10px, 1.1vw, 15px);
+        font-size: clamp(10px, 1.1vw, 28px);
         color: rgba(255, 255, 255, 0.55);
         margin-top: 3%;
         line-height: 1.5;

@@ -7,6 +7,10 @@
 
     // Sembunyikan navbar di halaman display publik
     let isDisplayRoute = $derived($page.url.pathname.startsWith("/display/"));
+    let isAdminRoute = $derived(
+        $page.url.pathname.startsWith("/admin") ||
+            $page.url.pathname.startsWith("/superadmin"),
+    );
 </script>
 
 <svelte:head>
@@ -15,7 +19,7 @@
 </svelte:head>
 
 <div class="min-h-screen">
-    {#if !isDisplayRoute}
+    {#if !isDisplayRoute && !isAdminRoute}
         <nav class="border-b border-emerald-200 bg-white/90 backdrop-blur">
             <div
                 class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"

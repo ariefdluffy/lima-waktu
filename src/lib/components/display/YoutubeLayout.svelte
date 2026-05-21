@@ -1,12 +1,17 @@
 <script lang="ts">
     import type { DisplayPayload } from "$lib/types/display";
-    import { PRAYER_ORDER, PRAYER_LABELS, PRAYER_ICONS } from "$lib/utils/prayer";
+    import {
+        PRAYER_ORDER,
+        PRAYER_LABELS,
+        PRAYER_ICONS,
+    } from "$lib/utils/prayer";
 
     interface Props {
         payload: DisplayPayload;
         nextPrayerName: string;
         nextPrayerTime: string;
         countdown: string;
+        countdownProgress: number;
         iqamahTime: string;
         activePrayerIndex: number;
     }
@@ -16,6 +21,7 @@
         nextPrayerName,
         nextPrayerTime,
         countdown,
+        countdownProgress,
         iqamahTime,
         activePrayerIndex,
     }: Props = $props();
@@ -48,6 +54,12 @@
         <div class="countdown-box">
             <span class="countdown-label">MENUJU ADZAN</span>
             <div class="countdown-val">{countdown}</div>
+            <div class="progress-track">
+                <div
+                    class="progress-fill"
+                    style="width: {countdownProgress}%"
+                ></div>
+            </div>
         </div>
         {#if iqamahTime}
             <div class="iqamah-box">
@@ -177,6 +189,22 @@
         font-weight: 700;
         color: #c8a84b;
         font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
+        margin-top: 6px;
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #c8a84b, #f0d080);
+        border-radius: 2px;
+        transition: width 1s linear;
     }
 
     .iqamah-box {

@@ -1,0 +1,1 @@
+ALTER TABLE `masjids` ADD `logo_url` varchar(500);

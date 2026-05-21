@@ -11,9 +11,10 @@
         payload: DisplayPayload;
         activePrayerIndex: number;
         currentSlide: number;
+        slideFading: boolean;
     }
 
-    let { payload, activePrayerIndex, currentSlide }: Props = $props();
+    let { payload, activePrayerIndex, currentSlide, slideFading }: Props = $props();
 
     function getCurrentSlideContent() {
         const slides = payload?.slides ?? [];
@@ -48,7 +49,7 @@
         {/each}
     </div>
 
-    <div class="slide-area">
+    <div class="slide-area" class:fade-out={slideFading}>
         {#if payload.slides.length > 0 && payload.slides[currentSlide % payload.slides.length]?.fileUrl}
             <img
                 src={payload.slides[currentSlide % payload.slides.length]
@@ -109,6 +110,12 @@
     .prayer-card.active {
         background: rgba(200, 168, 75, 0.12);
         border-color: rgba(200, 168, 75, 0.6);
+        animation: pulse-gold 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-gold {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(200, 168, 75, 0); }
+        50% { box-shadow: 0 0 20px 4px rgba(200, 168, 75, 0.25); }
     }
 
     .prayer-card.active::before {
@@ -180,6 +187,11 @@
         align-items: center;
         justify-content: center;
         padding: 1%;
+        transition: opacity 0.5s ease;
+    }
+
+    .slide-area.fade-out {
+        opacity: 0;
     }
 
     .slide-content {

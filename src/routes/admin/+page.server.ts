@@ -9,6 +9,7 @@ import {
   jumbotrons,
   masjidUsers,
   masjids,
+  mediaAssets,
   prayerSchedules,
   runningTexts,
   slides,
@@ -152,8 +153,21 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       .from(devices)
       .where(eq(devices.masjidId, masjidId)),
     db
-      .select()
+      .select({
+        id: slides.id,
+        masjidId: slides.masjidId,
+        mediaAssetId: slides.mediaAssetId,
+        title: slides.title,
+        orderIndex: slides.orderIndex,
+        startAt: slides.startAt,
+        endAt: slides.endAt,
+        isActive: slides.isActive,
+        createdAt: slides.createdAt,
+        updatedAt: slides.updatedAt,
+        fileUrl: mediaAssets.fileUrl,
+      })
       .from(slides)
+      .leftJoin(mediaAssets, eq(slides.mediaAssetId, mediaAssets.id))
       .where(eq(slides.masjidId, masjidId))
       .orderBy(desc(slides.orderIndex))
       .limit(PAGE_SIZE)
@@ -218,7 +232,19 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     deviceTotal,
     devicePage: pageDevice,
     deviceTotalPages: Math.max(1, Math.ceil(deviceTotal / PAGE_SIZE)),
-    slides: slideRows,
+    slides: slideRows.map((row) => ({
+      id: row.id,
+      masjidId: row.masjidId,
+      mediaAssetId: row.mediaAssetId,
+      title: row.title,
+      orderIndex: row.orderIndex,
+      startAt: row.startAt,
+      endAt: row.endAt,
+      isActive: row.isActive,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      fileUrl: row.fileUrl,
+    })),
     slideTotal,
     slidePage: pageSlide,
     slideTotalPages: Math.max(1, Math.ceil(slideTotal / PAGE_SIZE)),

@@ -20,6 +20,7 @@
     import {
         getTZOffsetHours,
         getTZParts,
+        getTZLabel,
         formatTimeTZ,
         formatDateTZ,
     } from "$lib/utils/timezone";
@@ -39,11 +40,13 @@
     let nextPrayerName = $state("");
     let nextPrayerTime = $state("");
     let countdown = $state("00 : 00 : 00");
+    let countdownProgress = $state(0);
     let iqamahTime = $state("");
     let activePrayerIndex = $state(-1);
 
     // Slide state
     let currentSlide = $state(0);
+    let slideFading = $state(false);
 
     // Beep state
     let lastTriggeredPrayer = $state("");
@@ -72,12 +75,15 @@
 
     // Konstanta prayer diimport dari $lib/utils/prayer
 
-    // Timezone offset dari payload masjid (fallback WITA +8)
+    // Timezone offset & label dari payload masjid
+    let tzLabel = $derived.by(() => {
+        const tz = payload?.masjid?.timezone ?? "Asia/Makassar";
+        return getTZLabel(tz);
+    });
     function getTZOffset(): number {
         return getTZOffsetHours(payload?.masjid?.timezone ?? "Asia/Makassar");
     }
 
-    // Wrapper getWIBParts pakai offset dinamis dari payload
     function getWIBParts(date: Date) {
         return getTZParts(date, getTZOffset());
     }
@@ -223,6 +229,13 @@
                 lastTriggeredPrayer = nextPrayer;
                 playAdzanBeep();
             }
+
+            // Countdown progress: hitung persentase waktu berlalu sejak sholat sebelumnya
+            countdownProgress = calcCountdownProgress(
+                currentMinutes,
+                resolved,
+                nextIdx,
+            );
         } else {
             // After Isya, countdown to tomorrow's Subuh
             const subuhTotalSeconds = timeToMinutes(resolved.subuh) * 60;
@@ -231,6 +244,10 @@
             const mm = Math.floor((diffSeconds % 3600) / 60);
             const ss = diffSeconds % 60;
             countdown = `${String(hh).padStart(2, "0")} : ${String(mm).padStart(2, "0")} : ${String(ss).padStart(2, "0")}`;
+            countdownProgress = calcCountdownProgressAfterIsya(
+                currentMinutes,
+                resolved,
+            );
         }
 
         // --- Mode Iqamah & Khusuk Detection ---
@@ -252,13 +269,13 @@
             const cp = PRAYER_ORDER[currentPrayerIdx];
             const adzanMin = timeToMinutes(resolved[cp]);
             const iqData = payload.schedule.iqamah[cp];
-            const KHUSUK_DURATION = 15; // menit setelah adzan
+            const KHUSUK_DURATION = 10; // menit setelah adzan
 
             if (iqData?.enabled && iqData?.time) {
                 const iqamahMin = timeToMinutes(iqData.time);
                 if (
                     currentMinutes >= iqamahMin &&
-                    currentMinutes < iqamahMin + 3
+                    currentMinutes < iqamahMin + 1
                 ) {
                     newMood = "iqamah";
                     newMoodPrayerName = PRAYER_LABELS[cp];
@@ -300,9 +317,47 @@
     }
 
     function rotateSlide() {
-        const slides = payload?.slides ?? [];
-        const total = Math.max(slides.length, DEFAULT_SLIDES.length);
-        currentSlide = (currentSlide + 1) % total;
+        slideFading = true;
+        setTimeout(() => {
+            const slides = payload?.slides ?? [];
+            const total = Math.max(slides.length, DEFAULT_SLIDES.length);
+            currentSlide = (currentSlide + 1) % total;
+            slideFading = false;
+        }, 500);
+    }
+
+    // ── Countdown Progress Helpers ──────────────────────────────────────
+    function calcCountdownProgress(
+        currentMinutes: number,
+        resolved: Record<string, string>,
+        nextIdx: number,
+    ): number {
+        let prevIdx = nextIdx - 1;
+        if (prevIdx < 0) prevIdx = PRAYER_ORDER.length - 1;
+        const prevPrayer = PRAYER_ORDER[prevIdx];
+        const nextPrayer = PRAYER_ORDER[nextIdx];
+        const prevMin = timeToMinutes(resolved[prevPrayer]);
+        let nextMin = timeToMinutes(resolved[nextPrayer]);
+        if (nextMin <= prevMin) nextMin += 1440;
+        const currentAdjusted =
+            currentMinutes < prevMin ? currentMinutes + 1440 : currentMinutes;
+        const total = nextMin - prevMin;
+        const elapsed = currentAdjusted - prevMin;
+        return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+    }
+
+    function calcCountdownProgressAfterIsya(
+        currentMinutes: number,
+        resolved: Record<string, string>,
+    ): number {
+        const isyaMin = timeToMinutes(resolved.isya);
+        const subuhMin = timeToMinutes(resolved.subuh);
+        const total = 1440 - isyaMin + subuhMin;
+        const elapsed =
+            currentMinutes >= isyaMin
+                ? currentMinutes - isyaMin
+                : 1440 - isyaMin + currentMinutes;
+        return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
     }
 
     async function fetchData() {
@@ -555,7 +610,10 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="header-time">{liveClock}</div>
+                    <div class="header-time">
+                        {liveClock}
+                        <span class="header-tz">{tzLabel}</span>
+                    </div>
                     <div class="header-date">{liveDate}</div>
                 </div>
             </header>
@@ -568,6 +626,7 @@
                     {nextPrayerName}
                     {nextPrayerTime}
                     {countdown}
+                    {countdownProgress}
                     {iqamahTime}
                     {activePrayerIndex}
                 />
@@ -579,11 +638,17 @@
                         {nextPrayerName}
                         {nextPrayerTime}
                         {countdown}
+                        {countdownProgress}
                         {iqamahTime}
                     />
 
                     <!-- CENTER PANEL -->
-                    <CenterPanel {payload} {activePrayerIndex} {currentSlide} />
+                    <CenterPanel
+                        {payload}
+                        {activePrayerIndex}
+                        {currentSlide}
+                        {slideFading}
+                    />
 
                     <!-- RIGHT PANEL -->
                     <RightPanel
@@ -1006,6 +1071,14 @@
         color: #f0d080;
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.05em;
+    }
+
+    .header-tz {
+        font-size: 0.35em;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.3);
+        vertical-align: super;
+        margin-left: 6px;
     }
 
     .header-date {
