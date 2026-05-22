@@ -2,45 +2,80 @@
     interface Props {
         mood: "normal" | "adzan" | "iqamah" | "khusuk";
         moodPrayerName: string;
+        moodPrayerKey: string;
         countdown: string;
         countdownLabel: string;
+        isJumat: boolean;
     }
 
     let {
         mood,
         moodPrayerName,
+        moodPrayerKey = "",
         countdown = "",
         countdownLabel = "",
+        isJumat = false,
     }: Props = $props();
+
+    // Layar Jumat: hari Jumat + adzan Dzuhur
+    const isJumatAdzan = $derived(
+        isJumat && mood === "adzan" && moodPrayerKey === "dzuhur",
+    );
 </script>
 
 {#if mood === "adzan"}
-    <div class="mood-overlay mood-overlay--adzan">
-        <div class="mood-icon">🔔</div>
-        <div class="mood-title">وَقْتُ الْأَذَان</div>
-        <div class="mood-subtitle">WAKTU ADZAN</div>
-        <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
-        <div class="mood-ayat">
-            "Allahu Akbar, Allahu Akbar. Asyhadu alla ilaha illallah, Asyhadu
-            anna Muhammadar Rasulullah."
-        </div>
-        <div class="mood-adzan-call">
-            حَيَّ عَلَى الصَّلَاةِ • حَيَّ عَلَى الْفَلَاحِ
-        </div>
-        {#if countdown}
-            <div class="mood-countdown">
-                <div class="mood-countdown-label">{countdownLabel}</div>
-                <div class="mood-countdown-val">{countdown}</div>
+    {#if isJumatAdzan}
+        <!-- LAYAR JUMAT -->
+        <div class="mood-overlay mood-overlay--jumat">
+            <div class="mood-icon">🕌</div>
+            <div class="mood-jumat-badge">HARI JUM'AT</div>
+            <div class="mood-title">أَذَانُ الْجُمُعَة</div>
+            <div class="mood-subtitle">ADZAN JUM'AT</div>
+            <div class="mood-prayer">SHOLAT JUM'AT</div>
+            <div class="mood-ayat">
+                يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا نُودِيَ لِلصَّلَاةِ مِن
+                يَوْمِ الْجُمُعَةِ فَاسْعَوْا إِلَىٰ ذِكْرِ اللَّهِ
             </div>
-        {/if}
-    </div>
+            <div class="mood-ayat-src">QS. Al-Jumu'ah: 9</div>
+            <div class="mood-adzan-call">
+                حَيَّ عَلَى الصَّلَاةِ • حَيَّ عَلَى الْفَلَاحِ
+            </div>
+            {#if countdown}
+                <div class="mood-countdown">
+                    <div class="mood-countdown-label">{countdownLabel}</div>
+                    <div class="mood-countdown-val">{countdown}</div>
+                </div>
+            {/if}
+        </div>
+    {:else}
+        <!-- LAYAR ADZAN BIASA -->
+        <div class="mood-overlay mood-overlay--adzan">
+            <div class="mood-icon">🔔</div>
+            <div class="mood-title">وَقْتُ الْأَذَان</div>
+            <div class="mood-subtitle">WAKTU ADZAN</div>
+            <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
+            <div class="mood-ayat">
+                "Allahu Akbar, Allahu Akbar. Asyhadu alla ilaha illallah,
+                Asyhadu anna Muhammadar Rasulullah."
+            </div>
+            <div class="mood-adzan-call">
+                حَيَّ عَلَى الصَّلَاةِ • حَيَّ عَلَى الْفَلَاحِ
+            </div>
+            {#if countdown}
+                <div class="mood-countdown">
+                    <div class="mood-countdown-label">{countdownLabel}</div>
+                    <div class="mood-countdown-val">{countdown}</div>
+                </div>
+            {/if}
+        </div>
+    {/if}
 {/if}
 
 {#if mood === "iqamah"}
     <div class="mood-overlay mood-overlay--iqamah">
         <div class="mood-icon">🕌</div>
-        <div class="mood-title">IQAMAH</div>
-        <div class="mood-subtitle">SILAKAN LURUSKAN SHAF</div>
+        <div class="mood-title">WAKTU MENUNGGU IQAMAH</div>
+        <div class="mood-subtitle">BERSEGERA KE MASJID</div>
         <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
         {#if countdown}
             <div class="mood-countdown">
@@ -79,6 +114,30 @@
         align-items: center;
         justify-content: center;
         animation: moodFadeIn 0.6s ease-out;
+    }
+
+    .mood-overlay--jumat {
+        background: var(
+            --mood-jumat-bg,
+            radial-gradient(
+                ellipse at center,
+                rgba(10, 50, 20, 1) 0%,
+                rgba(2, 20, 8, 1) 100%
+            )
+        );
+    }
+
+    .mood-jumat-badge {
+        font-size: clamp(12px, 1.4vw, 24px);
+        font-weight: 700;
+        letter-spacing: 0.25em;
+        color: var(--accent-secondary);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--accent-muted, rgba(255, 255, 255, 0.2));
+        border-radius: 999px;
+        padding: 4px 20px;
+        margin-bottom: 1.5%;
+        text-transform: uppercase;
     }
 
     .mood-overlay--adzan {
@@ -122,7 +181,7 @@
 
     .mood-title {
         font-family: var(--font-heading), serif;
-        font-size: clamp(36px, 7vw, 110px);
+        font-size: clamp(36px, 7vw, 90px);
         font-weight: 700;
         color: var(--accent-primary);
         text-align: center;
@@ -131,7 +190,7 @@
     }
 
     .mood-subtitle {
-        font-size: clamp(20px, 2.8vw, 48px);
+        font-size: clamp(20px, 3.8vw, 78px);
         color: var(--text-secondary);
         margin-top: 1.5%;
         text-align: center;
@@ -139,7 +198,7 @@
     }
 
     .mood-prayer {
-        font-size: clamp(24px, 3.5vw, 60px);
+        font-size: clamp(24px, 4.5vw, 118px);
         font-weight: 600;
         color: var(--accent-secondary);
         margin-top: 2%;
@@ -175,7 +234,7 @@
     }
 
     .mood-countdown {
-        margin-top: 3%;
+        margin-top: 2%;
         background: var(--card-bg, rgba(255, 255, 255, 0.06));
         border: 1px solid var(--card-border, rgba(255, 255, 255, 0.12));
         border-radius: var(--border-radius, 12px);
@@ -184,7 +243,7 @@
     }
 
     .mood-countdown-label {
-        font-size: clamp(10px, 1vw, 46px);
+        font-size: clamp(10px, 3vw, 80px);
         color: var(--text-muted);
         letter-spacing: 0.15em;
         font-weight: 600;
@@ -192,7 +251,7 @@
     }
 
     .mood-countdown-val {
-        font-size: clamp(36px, 5vw, 90px);
+        font-size: clamp(36px, 7vw, 160px);
         font-weight: 700;
         color: var(--accent-primary);
         font-variant-numeric: tabular-nums;

@@ -9,6 +9,9 @@
         weatherLoading: boolean;
         currentJumbotron: number;
         isJumat: boolean;
+        isJumatCardVisible?: boolean;
+        mood?: "normal" | "adzan" | "iqamah" | "khusuk";
+        moodPrayerKey?: string;
     }
 
     let {
@@ -19,7 +22,17 @@
         weatherLoading,
         currentJumbotron,
         isJumat,
+        isJumatCardVisible = false,
+        mood = "normal",
+        moodPrayerKey = "",
     }: Props = $props();
+
+    // Card SHOLAT JUM'AT: hari Jumat + sebelum 12.00 + belum adzan Jumat
+    const showJumatCard = $derived(
+        isJumatCardVisible &&
+            payload.schedule.iqamah?.jumat?.enabled &&
+            !(mood === "adzan" && moodPrayerKey === "dzuhur"),
+    );
 
     function getWeatherIcon(code: number): string {
         if (code === 0) return "☀️";
@@ -126,7 +139,7 @@
     </div>
 
     <!-- SHOLAT JUMAT -->
-    {#if isJumat && payload.schedule.iqamah?.jumat?.enabled}
+    {#if showJumatCard}
         <div class="info-card jumat-card">
             <div class="info-card-title">🔔 SHOLAT JUM'AT</div>
             <div class="jumat-body">
@@ -168,7 +181,7 @@
         width: 20%;
         display: flex;
         flex-direction: column;
-        padding: 1% 1.5% 0.3% 2.5%;
+        padding: 1% 1.5% 0.3% 1%;
         border-left: 1px solid var(--border-accent);
         background: var(--bg-secondary);
         gap: 1.5%;

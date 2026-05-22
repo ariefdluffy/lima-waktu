@@ -12,9 +12,16 @@
         activePrayerIndex: number;
         currentSlide: number;
         slideFading: boolean;
+        isJumat?: boolean;
     }
 
-    let { payload, activePrayerIndex, currentSlide, slideFading }: Props = $props();
+    let {
+        payload,
+        activePrayerIndex,
+        currentSlide,
+        slideFading,
+        isJumat = false,
+    }: Props = $props();
 
     function getCurrentSlideContent() {
         const slides = payload?.slides ?? [];
@@ -38,7 +45,7 @@
                     {payload.schedule.resolved?.[prayer] ?? "--:--"}
                 </div>
                 <div class="prayer-iqamah">
-                    {#if payload.schedule.iqamah[prayer]?.enabled}
+                    {#if payload.schedule.iqamah[prayer]?.enabled && !(isJumat && prayer === "dzuhur")}
                         Iqamah {payload.schedule.iqamah[prayer].time}
                     {/if}
                 </div>
@@ -114,8 +121,13 @@
     }
 
     @keyframes pulse-gold {
-        0%, 100% { box-shadow: 0 0 0 0 var(--prayer-active-glow); }
-        50% { box-shadow: 0 0 20px 4px var(--prayer-active-glow); }
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 var(--prayer-active-glow);
+        }
+        50% {
+            box-shadow: 0 0 20px 4px var(--prayer-active-glow);
+        }
     }
 
     .prayer-card.active::before {
@@ -125,7 +137,12 @@
         left: 0;
         right: 0;
         height: 2px;
-        background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+        background: linear-gradient(
+            90deg,
+            transparent,
+            var(--accent-primary),
+            transparent
+        );
     }
 
     .prayer-card-icon {

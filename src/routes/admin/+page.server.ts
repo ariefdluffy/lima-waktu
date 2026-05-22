@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, count } from "drizzle-orm";
+import { and, desc, eq, count, lt } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import {
   devices,
+  events,
   iqamahSettings,
   jumbotrons,
   masjidUsers,
@@ -35,6 +36,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     1,
     Number(url.searchParams.get("pageJB") ?? 1),
   );
+  const pageEvent = Math.max(1, Number(url.searchParams.get("pageEV") ?? 1));
   if (!locals.user) {
     throw redirect(302, "/auth/login");
   }
@@ -97,6 +99,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       jumbotronPage: 1,
       jumbotronTotalPages: 1,
       jumbotronTotal: 0,
+      events: [],
+      eventTotal: 0,
+      eventPage: 1,
+      eventTotalPages: 1,
     };
   }
 
@@ -132,6 +138,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     prayerRows,
     prayerCountRows,
     iqamahRows,
+    eventRows,
+    eventCountRows,
   ] = await Promise.all([
     db
       .select()
@@ -216,6 +224,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       .select()
       .from(iqamahSettings)
       .where(eq(iqamahSettings.masjidId, masjidId)),
+    db
+      .select()
+      .from(events)
+      .where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1)))
+      .orderBy(desc(events.eventDate))
+      .limit(PAGE_SIZE)
+      .offset((pageEvent - 1) * PAGE_SIZE),
+    db
+      .select({ total: count() })
+      .from(events)
+      .where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1))),
   ]);
 
   const runningTextTotal = runningTextCountRows[0]?.total ?? 0;
@@ -224,6 +243,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
   const jumbotronTotal = jumbotronCountRows[0]?.total ?? 0;
   const youtubeTotal = youtubeCountRows[0]?.total ?? 0;
   const prayerTotal = prayerCountRows[0]?.total ?? 0;
+  const eventTotal = eventCountRows[0]?.total ?? 0;
 
   // Load all global + masjid-specific themes
   const themeRows = await db
@@ -262,6 +282,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     jumbotronTotal,
     jumbotronPage: pageJumbotron,
     jumbotronTotalPages: Math.max(1, Math.ceil(jumbotronTotal / PAGE_SIZE)),
+    events: eventRows,
+    eventTotal,
+    eventPage: pageEvent,
+    eventTotalPages: Math.max(1, Math.ceil(eventTotal / PAGE_SIZE)),
     youtubeItems: youtubeRows,
     youtubeTotal,
     youtubePage: pageYoutube,
@@ -403,6 +427,36 @@ export const actions: Actions = {
     if (id) await db.delete(youtubeItems).where(eq(youtubeItems.id, id));
   },
 
+  addEvent: async ({ locals, request }) => {
+    if (!locals.user) throw redirect(302, "/auth/login");
+    const form = await request.formData();
+    const masjidId = String(form.get("masjid_id") ?? "").trim();
+    const title = String(form.get("title") ?? "").trim();
+    const description = String(form.get("description") ?? "").trim();
+    const eventDate = String(form.get("event_date") ?? "").trim();
+    const eventTime = String(form.get("event_time") ?? "").trim();
+    const countdownEnabled = Number(form.get("countdown_enabled") ?? 1);
+
+    if (masjidId && title && eventDate) {
+      await db.insert(events).values({
+        masjidId,
+        title,
+        description: description || null,
+        eventDate,
+        eventTime: eventTime || null,
+        countdownEnabled: countdownEnabled ? 1 : 0,
+      });
+    }
+  },
+
+  deleteEvent: async ({ locals, request }) => {
+    if (!locals.user) throw redirect(302, "/auth/login");
+    const form = await request.formData();
+    const id = Number(form.get("id") ?? 0);
+    if (id)
+      await db.update(events).set({ isActive: 0 }).where(eq(events.id, id));
+  },
+
   addJumbotron: async ({ locals, request }) => {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
@@ -483,6 +537,20 @@ export const actions: Actions = {
     }
 
     let saved = 0;
+
+    // Auto-hapus dulu jadwal >14 hari lalu biar data nggak menumpuk
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 14);
+    const cutoffStr = cutoffDate.toISOString().slice(0, 10);
+    await db
+      .delete(prayerSchedules)
+      .where(
+        and(
+          eq(prayerSchedules.masjidId, masjidId),
+          lt(prayerSchedules.scheduleDate, cutoffStr as unknown as Date),
+        ),
+      );
+
     for (const s of schedules) {
       // Validasi format tanggal YYYY-MM-DD
       if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date)) continue;
@@ -639,6 +707,81 @@ export const actions: Actions = {
 
     // Clear cache supaya display langsung kebaca
     invalidateCache(masjidId, dateStr);
+
+    // Auto-hapus jadwal >14 hari lalu
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 14);
+    const cutoffStr = cutoffDate.toISOString().slice(0, 10);
+    await db
+      .delete(prayerSchedules)
+      .where(
+        and(
+          eq(prayerSchedules.masjidId, masjidId),
+          lt(prayerSchedules.scheduleDate, cutoffStr as unknown as Date),
+        ),
+      );
+  },
+
+  createMasjid: async ({ locals, request }) => {
+    if (!locals.user) {
+      throw redirect(302, "/auth/login");
+    }
+
+    if (
+      !locals.user.roles.includes("admin_masjid") &&
+      !locals.user.roles.includes("superadmin")
+    ) {
+      return fail(403, { message: "Tidak punya akses" });
+    }
+
+    // Cek user sudah punya masjid atau belum
+    const [existing] = await db
+      .select({ id: masjidUsers.id })
+      .from(masjidUsers)
+      .where(
+        and(
+          eq(masjidUsers.userId, locals.user.id),
+          eq(masjidUsers.isActive, 1),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      return fail(400, {
+        message: "Akun ini sudah terhubung dengan sebuah masjid",
+      });
+    }
+
+    const form = await request.formData();
+    const name = String(form.get("name") ?? "").trim();
+    const city = String(form.get("city") ?? "").trim();
+    const province = String(form.get("province") ?? "").trim();
+    const address = String(form.get("address") ?? "").trim();
+    const timezone = String(form.get("timezone") ?? "Asia/Jakarta").trim();
+
+    if (!name) {
+      return fail(400, { message: "Nama masjid wajib diisi" });
+    }
+
+    const masjidId = randomUUID();
+    await db.insert(masjids).values({
+      id: masjidId,
+      name,
+      city: city || null,
+      province: province || null,
+      address: address || null,
+      timezone,
+      isActive: 1,
+    });
+
+    await db.insert(masjidUsers).values({
+      masjidId,
+      userId: locals.user.id,
+      roleScope: "owner",
+      isActive: 1,
+    });
+
+    return { success: true };
   },
 
   updateDeviceTheme: async ({ request }) => {
@@ -667,5 +810,42 @@ export const actions: Actions = {
     await db.update(devices).set({ themeId }).where(eq(devices.id, deviceId));
 
     return { success: true };
+  },
+
+  deleteMasjid: async ({ locals, request }) => {
+    if (!locals.user) {
+      throw redirect(302, "/auth/login");
+    }
+    const form = await request.formData();
+    const masjidId = String(form.get("masjid_id") ?? "").trim();
+
+    if (!masjidId) {
+      return fail(400, { error: "ID masjid tidak ditemukan" });
+    }
+
+    // Verify user owns this masjid
+    const [membership] = await db
+      .select({ id: masjidUsers.id })
+      .from(masjidUsers)
+      .where(
+        and(
+          eq(masjidUsers.masjidId, masjidId),
+          eq(masjidUsers.userId, locals.user.id),
+          eq(masjidUsers.isActive, 1),
+        ),
+      )
+      .limit(1);
+
+    if (!membership) {
+      return fail(403, { error: "Anda tidak memiliki akses ke masjid ini" });
+    }
+
+    // Hapus masjid — MySQL cascade hapus semua data terkait
+    // (devices, jadwal, slide, jumbotron, running text, youtube, dll)
+    await db.delete(masjids).where(eq(masjids.id, masjidId));
+
+    invalidateCache(masjidId, "*");
+
+    throw redirect(302, "/admin");
   },
 };

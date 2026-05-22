@@ -8,22 +8,28 @@
     import RunningBar from "$lib/components/display/RunningBar.svelte";
     import YoutubeLayout from "$lib/components/display/YoutubeLayout.svelte";
     import MoodOverlay from "$lib/components/display/MoodOverlay.svelte";
+    import { DEFAULT_SLIDES } from "$lib/utils/prayer";
+
+    // Extracted modules
+    import { prayer, updatePrayerState } from "$lib/display/prayer.svelte";
+    import { audio, handleUnlockAudio } from "$lib/display/audio.svelte";
     import {
-        PRAYER_ORDER,
-        PRAYER_LABELS,
-        PRAYER_ICONS,
-        DEFAULT_SLIDES,
-        timeToMinutes,
-        secondsToCountdown,
-        toHijriyah,
-    } from "$lib/utils/prayer";
+        weather,
+        fetchWeather,
+        skipWeather,
+    } from "$lib/display/weather.svelte";
     import {
-        getTZOffsetHours,
-        getTZParts,
-        getTZLabel,
-        formatTimeTZ,
-        formatDateTZ,
-    } from "$lib/utils/timezone";
+        themeCssVars,
+        getWIBParts,
+        formatTime,
+        formatDate,
+        computeHijriyah,
+        getTZLabelText,
+        getLocationText,
+        getYoutubeEmbedUrl,
+        getRunningTextContent,
+        getCurrentSlideContent,
+    } from "$lib/display/helpers";
 
     let { data }: { data: PageData } = $props();
 
@@ -38,430 +44,44 @@
     let liveClock = $state("");
     let liveDate = $state("");
 
-    // Countdown state
-    let nextPrayerName = $state("");
-    let nextPrayerTime = $state("");
-    let countdown = $state("00 : 00 : 00");
-    let countdownProgress = $state(0);
-    let iqamahTime = $state("");
-    let activePrayerIndex = $state(-1);
-
     // Slide state
     let currentSlide = $state(0);
     let slideFading = $state(false);
 
-    // Audio context — shared, resume on user gesture
-    let audioCtx: AudioContext | null = null;
-
-    function getAudioContext(): AudioContext {
-        if (!audioCtx) {
-            audioCtx = new (
-                window.AudioContext || (window as any).webkitAudioContext
-            )();
-        }
-        return audioCtx;
-    }
-
-    // Beep state
-    let lastTriggeredPrayer = $state("");
-    let lastTriggeredIqamah = $state("");
-
-    // Mood: normal | adzan | iqamah | khusuk
-    let mood = $state<"normal" | "adzan" | "iqamah" | "khusuk">("normal");
-    let moodPrayerName = $state("");
-    let moodCountdown = $state("");
-    let moodCountdownLabel = $state("");
-
     // Hijriyah
     let hijriyahDate = $state("");
-
-    // Cuaca
-    let weatherTemp = $state<number | null>(null);
-    let weatherCode = $state<number | null>(null);
-    let weatherLoading = $state(true);
-    let weatherFetched = $state(false);
-    let weatherLastFetched = $state(0);
-
-    // Screen saver (mode hemat)
-    let screensaver = $state(false);
-
-    // Mode Tahajud (1 jam sebelum Subuh)
-    let tahajudMode = $state(false);
 
     // Jumbotron rotate
     let currentJumbotron = $state(0);
 
-    // Konstanta prayer diimport dari $lib/utils/prayer
+    // Timezone derived (reused in template & functions)
+    let tz = $derived.by(() => payload?.masjid?.timezone ?? "Asia/Makassar");
 
-    function themeCssVars(palette: Record<string, string> | null): string {
-        if (!palette) return "";
-        return Object.entries(palette)
-            .map(
-                ([k, v]) =>
-                    `--${k.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase())}: ${v}`,
-            )
-            .join("; ");
+    // TZ label
+    let tzLabel = $derived.by(() => getTZLabelText(tz, payload?.masjid?.city));
+
+    // ── Named Handlers ──────────────────────────────────────────────
+    function handleRefresh() {
+        window.location.reload();
+    }
+    function handleCardClick(e: MouseEvent) {
+        e.stopPropagation();
     }
 
-    // Timezone offset & label dari payload masjid
-    let tzLabel = $derived.by(() => {
-        const tz = payload?.masjid?.timezone ?? "Asia/Makassar";
-        const label = getTZLabel(tz);
-        const city = payload?.masjid?.city;
-        return city ? `${label} \u2022 ${city}` : label;
-    });
-    function getTZOffset(): number {
-        return getTZOffsetHours(payload?.masjid?.timezone ?? "Asia/Makassar");
-    }
-
-    function getWIBParts(date: Date) {
-        return getTZParts(date, getTZOffset());
-    }
-
-    function formatTime(date: Date): string {
-        return formatTimeTZ(date, getTZOffset());
-    }
-
-    function formatDate(date: Date): string {
-        return formatDateTZ(date, getTZOffset());
-    }
-
-    // ── Hijriyah ──────────────────────────────────────────────────────────
-    function updateHijriyah() {
-        const offset = payload?.masjid?.hijriOffset ?? 0;
-        const { year, month, date } = getWIBParts(new Date());
-        hijriyahDate = toHijriyah(year, month + 1, date, offset);
-    }
-
-    // ── Cuaca ─────────────────────────────────────────────────────────────
-    const WEATHER_CACHE_MS = 30 * 60 * 1000; // 30 menit
-
-    async function fetchWeather(lat: string, lon: string) {
-        const now = Date.now();
-        if (weatherFetched && now - weatherLastFetched < WEATHER_CACHE_MS) {
-            weatherLoading = false;
-            return;
-        }
-        try {
-            const res = await fetch(`/api/v1/weather?lat=${lat}&lon=${lon}`);
-            const json = await res.json();
-            if (json.ok) {
-                weatherTemp = json.temp;
-                weatherCode = json.code;
-                weatherLastFetched = now;
-                weatherFetched = true;
-            } else {
-                // Jaga data lama jika sudah pernah fetch
-                if (!weatherFetched) {
-                    weatherTemp = null;
-                    weatherCode = null;
-                }
-            }
-        } catch {
-            if (!weatherFetched) {
-                weatherTemp = null;
-                weatherCode = null;
-            }
-        } finally {
-            weatherLoading = false;
-        }
-    }
-
-    // ── Jumbotron rotate ──────────────────────────────────────────────────
-    function rotateJumbotron() {
-        if (!payload?.jumbotrons?.length) return;
-        currentJumbotron = (currentJumbotron + 1) % payload.jumbotrons.length;
-    }
-
-    // timeToMinutes diimport dari $lib/utils/prayer
-
-    function getCurrentTimeMinutes(): number {
-        const { hours, minutes } = getWIBParts(now);
-        return hours * 60 + minutes;
-    }
-
+    // ── Clock ───────────────────────────────────────────────────
     function updateClock() {
         now = new Date();
-        liveClock = formatTime(now);
-        liveDate = formatDate(now);
+        liveClock = formatTime(now, tz);
+        liveDate = formatDate(now, tz);
     }
 
-    function playAdzanBeep() {
-        try {
-            const ctx = getAudioContext();
-            if (ctx.state === "suspended") {
-                ctx.resume();
-            }
-            const sequence = [
-                { freq: 880, duration: 0.15, start: 0.0 },
-                { freq: 880, duration: 0.15, start: 0.25 },
-                { freq: 1100, duration: 0.15, start: 0.5 },
-                { freq: 1100, duration: 0.6, start: 0.8 },
-            ];
-            sequence.forEach(({ freq, duration, start }) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.type = "sine";
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0, ctx.currentTime + start);
-                gain.gain.linearRampToValueAtTime(
-                    0.4,
-                    ctx.currentTime + start + 0.01,
-                );
-                gain.gain.linearRampToValueAtTime(
-                    0,
-                    ctx.currentTime + start + duration,
-                );
-                osc.start(ctx.currentTime + start);
-                osc.stop(ctx.currentTime + start + duration + 0.05);
-            });
-            setTimeout(() => ctx.close(), 3000);
-        } catch (e) {
-            console.warn("Web Audio API tidak tersedia:", e);
-        }
+    // ── Hijriyah ──────────────────────────────────────────────────
+    function updateHijriyah() {
+        const offset = payload?.masjid?.hijriOffset ?? 0;
+        hijriyahDate = computeHijriyah(new Date(), tz, offset);
     }
 
-    function playIqamahBeep() {
-        try {
-            const ctx = getAudioContext();
-            if (ctx.state === "suspended") {
-                ctx.resume();
-            }
-            // Iqamah pattern: rapid double-beep (lebih cepat & pendek)
-            const sequence = [
-                { freq: 1000, duration: 0.08, start: 0.0 },
-                { freq: 1000, duration: 0.08, start: 0.12 },
-                { freq: 1200, duration: 0.08, start: 0.28 },
-                { freq: 1200, duration: 0.08, start: 0.4 },
-                { freq: 1400, duration: 0.5, start: 0.55 },
-            ];
-            sequence.forEach(({ freq, duration, start }) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.type = "sine";
-                osc.frequency.value = freq;
-                gain.gain.setValueAtTime(0, ctx.currentTime + start);
-                gain.gain.linearRampToValueAtTime(
-                    0.4,
-                    ctx.currentTime + start + 0.01,
-                );
-                gain.gain.linearRampToValueAtTime(
-                    0,
-                    ctx.currentTime + start + duration,
-                );
-                osc.start(ctx.currentTime + start);
-                osc.stop(ctx.currentTime + start + duration + 0.05);
-            });
-            setTimeout(() => ctx.close(), 3000);
-        } catch (e) {
-            console.warn("Web Audio API tidak tersedia:", e);
-        }
-    }
-
-    function updatePrayerState() {
-        if (!payload?.schedule?.resolved) return;
-
-        const resolved = payload.schedule.resolved;
-        const currentMinutes = getCurrentTimeMinutes();
-
-        // Find next prayer
-        let found = false;
-        let nextIdx = -1;
-
-        for (let i = 0; i < PRAYER_ORDER.length; i++) {
-            const prayer = PRAYER_ORDER[i];
-            const prayerMinutes = timeToMinutes(resolved[prayer]);
-
-            if (prayerMinutes > currentMinutes) {
-                nextIdx = i;
-                found = true;
-                break;
-            }
-        }
-
-        // If no prayer found today, next is tomorrow's Subuh
-        if (!found) {
-            nextIdx = 0;
-        }
-
-        activePrayerIndex = nextIdx;
-        const nextPrayer = PRAYER_ORDER[nextIdx];
-        nextPrayerName = PRAYER_LABELS[nextPrayer];
-        nextPrayerTime = resolved[nextPrayer];
-
-        // Iqamah time
-        const iqamahData = payload.schedule.iqamah[nextPrayer];
-        iqamahTime = iqamahData?.enabled ? iqamahData.time : "";
-
-        // Countdown — hitung detik secara akurat dari waktu sekarang (WIB)
-        const { hours: nowH, minutes: nowM, seconds: nowS } = getWIBParts(now);
-        const currentTotalSeconds = nowH * 3600 + nowM * 60 + nowS;
-
-        if (found) {
-            const targetTotalSeconds = timeToMinutes(resolved[nextPrayer]) * 60;
-            let diffSeconds = targetTotalSeconds - currentTotalSeconds;
-            if (diffSeconds < 0) diffSeconds += 86400;
-
-            const hh = Math.floor(diffSeconds / 3600);
-            const mm = Math.floor((diffSeconds % 3600) / 60);
-            const ss = diffSeconds % 60;
-            countdown = `${String(hh).padStart(2, "0")} : ${String(mm).padStart(2, "0")} : ${String(ss).padStart(2, "0")}`;
-
-            // Trigger beep saat adzan tiba
-            if (diffSeconds <= 1 && lastTriggeredPrayer !== nextPrayer) {
-                lastTriggeredPrayer = nextPrayer;
-                playAdzanBeep();
-            }
-
-            // Countdown progress: hitung persentase waktu berlalu sejak sholat sebelumnya
-            countdownProgress = calcCountdownProgress(
-                currentMinutes,
-                resolved,
-                nextIdx,
-            );
-        } else {
-            // After Isya, countdown to tomorrow's Subuh
-            const subuhTotalSeconds = timeToMinutes(resolved.subuh) * 60;
-            let diffSeconds = 86400 - currentTotalSeconds + subuhTotalSeconds;
-            const hh = Math.floor(diffSeconds / 3600);
-            const mm = Math.floor((diffSeconds % 3600) / 60);
-            const ss = diffSeconds % 60;
-            countdown = `${String(hh).padStart(2, "0")} : ${String(mm).padStart(2, "0")} : ${String(ss).padStart(2, "0")}`;
-            countdownProgress = calcCountdownProgressAfterIsya(
-                currentMinutes,
-                resolved,
-            );
-        }
-
-        // --- Mode Adzan, Iqamah & Khusuk Detection ---
-        let newMood: "normal" | "adzan" | "iqamah" | "khusuk" = "normal";
-        let newMoodPrayerName = "";
-        const ADZAN_DURATION = payload?.masjid?.adzanScreenDuration ?? 2;
-        const KHUSUK_DURATION = payload?.masjid?.khusukScreenDuration ?? 10;
-
-        // Cari sholat yg adzan-nya sudah lewat (current/active prayer)
-        let currentPrayerIdx = -1;
-        for (let i = PRAYER_ORDER.length - 1; i >= 0; i--) {
-            const p = PRAYER_ORDER[i];
-            const pMin = timeToMinutes(resolved[p]);
-            if (pMin <= currentMinutes) {
-                currentPrayerIdx = i;
-                break;
-            }
-        }
-
-        if (currentPrayerIdx >= 0) {
-            const cp = PRAYER_ORDER[currentPrayerIdx];
-            const adzanMin = timeToMinutes(resolved[cp]);
-            const adzanEndMin = adzanMin + ADZAN_DURATION;
-            const iqData = payload.schedule.iqamah[cp];
-
-            // Dalam jendela adzan + khusuk (KHUSUK_DURATION menit dari adzan)
-            if (
-                currentMinutes >= adzanMin &&
-                currentMinutes < adzanMin + KHUSUK_DURATION
-            ) {
-                if (currentMinutes < adzanEndMin) {
-                    // Fase awal: layar adzan
-                    newMood = "adzan";
-                } else if (iqData?.enabled && iqData?.time) {
-                    const iqamahMin = timeToMinutes(iqData.time);
-                    if (
-                        currentMinutes >= iqamahMin &&
-                        currentMinutes < iqamahMin + 1
-                    ) {
-                        newMood = "iqamah";
-                        // Trigger iqamah beep once per prayer
-                        if (lastTriggeredIqamah !== cp) {
-                            lastTriggeredIqamah = cp;
-                            playIqamahBeep();
-                        }
-                    } else {
-                        newMood = "khusuk";
-                    }
-                } else {
-                    // Tidak ada iqamah: khusuk setelah layar adzan
-                    newMood = "khusuk";
-                }
-                newMoodPrayerName = PRAYER_LABELS[cp];
-            }
-        }
-
-        // Reset iqamah tracker when leaving iqamah mood
-        if (newMood !== "iqamah" && lastTriggeredIqamah) {
-            lastTriggeredIqamah = "";
-        }
-
-        mood = newMood;
-        moodPrayerName = newMoodPrayerName;
-
-        // --- Mood Countdown ---
-        {
-            let remainingSec = 0;
-            let label = "";
-            if (newMood === "adzan" && currentPrayerIdx >= 0) {
-                const cp = PRAYER_ORDER[currentPrayerIdx];
-                const adzanMin = timeToMinutes(resolved[cp]);
-                const adzanEndMin = adzanMin + ADZAN_DURATION;
-                remainingSec = adzanEndMin * 60 - currentTotalSeconds;
-                label = "ADZAN BERAKHIR DALAM";
-            } else if (newMood === "iqamah" && currentPrayerIdx >= 0) {
-                const cp = PRAYER_ORDER[currentPrayerIdx];
-                const iqData = payload.schedule.iqamah[cp];
-                if (iqData?.enabled && iqData?.time) {
-                    const iqamahMin = timeToMinutes(iqData.time);
-                    remainingSec = (iqamahMin + 1) * 60 - currentTotalSeconds;
-                    label = "IQAMAH BERAKHIR DALAM";
-                }
-            } else if (newMood === "khusuk" && currentPrayerIdx >= 0) {
-                const cp = PRAYER_ORDER[currentPrayerIdx];
-                const adzanMin = timeToMinutes(resolved[cp]);
-                remainingSec =
-                    (adzanMin + KHUSUK_DURATION) * 60 - currentTotalSeconds;
-                label = "WAKTU KHUSYUK TERSISA";
-            }
-            if (remainingSec > 0) {
-                const mm = Math.floor(remainingSec / 60);
-                const ss = remainingSec % 60;
-                moodCountdown = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
-                moodCountdownLabel = label;
-            } else {
-                moodCountdown = "";
-                moodCountdownLabel = "";
-            }
-        }
-
-        // --- Screen Saver & Tahajud Mode ---
-        const isyaMin = timeToMinutes(resolved.isya);
-        const subuhMin = timeToMinutes(resolved.subuh);
-        const syuruqMin = timeToMinutes(resolved.sunrise);
-        const dzuhurMin = timeToMinutes(resolved.dzuhur);
-        const SCREENSAVER_DELAY =
-            payload?.masjid?.screensaverDelayMinutes ?? 120;
-        const SCREENSAVER_WAKE = payload?.masjid?.screensaverWakeMinutes ?? 60;
-
-        // Jendela malam: X menit setelah Isya s/d Y menit sebelum Subuh
-        const dalamJendelaMalam =
-            currentMinutes >= isyaMin + SCREENSAVER_DELAY ||
-            currentMinutes < subuhMin - SCREENSAVER_WAKE;
-
-        // Jendela pagi: 1 jam setelah Syuruq s/d 2 jam sebelum Dzuhur
-        const dalamJendelaPagi =
-            currentMinutes >= syuruqMin + 60 &&
-            currentMinutes < dzuhurMin - 120;
-
-        const dalamJendelaScreensaver = dalamJendelaMalam || dalamJendelaPagi;
-        const dalamJendelaTahajud =
-            currentMinutes >= subuhMin - SCREENSAVER_WAKE &&
-            currentMinutes < subuhMin;
-        screensaver = dalamJendelaScreensaver;
-        tahajudMode = dalamJendelaTahajud;
-    }
-
+    // ── Slide ─────────────────────────────────────────────────────
     function rotateSlide() {
         slideFading = true;
         setTimeout(() => {
@@ -472,40 +92,13 @@
         }, 500);
     }
 
-    // ── Countdown Progress Helpers ──────────────────────────────────────
-    function calcCountdownProgress(
-        currentMinutes: number,
-        resolved: Record<string, string>,
-        nextIdx: number,
-    ): number {
-        let prevIdx = nextIdx - 1;
-        if (prevIdx < 0) prevIdx = PRAYER_ORDER.length - 1;
-        const prevPrayer = PRAYER_ORDER[prevIdx];
-        const nextPrayer = PRAYER_ORDER[nextIdx];
-        const prevMin = timeToMinutes(resolved[prevPrayer]);
-        let nextMin = timeToMinutes(resolved[nextPrayer]);
-        if (nextMin <= prevMin) nextMin += 1440;
-        const currentAdjusted =
-            currentMinutes < prevMin ? currentMinutes + 1440 : currentMinutes;
-        const total = nextMin - prevMin;
-        const elapsed = currentAdjusted - prevMin;
-        return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+    // ── Jumbotron ────────────────────────────────────────────────
+    function rotateJumbotron() {
+        if (!payload?.jumbotrons?.length) return;
+        currentJumbotron = (currentJumbotron + 1) % payload.jumbotrons.length;
     }
 
-    function calcCountdownProgressAfterIsya(
-        currentMinutes: number,
-        resolved: Record<string, string>,
-    ): number {
-        const isyaMin = timeToMinutes(resolved.isya);
-        const subuhMin = timeToMinutes(resolved.subuh);
-        const total = 1440 - isyaMin + subuhMin;
-        const elapsed =
-            currentMinutes >= isyaMin
-                ? currentMinutes - isyaMin
-                : 1440 - isyaMin + currentMinutes;
-        return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
-    }
-
+    // ── Data Fetch ────────────────────────────────────────────────
     async function fetchData() {
         try {
             const res = await fetch(
@@ -527,27 +120,22 @@
     onMount(() => {
         fetchData();
 
-        // Clock update every second
         const clockInterval = setInterval(updateClock, 1000);
         updateClock();
 
-        // Hijriyah update
         updateHijriyah();
-        const hijriInterval = setInterval(updateHijriyah, 3600000); // refresh tiap jam
+        const hijriInterval = setInterval(updateHijriyah, 3600000);
 
-        // Prayer state update every second
-        const prayerInterval = setInterval(updatePrayerState, 1000);
+        const prayerInterval = setInterval(() => {
+            if (payload) updatePrayerState(payload, now);
+        }, 1000);
 
-        // Slide rotation every 7 seconds
         const slideInterval = setInterval(rotateSlide, 7000);
 
-        // Jumbotron rotate every 10 seconds
         const jumbotronInterval = setInterval(rotateJumbotron, 10000);
 
-        // Refresh data every 15 seconds — biar layout & konten cepat sinkron
         const dataInterval = setInterval(fetchData, 15000);
 
-        // Visibility change — refresh langsung saat tab display aktif lagi
         const onVisible = () => {
             if (document.visibilityState === "visible") {
                 fetchData();
@@ -583,65 +171,16 @@
 
     $effect(() => {
         if (payload) {
-            updatePrayerState();
-            // Fetch cuaca saat payload tersedia
+            // Initial prayer state sync (interval handles subsequent updates)
+            updatePrayerState(payload, now);
+            updateHijriyah();
             if (payload.masjid?.latitude && payload.masjid?.longitude) {
                 fetchWeather(payload.masjid.latitude, payload.masjid.longitude);
             } else {
-                weatherLoading = false;
+                skipWeather();
             }
         }
     });
-
-    function getLocationText(): string {
-        if (!payload?.masjid) return "";
-        const parts = [
-            payload.masjid.address,
-            payload.masjid.city,
-            payload.masjid.province,
-        ].filter(Boolean);
-        return parts.join(", ");
-    }
-
-    function getYoutubeEmbedUrl(url: string): string {
-        // Support format: youtu.be/ID, youtube.com/watch?v=ID, youtube.com/live/ID
-        let videoId = "";
-        try {
-            const u = new URL(url);
-            if (u.hostname === "youtu.be") {
-                videoId = u.pathname.slice(1);
-            } else if (u.hostname.includes("youtube.com")) {
-                videoId =
-                    u.searchParams.get("v") ??
-                    u.pathname.split("/").pop() ??
-                    "";
-            }
-        } catch {
-            videoId = url;
-        }
-        // autoplay=1 + mute=1 wajib agar browser mengizinkan autoplay
-        // enablejsapi=1 untuk kontrol via JS jika diperlukan
-        // playsinline=1 agar tidak fullscreen otomatis di mobile
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&loop=1&playlist=${videoId}&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
-    }
-
-    function getRunningTextContent(): string {
-        if (!payload?.runningTexts?.length) {
-            return "Selamat datang di Masjid. Mohon menonaktifkan nada dering ponsel.";
-        }
-        return payload.runningTexts.map((rt) => rt.content).join("  |  ");
-    }
-
-    function getCurrentSlideContent() {
-        const slides = payload?.slides ?? [];
-        if (slides.length === 0) {
-            return DEFAULT_SLIDES[currentSlide % DEFAULT_SLIDES.length];
-        }
-        const slide = slides[currentSlide % slides.length];
-        return slide?.fileUrl
-            ? null
-            : DEFAULT_SLIDES[currentSlide % DEFAULT_SLIDES.length];
-    }
 </script>
 
 <svelte:head>
@@ -660,8 +199,8 @@
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="display-error-screen" onclick={() => window.location.reload()}>
-        <div class="display-error-card" onclick={(e) => e.stopPropagation()}>
+    <div class="display-error-screen" onclick={handleRefresh}>
+        <div class="display-error-card" onclick={handleCardClick}>
             <div class="display-error-icon">⚠️</div>
             <div class="display-error-title">Gangguan Data</div>
             <p class="display-error-msg">{error}</p>
@@ -693,7 +232,7 @@
                 class="display-error-btn"
                 onclick={(e) => {
                     e.stopPropagation();
-                    window.location.reload();
+                    handleRefresh();
                 }}
             >
                 🔄 Refresh Sekarang
@@ -701,7 +240,7 @@
         </div>
     </div>
 {:else if payload}
-    {#if screensaver}
+    {#if prayer.screensaver}
         <div
             class="screensaver"
             style={themeCssVars(payload?.theme?.palette ?? null)}
@@ -733,7 +272,7 @@
                 </div>
             </div>
         </div>
-    {:else if tahajudMode}
+    {:else if prayer.tahajudMode}
         <div
             class="tahajud"
             style={themeCssVars(payload?.theme?.palette ?? null)}
@@ -759,7 +298,7 @@
                     <div class="tahajud-countdown-label">
                         MENUJU SHOLAT SUBUH
                     </div>
-                    <div class="tahajud-countdown-val">{countdown}</div>
+                    <div class="tahajud-countdown-val">{prayer.countdown}</div>
                 </div>
                 <div class="tahajud-masjid">{payload.masjid.name}</div>
             </div>
@@ -768,20 +307,22 @@
         <div
             class="tv-wrap"
             style={themeCssVars(payload?.theme?.palette ?? null)}
-            class:tv-wrap--mood={mood !== "normal"}
+            class:tv-wrap--mood={prayer.mood !== "normal"}
         >
             <div class="bg-stars"></div>
             <div class="bg-grid"></div>
             <button
                 class="sound-unlock-btn"
-                onclick={() => {
-                    try {
-                        const ctx = getAudioContext();
-                        if (ctx.state === "suspended") ctx.resume();
-                    } catch (e) {}
-                }}
-                title="Aktifkan suara adzan">🔔</button
+                class:sound-unlock-btn--blocked={audio.blocked}
+                onclick={handleUnlockAudio}
+                title="Aktifkan suara adzan"
             >
+                {#if audio.blocked}
+                    🔕
+                {:else}
+                    🔔
+                {/if}
+            </button>
             <div class="top-bar"></div>
 
             <!-- HEADER -->
@@ -800,15 +341,16 @@
                     </div>
                     <div class="masjid-name-block">
                         <div class="masjid-name">{payload.masjid.name}</div>
-                        <div class="masjid-loc">{getLocationText()}</div>
+                        <div class="masjid-loc">
+                            {getLocationText(payload.masjid)}
+                        </div>
                     </div>
                 </div>
                 <div class="header-right">
                     <div class="header-time">
                         {liveClock}
-                        <span class="header-tz">{tzLabel}</span>
+                        <!-- <span class="header-tz">{tzLabel}</span> -->
                     </div>
-                    <div class="header-date">{liveDate}</div>
                 </div>
             </header>
 
@@ -817,55 +359,63 @@
                 <!-- YOUTUBE LAYOUT -->
                 <YoutubeLayout
                     {payload}
-                    {nextPrayerName}
-                    {nextPrayerTime}
-                    {countdown}
-                    {countdownProgress}
-                    {iqamahTime}
-                    {activePrayerIndex}
+                    nextPrayerName={prayer.nextPrayerName}
+                    nextPrayerTime={prayer.nextPrayerTime}
+                    countdown={prayer.countdown}
+                    countdownProgress={prayer.countdownProgress}
+                    iqamahTime={prayer.iqamahTime}
+                    activePrayerIndex={prayer.activePrayerIndex}
                 />
             {:else}
                 <!-- DEFAULT LAYOUT -->
                 <main class="main-body">
                     <!-- LEFT PANEL -->
                     <LeftPanel
-                        {nextPrayerName}
-                        {nextPrayerTime}
-                        {countdown}
-                        {countdownProgress}
-                        {iqamahTime}
+                        nextPrayerName={prayer.nextPrayerName}
+                        nextPrayerTime={prayer.nextPrayerTime}
+                        countdown={prayer.countdown}
+                        countdownProgress={prayer.countdownProgress}
+                        iqamahTime={prayer.iqamahTime}
+                        {liveDate}
                     />
 
                     <!-- CENTER PANEL -->
                     <CenterPanel
                         {payload}
-                        {activePrayerIndex}
+                        activePrayerIndex={prayer.activePrayerIndex}
                         {currentSlide}
                         {slideFading}
+                        isJumat={getWIBParts(now, tz).day === 5}
                     />
 
                     <!-- RIGHT PANEL -->
                     <RightPanel
                         {payload}
                         {hijriyahDate}
-                        {weatherTemp}
-                        {weatherCode}
-                        {weatherLoading}
+                        weatherTemp={weather.temp}
+                        weatherCode={weather.code}
+                        weatherLoading={weather.loading}
                         {currentJumbotron}
-                        isJumat={getWIBParts(now).day === 5}
+                        isJumat={getWIBParts(now, tz).day === 5}
+                        isJumatCardVisible={getWIBParts(now, tz).day === 5 &&
+                            getWIBParts(now, tz).hours < 12}
+                        mood={prayer.mood}
+                        moodPrayerKey={prayer.moodPrayerKey}
                     />
                 </main>
             {/if}
 
             <!-- RUNNING TEXT -->
-            <RunningBar content={getRunningTextContent()} />
+            <RunningBar content={getRunningTextContent(payload.runningTexts)} />
 
             <!-- MOOD OVERLAY -->
             <MoodOverlay
-                {mood}
-                {moodPrayerName}
-                countdown={moodCountdown}
-                countdownLabel={moodCountdownLabel}
+                mood={prayer.mood}
+                moodPrayerName={prayer.moodPrayerName}
+                moodPrayerKey={prayer.moodPrayerKey}
+                countdown={prayer.moodCountdown}
+                countdownLabel={prayer.moodCountdownLabel}
+                isJumat={getWIBParts(now, tz).day === 5}
             />
         </div>
     {/if}
@@ -1111,7 +661,7 @@
     .screensaver-logo-img {
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover;
         border-radius: 50%;
     }
 
@@ -1342,13 +892,13 @@
     /* HEADER */
     .header {
         position: absolute;
-        top: 2px;
+        top: 0;
         left: 0;
         right: 0;
-        height: 13%;
+        height: 10%;
         display: flex;
         align-items: center;
-        padding: 0 2.5% 0 2%;
+        padding: 1.2% 2.5% 0 2%;
         background: var(--header-bg);
     }
 
@@ -1360,7 +910,7 @@
     }
 
     .masjid-logo {
-        width: 6%;
+        width: 8%;
         aspect-ratio: 1;
         background: var(--border-accent);
         border: 1.5px solid var(--prayer-active-border);
@@ -1368,26 +918,31 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: clamp(16px, 2vw, 28px);
+        font-size: clamp(24px, 4.5vw, 86px);
+        margin-top: 3%;
     }
 
     .masjid-logo-img {
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover;
         border-radius: 50%;
+    }
+
+    .masjid-name-block {
+        margin-top: 2%;
     }
 
     .masjid-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(18px, 2.2vw, 36px);
+        font-size: clamp(18px, 4.2vw, 56px);
         font-weight: 700;
         color: var(--accent-primary);
         letter-spacing: 0.05em;
     }
 
     .masjid-loc {
-        font-size: clamp(11px, 1.2vw, 20px);
+        font-size: clamp(11px, 2.5vw, 32px);
         color: var(--text-secondary);
         margin-top: 2px;
         letter-spacing: 0.08em;
@@ -1398,7 +953,7 @@
     }
 
     .header-time {
-        font-size: clamp(28px, 3.6vw, 74px);
+        font-size: clamp(28px, 8.6vw, 144px);
         font-weight: 700;
         color: var(--accent-primary);
         font-variant-numeric: tabular-nums;
@@ -1410,13 +965,7 @@
         font-weight: 600;
         color: var(--text-muted);
         vertical-align: super;
-        margin-left: 6px;
-    }
-
-    .header-date {
-        font-size: clamp(13px, 1.5vw, 44px);
-        color: var(--text-secondary);
-        margin-top: 1px;
+        margin-left: 3px;
     }
 
     /* MAIN BODY */
@@ -1446,10 +995,30 @@
         align-items: center;
         justify-content: center;
         color: var(--accent-primary);
-        transition: background 0.2s;
+        transition:
+            background 0.2s,
+            transform 0.2s,
+            box-shadow 0.2s;
     }
     .sound-unlock-btn:hover {
         background: var(--prayer-active-bg);
+    }
+    .sound-unlock-btn--blocked {
+        animation: bell-pulse 1.5s ease-in-out infinite;
+        border-color: #f59e0b;
+        color: #f59e0b;
+        background: rgba(245, 158, 11, 0.15);
+    }
+    @keyframes bell-pulse {
+        0%,
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+        }
+        50% {
+            transform: scale(1.15);
+            box-shadow: 0 0 12px 4px rgba(245, 158, 11, 0.3);
+        }
     }
 
     /* Responsive */

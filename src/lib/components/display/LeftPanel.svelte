@@ -5,6 +5,7 @@
         countdown: string;
         countdownProgress: number;
         iqamahTime: string;
+        liveDate: string;
     }
 
     let {
@@ -13,10 +14,12 @@
         countdown,
         countdownProgress,
         iqamahTime,
+        liveDate,
     }: Props = $props();
 </script>
 
 <aside class="left-panel">
+    <div class="left-date">{liveDate}</div>
     <div class="next-label">WAKTU BERIKUTNYA</div>
     <div class="next-prayer-name">{nextPrayerName}</div>
     <div class="next-prayer-time">{nextPrayerTime}</div>
@@ -54,6 +57,13 @@
         overflow: hidden;
     }
 
+    .left-date {
+        font-size: clamp(13px, 1.8vw, 48px);
+        color: var(--accent-primary);
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
     .next-label {
         font-size: clamp(10px, 1vw, 42px);
         color: var(--text-secondary);
@@ -63,7 +73,7 @@
 
     .next-prayer-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(28px, 2.9vw, 106px);
+        font-size: clamp(28px, 4.9vw, 106px);
         font-weight: 700;
         color: var(--accent-primary);
         text-align: center;
@@ -71,7 +81,7 @@
     }
 
     .next-prayer-time {
-        font-size: clamp(48px, 5.2vw, 120px);
+        font-size: clamp(48px, 6.2vw, 140px);
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;
@@ -89,7 +99,7 @@
     }
 
     .countdown-label {
-        font-size: clamp(8px, 0.85vw, 36px);
+        font-size: clamp(8px, 1.85vw, 36px);
         color: var(--text-muted);
         letter-spacing: 0.12em;
         display: block;
@@ -97,7 +107,7 @@
     }
 
     .countdown-val {
-        font-size: clamp(22px, 2.7vw, 56px);
+        font-size: clamp(22px, 4.7vw, 86px);
         font-weight: 700;
         color: var(--accent-secondary);
         font-variant-numeric: tabular-nums;
@@ -106,7 +116,7 @@
     .progress-track {
         margin-top: 6px;
         width: 100%;
-        height: 4px;
+        height: 8px;
         background: var(--border-color);
         border-radius: 2px;
         overflow: hidden;
@@ -129,13 +139,13 @@
     }
 
     .iqamah-label {
-        font-size: clamp(8px, 0.85vw, 82px);
+        font-size: clamp(8px, 2.5vw, 82px);
         color: var(--text-muted);
         letter-spacing: 0.1em;
     }
 
     .iqamah-val {
-        font-size: clamp(14px, 1.9vw, 76px);
+        font-size: clamp(14px, 3.9vw, 76px);
         color: var(--text-secondary);
         font-weight: 500;
     }
