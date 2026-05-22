@@ -9,6 +9,7 @@ git pull origin main
 
 # 2. Install & Build
 npm install
+npm run db:migrate
 npm run build
 
 # 3. Restart PM2

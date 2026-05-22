@@ -27,18 +27,28 @@
     class="bg-linear-to-br from-emerald-100 via-green-50 to-white px-4 py-6 sm:px-6 lg:px-8"
 >
     <div class="mx-auto w-full max-w-7xl space-y-6">
-        <header class="rounded-2xl bg-white p-6 shadow-sm">
-            <p
-                class="text-xs font-semibold uppercase tracking-wider text-emerald-700"
-            >
-                Superadmin
-            </p>
-            <h1 class="mt-1 text-2xl font-bold text-emerald-900">
-                Kontrol Pusat Platform Lima Waktu
-            </h1>
-            <p class="mt-2 text-sm text-slate-600">
-                Kelola tenant masjid, user, dan subscription.
-            </p>
+        <header class="flex items-center justify-between rounded-2xl bg-white p-6 shadow-sm">
+            <div>
+                <p
+                    class="text-xs font-semibold uppercase tracking-wider text-emerald-700"
+                >
+                    Superadmin
+                </p>
+                <h1 class="mt-1 text-2xl font-bold text-emerald-900">
+                    Kontrol Pusat Platform Lima Waktu
+                </h1>
+                <p class="mt-2 text-sm text-slate-600">
+                    Kelola tenant masjid, user, dan subscription.
+                </p>
+            </div>
+            <form action="/auth/logout" method="POST">
+                <button
+                    type="submit"
+                    class="rounded-xl bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100"
+                >
+                    Keluar
+                </button>
+            </form>
         </header>
 
         <!-- Stats -->
