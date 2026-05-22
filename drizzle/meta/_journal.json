@@ -22,6 +22,20 @@
       "when": 1779359404160,
       "tag": "0002_blushing_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1779400000000,
+      "tag": "0003_screensaver_config",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1779408000000,
+      "tag": "0004_seed_themes",
+      "breakpoints": true
     }
   ]
 }
