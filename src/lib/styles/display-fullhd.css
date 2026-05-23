@@ -1,0 +1,312 @@
+/* Display TV Full HD Optimization (1920x1080 dan lebih besar) */
+/* File ini berisi media queries dan optimasi untuk TV 32 inch ke atas */
+
+/* ============================================================
+   FULL HD BREAKPOINT (1920x1080 dan lebih besar)
+   ============================================================ */
+
+@media (min-width: 1920px) {
+  /* Root font size adjustment untuk Full HD */
+  :root {
+    --font-size-base: 16px;
+  }
+
+  /* Prayer Card Optimization */
+  .prayer-card-icon {
+    font-size: 32px;
+  }
+
+  .prayer-card-name {
+    font-size: 52px;
+    margin-bottom: 8px;
+  }
+
+  .prayer-card-time {
+    font-size: 104px;
+    margin-bottom: 12px;
+  }
+
+  .prayer-iqamah {
+    font-size: 52px;
+  }
+
+  .active-badge {
+    font-size: 58px;
+    padding: 4px 12px;
+  }
+
+  /* Left Panel Optimization */
+  .left-date {
+    font-size: 56px;
+    margin-bottom: 8px;
+  }
+
+  .next-label {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .next-prayer-name {
+    font-size: 120px;
+    margin-bottom: 16px;
+  }
+
+  .next-prayer-time {
+    font-size: 160px;
+    margin-bottom: 20px;
+  }
+
+  .countdown-label {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+
+  .countdown-val {
+    font-size: 96px;
+    margin-bottom: 12px;
+  }
+
+  .progress-track {
+    height: 12px;
+    margin-top: 12px;
+  }
+
+  .iqamah-label {
+    font-size: 92px;
+  }
+
+  .iqamah-val {
+    font-size: 84px;
+    margin-top: 8px;
+  }
+
+  /* Right Panel Optimization */
+  .info-card-title {
+    font-size: 36px;
+    margin-bottom: 12px;
+  }
+
+  .info-card-value {
+    font-size: 36px;
+    margin-top: 8px;
+  }
+
+  .info-card-sub {
+    font-size: 36px;
+    margin-top: 6px;
+  }
+
+  .hijriyah-value {
+    font-size: 32px;
+    margin-top: 12px;
+  }
+
+  .weather-icon {
+    font-size: 48px;
+  }
+
+  .weather-temp {
+    font-size: 38px;
+  }
+
+  .weather-desc {
+    font-size: 18px;
+  }
+
+  .weather-city {
+    font-size: 64px;
+    margin-top: 12px;
+  }
+
+  .event-days {
+    font-size: 72px;
+    margin-bottom: 12px;
+  }
+
+  .event-label {
+    font-size: 28px;
+    margin-top: 8px;
+  }
+
+  .imsakiyah-time {
+    font-size: 46px;
+  }
+
+  .imsakiyah-sep {
+    font-size: 46px;
+  }
+
+  .jumbotron-title {
+    font-size: 38px;
+    margin-top: 12px;
+  }
+
+  .jumbotron-content {
+    font-size: 32px;
+    margin-top: 12px;
+  }
+
+  /* Center Panel Slide Optimization */
+  .slide-arabic {
+    font-size: 64px;
+    margin-bottom: 12px;
+  }
+
+  .slide-translation {
+    font-size: 36px;
+  }
+
+  .slide-source {
+    font-size: 22px;
+    margin-top: 8px;
+  }
+
+  /* Running Bar Optimization */
+  .running-icon {
+    font-size: 32px;
+  }
+
+  .running-text {
+    font-size: 48px;
+  }
+}
+
+/* ============================================================
+   4K BREAKPOINT (3840x2160 dan lebih besar)
+   ============================================================ */
+
+@media (min-width: 3840px) {
+  /* 4K scaling - 2x dari Full HD */
+  .prayer-card-icon {
+    font-size: 64px;
+  }
+
+  .prayer-card-name {
+    font-size: 104px;
+  }
+
+  .prayer-card-time {
+    font-size: 208px;
+  }
+
+  .prayer-iqamah {
+    font-size: 104px;
+  }
+
+  .active-badge {
+    font-size: 116px;
+    padding: 8px 24px;
+  }
+
+  .left-date {
+    font-size: 112px;
+  }
+
+  .next-label {
+    font-size: 96px;
+  }
+
+  .next-prayer-name {
+    font-size: 240px;
+  }
+
+  .next-prayer-time {
+    font-size: 320px;
+  }
+
+  .countdown-label {
+    font-size: 80px;
+  }
+
+  .countdown-val {
+    font-size: 192px;
+  }
+
+  .progress-track {
+    height: 24px;
+  }
+
+  .iqamah-label {
+    font-size: 184px;
+  }
+
+  .iqamah-val {
+    font-size: 168px;
+  }
+
+  .info-card-title {
+    font-size: 72px;
+  }
+
+  .info-card-value {
+    font-size: 72px;
+  }
+
+  .info-card-sub {
+    font-size: 72px;
+  }
+
+  .hijriyah-value {
+    font-size: 64px;
+  }
+
+  .weather-icon {
+    font-size: 96px;
+  }
+
+  .weather-temp {
+    font-size: 76px;
+  }
+
+  .weather-desc {
+    font-size: 36px;
+  }
+
+  .weather-city {
+    font-size: 128px;
+  }
+
+  .event-days {
+    font-size: 144px;
+  }
+
+  .event-label {
+    font-size: 56px;
+  }
+
+  .imsakiyah-time {
+    font-size: 92px;
+  }
+
+  .imsakiyah-sep {
+    font-size: 92px;
+  }
+
+  .jumbotron-title {
+    font-size: 76px;
+  }
+
+  .jumbotron-content {
+    font-size: 64px;
+  }
+
+  .slide-arabic {
+    font-size: 128px;
+  }
+
+  .slide-translation {
+    font-size: 72px;
+  }
+
+  .slide-source {
+    font-size: 44px;
+  }
+
+  .running-icon {
+    font-size: 64px;
+  }
+
+  .running-text {
+    font-size: 96px;
+  }
+}

@@ -8,11 +8,6 @@
     import { themeCssVars } from "$lib/display/helpers";
     import { DEFAULT_SLIDES } from "$lib/utils/prayer";
     import {
-        audio,
-        handleUnlockAudio,
-        initAudio,
-    } from "$lib/display/audio.svelte";
-    import {
         prayer,
         updatePrayerState,
         resetBeepTriggers,
@@ -52,7 +47,7 @@
     setInterval(updateClock, 1000);
 
     // Init AudioContext sedini mungkin — autoplay
-    initAudio();
+    // initAudio();
     resetBeepTriggers();
 
     // Prayer update tiap detik — trigger beep otomatis
@@ -113,11 +108,12 @@
 
     <button
         class="sound-unlock-btn"
-        class:sound-unlock-btn--blocked={audio.blocked}
-        onclick={handleUnlockAudio}
-        title="Aktifkan suara adzan"
+        class:sound-unlock-btn--blocked={false}
+        onclick={() => {}}
+        title="Audio dinonaktifkan di preview"
+        style="display: none;"
     >
-        {#if audio.blocked}🔕{:else}🔔{/if}
+        🔕
     </button>
 
     <div class="bg-stars"></div>

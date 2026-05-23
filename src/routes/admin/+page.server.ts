@@ -443,11 +443,12 @@ export const actions: Actions = {
     const masjidId = String(form.get("masjid_id") ?? "").trim();
     const title = String(form.get("title") ?? "").trim();
     const description = String(form.get("description") ?? "").trim();
-    const eventDate = String(form.get("event_date") ?? "").trim();
+    const eventDateStr = String(form.get("event_date") ?? "").trim();
     const eventTime = String(form.get("event_time") ?? "").trim();
     const countdownEnabled = Number(form.get("countdown_enabled") ?? 1);
 
-    if (masjidId && title && eventDate) {
+    if (masjidId && title && eventDateStr) {
+      const eventDate = new Date(eventDateStr);
       await db.insert(events).values({
         masjidId,
         title,

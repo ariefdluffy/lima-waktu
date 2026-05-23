@@ -199,21 +199,21 @@
     }
 
     .info-card-title {
-        font-size: clamp(10px, 1.1vw, 32px);
+        font-size: clamp(11px, 1.3vw, 36px);
         color: var(--accent-muted);
         letter-spacing: 0.12em;
         margin-bottom: 4%;
     }
 
     .info-card-value {
-        font-size: clamp(16px, 2vw, 32px);
+        font-size: clamp(18px, 2.2vw, 36px);
         font-weight: 600;
         color: var(--text-primary);
         line-height: 1.3;
     }
 
     .info-card-sub {
-        font-size: clamp(11px, 1.2vw, 32px);
+        font-size: clamp(12px, 1.4vw, 36px);
         color: var(--text-muted);
         margin-top: 2%;
     }
@@ -223,7 +223,7 @@
     }
 
     .hijriyah-value {
-        font-size: clamp(11px, 1.3vw, 28px);
+        font-size: clamp(12px, 1.5vw, 32px);
         font-weight: 600;
         color: var(--accent-secondary);
         margin-top: 4%;
@@ -244,7 +244,7 @@
     }
 
     .weather-icon {
-        font-size: clamp(22px, 3vw, 44px);
+        font-size: clamp(24px, 3.2vw, 48px);
         line-height: 1;
     }
 
@@ -255,19 +255,19 @@
     }
 
     .weather-temp {
-        font-size: clamp(18px, 2.4vw, 34px);
+        font-size: clamp(20px, 2.6vw, 38px);
         font-weight: 700;
         color: var(--text-primary);
         line-height: 1.1;
     }
 
     .weather-desc {
-        font-size: clamp(10px, 1.1vw, 15px);
+        font-size: clamp(11px, 1.2vw, 18px);
         color: var(--text-muted);
     }
 
     .weather-city {
-        font-size: clamp(9px, 1vw, 58px);
+        font-size: clamp(10px, 1.1vw, 64px);
         color: var(--accent-muted);
         margin-top: 3%;
         text-align: center;
@@ -278,13 +278,13 @@
     }
 
     .event-days {
-        font-size: clamp(32px, 4.5vw, 64px);
+        font-size: clamp(36px, 5vw, 72px);
         font-weight: 700;
         color: var(--accent-secondary);
     }
 
     .event-label {
-        font-size: clamp(11px, 1.2vw, 24px);
+        font-size: clamp(12px, 1.3vw, 28px);
         color: var(--text-secondary);
         margin-top: 2%;
         line-height: 1.4;
@@ -298,12 +298,12 @@
     }
 
     .imsakiyah-time {
-        font-size: clamp(18px, 2.2vw, 42px);
+        font-size: clamp(20px, 2.4vw, 46px);
     }
 
     .imsakiyah-sep {
         color: var(--accent-muted);
-        font-size: clamp(18px, 2.2vw, 42px);
+        font-size: clamp(20px, 2.4vw, 46px);
     }
 
     .jumat-card {
@@ -326,7 +326,7 @@
     }
 
     .jumbotron-title {
-        font-size: clamp(11px, 1.3vw, 34px);
+        font-size: clamp(12px, 1.5vw, 38px);
         font-weight: 700;
         color: #7dd3fc;
         margin-top: 4%;
@@ -334,7 +334,7 @@
     }
 
     .jumbotron-content {
-        font-size: clamp(10px, 1.1vw, 28px);
+        font-size: clamp(11px, 1.2vw, 32px);
         color: var(--text-secondary);
         margin-top: 3%;
         line-height: 1.5;

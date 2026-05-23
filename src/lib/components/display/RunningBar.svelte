@@ -36,7 +36,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: clamp(14px, 1.8vw, 26px);
+        font-size: clamp(16px, 2vw, 32px);
         font-weight: 700;
         color: var(--accent-primary);
         letter-spacing: 0.08em;
@@ -50,7 +50,7 @@
 
     .running-text {
         display: inline-block;
-        font-size: clamp(20px, 2.2vw, 42px);
+        font-size: clamp(22px, 2.4vw, 48px);
         color: var(--text-secondary);
         animation: marquee 70s linear infinite;
         padding-left: 100%;

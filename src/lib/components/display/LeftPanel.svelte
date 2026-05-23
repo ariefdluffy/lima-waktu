@@ -58,14 +58,14 @@
     }
 
     .left-date {
-        font-size: clamp(13px, 1.8vw, 48px);
+        font-size: clamp(14px, 2vw, 56px);
         color: var(--accent-primary);
         font-weight: 600;
         margin-bottom: 4px;
     }
 
     .next-label {
-        font-size: clamp(10px, 1vw, 42px);
+        font-size: clamp(11px, 1.2vw, 48px);
         color: var(--text-secondary);
         letter-spacing: 0.15em;
         text-transform: uppercase;
@@ -73,7 +73,7 @@
 
     .next-prayer-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(28px, 4.9vw, 106px);
+        font-size: clamp(32px, 5.5vw, 120px);
         font-weight: 700;
         color: var(--accent-primary);
         text-align: center;
@@ -81,7 +81,7 @@
     }
 
     .next-prayer-time {
-        font-size: clamp(48px, 6.2vw, 140px);
+        font-size: clamp(56px, 7vw, 160px);
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;
@@ -99,7 +99,7 @@
     }
 
     .countdown-label {
-        font-size: clamp(8px, 1.85vw, 36px);
+        font-size: clamp(9px, 2vw, 40px);
         color: var(--text-muted);
         letter-spacing: 0.12em;
         display: block;
@@ -107,7 +107,7 @@
     }
 
     .countdown-val {
-        font-size: clamp(22px, 4.7vw, 86px);
+        font-size: clamp(24px, 5.2vw, 96px);
         font-weight: 700;
         color: var(--accent-secondary);
         font-variant-numeric: tabular-nums;
@@ -139,13 +139,13 @@
     }
 
     .iqamah-label {
-        font-size: clamp(8px, 2.5vw, 82px);
+        font-size: clamp(9px, 2.8vw, 92px);
         color: var(--text-muted);
         letter-spacing: 0.1em;
     }
 
     .iqamah-val {
-        font-size: clamp(14px, 3.9vw, 76px);
+        font-size: clamp(16px, 4.3vw, 84px);
         color: var(--text-secondary);
         font-weight: 500;
     }
