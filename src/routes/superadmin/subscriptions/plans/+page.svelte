@@ -1,7 +1,17 @@
 <script lang="ts">
-    let { data } = $props();
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import { showToast } from "$lib/stores/toast";
+
+    let { data, form } = $props();
     let showCreateModal = $state(false);
     let editId = $state<number | null>(null);
+    let deleteTarget = $state<number | null>(null);
+    let deleteFormEl = $state<HTMLFormElement | null>(null);
+
+    $effect(() => {
+        if (form?.deleted) showToast("Paket berhasil dinonaktifkan");
+        if (form?.saved) showToast("Paket berhasil disimpan");
+    });
 
     function formatRupiah(v: unknown): string {
         return "Rp " + Number(v ?? 0).toLocaleString("id-ID");
@@ -67,10 +77,13 @@
                     <form method="POST" action="?/deletePlan" class="inline">
                         <input type="hidden" name="id" value={plan.id} />
                         <button
+                            type="button"
                             class="rounded-lg bg-red-100 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-200"
                             onclick={(e) => {
-                                if (!confirm("Nonaktifkan paket ini?"))
-                                    e.preventDefault();
+                                deleteTarget = plan.id;
+                                deleteFormEl = e.currentTarget.closest(
+                                    "form",
+                                ) as HTMLFormElement;
                             }}>Nonaktifkan</button
                         >
                     </form>
@@ -344,3 +357,20 @@
         </div>
     {/if}
 {/if}
+
+<ConfirmDialog
+    open={deleteTarget !== null}
+    title="Nonaktifkan Paket"
+    message="Nonaktifkan paket harga ini?"
+    confirmLabel="Ya, Nonaktifkan"
+    cancelLabel="Batal"
+    onconfirm={() => {
+        if (deleteFormEl) deleteFormEl.requestSubmit();
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+    oncancel={() => {
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+/>

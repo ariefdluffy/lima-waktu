@@ -124,6 +124,8 @@ export const actions = {
       if (status === "paid") updateData.paidAt = new Date();
       await db.update(invoices).set(updateData).where(eq(invoices.id, id));
     }
+
+    return { saved: true };
   },
 
   generateInvoice: async ({ request }) => {
@@ -166,5 +168,7 @@ export const actions = {
       paymentMethod,
       status: "draft",
     });
+
+    return { saved: true };
   },
 };

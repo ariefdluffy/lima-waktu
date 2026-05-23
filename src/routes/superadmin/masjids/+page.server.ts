@@ -132,6 +132,7 @@ export const load = async ({
     statusFilter,
     users: allUsers,
     createSuccess: url.searchParams.get("created") === "1",
+    deleted: url.searchParams.get("deleted") === "1",
   };
 };
 
@@ -182,6 +183,8 @@ export const actions = {
       .update(masjids)
       .set({ isActive: currentActive ? 0 : 1 })
       .where(eq(masjids.id, masjidId));
+
+    return { saved: true };
   },
 
   deleteMasjid: async ({ request }) => {
@@ -190,5 +193,7 @@ export const actions = {
     if (!masjidId) return;
 
     await db.delete(masjids).where(eq(masjids.id, masjidId));
+
+    return { deleted: true };
   },
 };

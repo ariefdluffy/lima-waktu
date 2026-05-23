@@ -110,6 +110,8 @@ export const actions = {
         screensaverWakeMinutes,
       })
       .where(eq(masjids.id, params.id));
+
+    return { saved: true };
   },
 
   toggleSuspend: async ({ params }) => {
@@ -124,11 +126,13 @@ export const actions = {
         .set({ isActive: m.isActive ? 0 : 1 })
         .where(eq(masjids.id, params.id));
     }
+
+    return { saved: true };
   },
 
   deleteMasjid: async ({ params }) => {
     await db.delete(masjids).where(eq(masjids.id, params.id));
-    throw redirect(302, "/superadmin/masjids");
+    throw redirect(302, "/superadmin/masjids?deleted=1");
   },
 
   resetDevices: async ({ params }) => {
@@ -136,6 +140,8 @@ export const actions = {
       .update(devices)
       .set({ pairedAt: null, lastSeenAt: null, status: "unknown", isActive: 0 })
       .where(eq(devices.masjidId, params.id));
+
+    return { saved: true };
   },
 
   removeAdmin: async ({ request }) => {
@@ -149,5 +155,7 @@ export const actions = {
           sql`${masjidUsers.masjidId} = ${masjidId} AND ${masjidUsers.userId} = ${userId}`,
         );
     }
+
+    return { saved: true };
   },
 };

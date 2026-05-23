@@ -1,7 +1,17 @@
 <script lang="ts">
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import { showToast } from "$lib/stores/toast";
+
     let { data, form } = $props();
 
     let showAddProvider = $state(false);
+    let deleteTarget = $state<number | null>(null);
+    let deleteFormEl = $state<HTMLFormElement | null>(null);
+
+    $effect(() => {
+        if (form?.deleted) showToast("Provider berhasil dinonaktifkan");
+        if (form?.saved) showToast("Konfigurasi berhasil disimpan");
+    });
 
     function formatDate(d: unknown): string {
         if (!d) return "-";
@@ -223,8 +233,12 @@
                 </button>
             </form>
             {#if data.refreshed}
-                <p class="mt-2 text-sm font-medium text-emerald-600">
-                    Refresh semua masjid berhasil dipicu.
+                <p
+                    class="mt-2 text-sm font-medium {data.syncOk
+                        ? 'text-emerald-600'
+                        : 'text-amber-600'}"
+                >
+                    {data.syncMsg ?? "Sinkronisasi selesai."}
                 </p>
             {/if}
         </div>
@@ -320,14 +334,14 @@
                                                 value={p.id}
                                             />
                                             <button
+                                                type="button"
                                                 class="rounded bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200"
                                                 onclick={(e) => {
-                                                    if (
-                                                        !confirm(
-                                                            "Hapus provider ini?",
-                                                        )
-                                                    )
-                                                        e.preventDefault();
+                                                    deleteTarget = p.id;
+                                                    deleteFormEl =
+                                                        e.currentTarget?.closest(
+                                                            "form",
+                                                        );
                                                 }}
                                             >
                                                 Hapus
@@ -408,6 +422,23 @@
         {/if}
     </section>
 </div>
+
+<ConfirmDialog
+    open={deleteTarget !== null}
+    title="Hapus Provider"
+    message="Nonaktifkan provider ini? Data tidak akan hilang, hanya dinonaktifkan."
+    confirmLabel="Ya, Nonaktifkan"
+    cancelLabel="Batal"
+    onconfirm={() => {
+        if (deleteFormEl) deleteFormEl.requestSubmit();
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+    oncancel={() => {
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+/>
 
 <!-- Modal Tambah Provider -->
 {#if showAddProvider}

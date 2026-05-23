@@ -47,6 +47,8 @@ export const actions = {
       createdBy: locals.user.id ?? null,
     };
     await db.insert(platformAnnouncements).values(insertData);
+
+    return { saved: true };
   },
 
   toggleAnnouncement: async ({ request }) => {
@@ -67,6 +69,8 @@ export const actions = {
         .set({ isActive: existing.isActive ? 0 : 1 })
         .where(eq(platformAnnouncements.id, id));
     }
+
+    return { saved: true };
   },
 
   deleteAnnouncement: async ({ request }) => {
@@ -78,5 +82,7 @@ export const actions = {
     await db
       .delete(platformAnnouncements)
       .where(eq(platformAnnouncements.id, id));
+
+    return { deleted: true };
   },
 };

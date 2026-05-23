@@ -1,8 +1,13 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
+    import { showToast } from "$lib/stores/toast";
 
     let { data, form } = $props();
+
+    $effect(() => {
+        if (form?.saved) showToast("Invoice berhasil diupdate");
+    });
 
     let showGenerateInvoice = $state(false);
 

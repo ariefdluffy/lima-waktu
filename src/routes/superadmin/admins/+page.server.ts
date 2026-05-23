@@ -11,6 +11,7 @@ import {
   masjids,
   auditLogs,
 } from "$lib/server/db/schema";
+import { hashPassword } from "$lib/server/auth/password";
 
 export const load = async ({
   locals,
@@ -165,7 +166,7 @@ export const actions = {
     }
 
     const userId = randomUUID();
-    const passwordHash = password;
+    const passwordHash = hashPassword(password);
 
     await db.insert(users).values({
       id: userId,
@@ -214,6 +215,8 @@ export const actions = {
       .update(users)
       .set({ fullName, email, phone: phone || null })
       .where(eq(users.id, userId));
+
+    return { saved: true };
   },
 
   resetPassword: async ({ request }) => {
@@ -225,7 +228,7 @@ export const actions = {
       return { error: "Password minimal 6 karakter" };
     }
 
-    const passwordHash = newPassword;
+    const passwordHash = hashPassword(newPassword);
     await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
 
     return { newPassword };
@@ -241,6 +244,8 @@ export const actions = {
       .update(users)
       .set({ isActive: currentActive ? 0 : 1 })
       .where(eq(users.id, userId));
+
+    return { saved: true };
   },
 
   assignMasjid: async ({ request }) => {
@@ -267,6 +272,8 @@ export const actions = {
       roleScope: roleScope as "owner" | "operator" | "viewer",
       isActive: 1,
     });
+
+    return { saved: true };
   },
 
   removeMasjid: async ({ request }) => {
@@ -281,5 +288,7 @@ export const actions = {
           sql`${masjidUsers.userId} = ${userId} AND ${masjidUsers.masjidId} = ${masjidId}`,
         );
     }
+
+    return { deleted: true };
   },
 };

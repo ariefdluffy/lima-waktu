@@ -1,8 +1,11 @@
 <script lang="ts">
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
     import { goto } from "$app/navigation";
+    import { showToast } from "$lib/stores/toast";
 
-    let { data } = $props();
+    let { data, form } = $props();
     let editMode = $state(false);
+    let deleteOpen = $state(false);
 
     const STATUS_COLORS: Record<string, string> = {
         active: "bg-emerald-100 text-emerald-700",
@@ -29,18 +32,12 @@
     }
 
     function confirmDelete() {
-        if (
-            confirm(
-                `Hapus masjid "${data.masjid.name}"? Tindakan ini tidak bisa dibatalkan.`,
-            )
-        ) {
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = "?/deleteMasjid";
-            document.body.appendChild(form);
-            form.submit();
-        }
+        deleteOpen = true;
     }
+
+    $effect(() => {
+        if (form?.saved) showToast("Data masjid berhasil disimpan");
+    });
 </script>
 
 <div class="space-y-6">
@@ -553,3 +550,21 @@
         {/if}
     </section>
 </div>
+
+<ConfirmDialog
+    open={deleteOpen}
+    title="Hapus Masjid"
+    message={data.masjid
+        ? `Hapus masjid "${data.masjid.name}"? Tindakan ini tidak bisa dibatalkan.`
+        : ""}
+    confirmLabel="Ya, Hapus"
+    cancelLabel="Batal"
+    onconfirm={() => {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "?/deleteMasjid";
+        document.body.appendChild(form);
+        form.submit();
+    }}
+    oncancel={() => (deleteOpen = false)}
+/>

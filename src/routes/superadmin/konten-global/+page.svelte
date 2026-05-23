@@ -1,6 +1,17 @@
 <script lang="ts">
-    let { data } = $props();
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import { showToast } from "$lib/stores/toast";
+
+    let { data, form } = $props();
     let showCreateModal = $state(false);
+
+    let deleteTarget = $state<{ id: number; title: string } | null>(null);
+    let deleteFormEl = $state<HTMLFormElement | null>(null);
+
+    $effect(() => {
+        if (form?.deleted) showToast("Pengumuman berhasil dihapus");
+        if (form?.saved) showToast("Pengumuman berhasil disimpan");
+    });
 
     function formatDate(d: unknown): string {
         if (!d) return "-";
@@ -128,14 +139,6 @@
                                             method="POST"
                                             action="?/deleteAnnouncement"
                                             class="inline"
-                                            onsubmit={(e) => {
-                                                if (
-                                                    !confirm(
-                                                        `Hapus pengumuman "${a.title}"?`,
-                                                    )
-                                                )
-                                                    e.preventDefault();
-                                            }}
                                         >
                                             <input
                                                 type="hidden"
@@ -143,8 +146,18 @@
                                                 value={a.id}
                                             />
                                             <button
+                                                type="button"
                                                 class="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200"
-                                                >Hapus</button
+                                                onclick={(e) => {
+                                                    deleteTarget = {
+                                                        id: a.id,
+                                                        title: a.title,
+                                                    };
+                                                    deleteFormEl =
+                                                        e.currentTarget?.closest(
+                                                            "form",
+                                                        ) ?? null;
+                                                }}>Hapus</button
                                             >
                                         </form>
                                     </div>
@@ -209,6 +222,23 @@
         {/if}
     </section>
 </div>
+
+<ConfirmDialog
+    open={deleteTarget !== null}
+    title="Hapus Pengumuman"
+    message={deleteTarget ? `Hapus pengumuman "${deleteTarget.title}"?` : ""}
+    confirmLabel="Ya, Hapus"
+    cancelLabel="Batal"
+    onconfirm={() => {
+        if (deleteFormEl) deleteFormEl.requestSubmit();
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+    oncancel={() => {
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+/>
 
 <!-- Create Announcement Modal -->
 {#if showCreateModal}

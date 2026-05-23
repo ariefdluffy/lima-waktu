@@ -1,8 +1,4 @@
-import { db } from "$lib/server/db";
-import { devices, masjids } from "$lib/server/db/schema";
-import { eq } from "drizzle-orm";
-import { resolvePrayerScheduleForMasjid, todayYmdInTimezone } from "./resolver";
-import { setCachedSchedule } from "./cache";
+import { syncAllMasjids } from "./sync";
 
 const INTERVAL_MS = 15 * 60 * 1000; // 15 menit
 let schedulerTimer: ReturnType<typeof setInterval> | null = null;
@@ -13,43 +9,24 @@ async function refreshAllSchedules(): Promise<void> {
   isRunning = true;
 
   try {
-    // Ambil semua masjid yang punya device aktif — include timezone
-    const activeMasjids = await db
-      .select({ id: masjids.id, timezone: masjids.timezone })
-      .from(masjids)
-      .innerJoin(devices, eq(devices.masjidId, masjids.id))
-      .where(eq(devices.isActive, 1));
+    console.log(`[PrayerScheduler] Starting sync for all masjids...`);
 
-    if (activeMasjids.length === 0) return;
+    const result = await syncAllMasjids();
 
-    console.log(
-      `[PrayerScheduler] Refreshing ${activeMasjids.length} masjid(s)...`,
-    );
-
-    await Promise.allSettled(
-      activeMasjids.map(async ({ id: masjidId, timezone }) => {
-        try {
-          const today = todayYmdInTimezone(timezone ?? "Asia/Jakarta");
-          const schedule = await resolvePrayerScheduleForMasjid(
-            masjidId,
-            today,
-          );
-          setCachedSchedule(masjidId, today, schedule);
-          console.log(
-            `[PrayerScheduler] Cached schedule for masjid ${masjidId}`,
-          );
-        } catch (err) {
-          console.error(
-            `[PrayerScheduler] Failed to refresh masjid ${masjidId}:`,
-            err,
-          );
+    if (result.totalMasjids === 0) {
+      console.log(
+        `[PrayerScheduler] No active masjids found. If global config missing, please configure at /superadmin/jadwal-global`,
+      );
+    } else {
+      console.log(
+        `[PrayerScheduler] Sync done: ${result.succeeded} succeeded, ${result.failed} failed out of ${result.totalMasjids} masjids`,
+      );
+      if (result.errors.length > 0) {
+        for (const e of result.errors.slice(0, 5)) {
+          console.warn(`[PrayerScheduler] Error: [${e.masjidName}] ${e.error}`);
         }
-      }),
-    );
-
-    console.log(
-      `[PrayerScheduler] Refresh done at ${new Date().toISOString()}`,
-    );
+      }
+    }
   } catch (err) {
     console.error("[PrayerScheduler] Unexpected error:", err);
   } finally {
@@ -58,7 +35,7 @@ async function refreshAllSchedules(): Promise<void> {
 }
 
 export function startPrayerScheduler(): void {
-  if (schedulerTimer) return; // sudah berjalan
+  if (schedulerTimer) return;
 
   console.log(
     `[PrayerScheduler] Starting — interval every ${INTERVAL_MS / 60000} minutes`,

@@ -44,6 +44,8 @@ export const actions = {
       sortOrder,
       isActive: 1,
     });
+
+    return { saved: true };
   },
 
   updatePlan: async ({ request }) => {
@@ -65,15 +67,33 @@ export const actions = {
 
     await db
       .update(pricingPlans)
-      .set({ name, badge: badge || null, priceMonthly, priceYearly, priceNote: priceNote || null, featuresJson, ctaLabel, ctaHref, isHighlight, sortOrder, isActive })
+      .set({
+        name,
+        badge: badge || null,
+        priceMonthly,
+        priceYearly,
+        priceNote: priceNote || null,
+        featuresJson,
+        ctaLabel,
+        ctaHref,
+        isHighlight,
+        sortOrder,
+        isActive,
+      })
       .where(eq(pricingPlans.id, id));
+
+    return { saved: true };
   },
 
   deletePlan: async ({ request }) => {
     const form = await request.formData();
     const id = Number(form.get("id") ?? 0);
     if (id) {
-      await db.update(pricingPlans).set({ isActive: 0 }).where(eq(pricingPlans.id, id));
+      await db
+        .update(pricingPlans)
+        .set({ isActive: 0 })
+        .where(eq(pricingPlans.id, id));
     }
+    return { deleted: true };
   },
 };

@@ -1,8 +1,18 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import { showToast } from "$lib/stores/toast";
 
-    let { data } = $props();
+    let { data, form } = $props();
+
+    let deleteTarget = $state<number | null>(null);
+    let deleteFormEl = $state<HTMLFormElement | null>(null);
+
+    $effect(() => {
+        if (form?.deleted) showToast("Subscription berhasil dihapus");
+        if (form?.saved) showToast("Subscription berhasil diupdate");
+    });
 
     const STATUS_COLORS: Record<string, string> = {
         active: "bg-emerald-100 text-emerald-700",
@@ -64,7 +74,7 @@
         <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <p class="text-xs text-slate-500">Total</p>
             <p class="mt-1 text-2xl font-bold text-slate-700">
-                {data.subscriptions.length}
+                {data.totalCount}
             </p>
         </div>
         <div
@@ -72,27 +82,19 @@
         >
             <p class="text-xs text-slate-500">Active</p>
             <p class="mt-1 text-2xl font-bold text-emerald-700">
-                {data.subscriptions.filter(
-                    (s: { status: string }) => s.status === "active",
-                ).length}
+                {data.statusCounts.active}
             </p>
         </div>
         <div class="rounded-xl border border-yellow-200 bg-white p-4 shadow-sm">
             <p class="text-xs text-slate-500">Trial/Grace</p>
             <p class="mt-1 text-2xl font-bold text-yellow-700">
-                {data.subscriptions.filter(
-                    (s: { status: string }) =>
-                        s.status === "trial" || s.status === "grace",
-                ).length}
+                {data.statusCounts.trial + data.statusCounts.grace}
             </p>
         </div>
         <div class="rounded-xl border border-red-200 bg-white p-4 shadow-sm">
             <p class="text-xs text-slate-500">Expired</p>
             <p class="mt-1 text-2xl font-bold text-red-700">
-                {data.subscriptions.filter(
-                    (s: { status: string }) =>
-                        s.status === "expired" || s.status === "cancelled",
-                ).length}
+                {data.statusCounts.expired + data.statusCounts.cancelled}
             </p>
         </div>
     </section>
@@ -201,14 +203,14 @@
                                         value={sub.id}
                                     />
                                     <button
+                                        type="button"
                                         class="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200"
                                         onclick={(e) => {
-                                            if (
-                                                !confirm(
-                                                    "Hapus subscription ini?",
-                                                )
-                                            )
-                                                e.preventDefault();
+                                            deleteTarget = sub.id;
+                                            deleteFormEl =
+                                                e.currentTarget?.closest(
+                                                    "form",
+                                                );
                                         }}>🗑</button
                                     >
                                 </form>
@@ -229,6 +231,23 @@
             </tbody>
         </table>
     </div>
+
+    <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Hapus Subscription"
+        message="Hapus subscription ini?"
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        onconfirm={() => {
+            if (deleteFormEl) deleteFormEl.requestSubmit();
+            deleteTarget = null;
+            deleteFormEl = null;
+        }}
+        oncancel={() => {
+            deleteTarget = null;
+            deleteFormEl = null;
+        }}
+    />
 
     <!-- Pagination -->
     {#if data.totalPages > 1}

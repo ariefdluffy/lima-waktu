@@ -30,7 +30,7 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
     offlineDeviceList,
     expiringSubscriptions,
     revenueChartData,
-    deviceStatusRaw,
+    unknownDevicesCount,
   ] = await Promise.all([
     // Total masjid
     db
@@ -134,18 +134,12 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .groupBy(sql`DATE_FORMAT(${invoices.paidAt}, '%Y-%m')`)
       .orderBy(sql`DATE_FORMAT(${invoices.paidAt}, '%Y-%m')`),
 
-    // Device status counts (heartbeat-based: online = seen < 5 min, offline = seen > 5 min, unknown = never seen)
+    // Unknown devices count (no heartbeat ever)
     db
-      .select({
-        status: sql<string>`CASE
-          WHEN ${devices.lastSeenAt} IS NULL THEN 'unknown'
-          WHEN ${devices.lastSeenAt} > NOW() - INTERVAL 5 MINUTE THEN 'online'
-          ELSE 'offline'
-        END`,
-        val: count(),
-      })
+      .select({ val: count() })
       .from(devices)
-      .groupBy(sql`1`),
+      .where(sql`${devices.lastSeenAt} IS NULL`)
+      .then((r) => Number(r[0].val)),
   ]);
 
   const subMap: Record<string, number> = {
@@ -159,14 +153,11 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
     subMap[s.status] = Number(s.val);
   }
 
-  const deviceStatusCounts: Record<string, number> = {
-    online: 0,
-    offline: 0,
-    unknown: 0,
+  const deviceStatusCounts = {
+    online: Number(onlineDevices),
+    offline: totalDevices - Number(onlineDevices) - unknownDevicesCount,
+    unknown: unknownDevicesCount,
   };
-  for (const d of deviceStatusRaw) {
-    deviceStatusCounts[d.status] = Number(d.val);
-  }
 
   return {
     revenueChart: revenueChartData.map((r) => ({

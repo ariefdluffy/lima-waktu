@@ -1,12 +1,26 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import { showToast } from "$lib/stores/toast";
 
     let { data, form } = $props();
     let showCreateModal = $state(false);
     let editAdminId = $state<string | null>(null);
     let resetPassUserId = $state<string | null>(null);
     let resetPassResult = $state<string | null>(null);
+    let deleteTarget = $state<{
+        userId: string;
+        masjidId: string;
+        masjidName: string;
+    } | null>(null);
+    let deleteFormEl = $state<HTMLFormElement | null>(null);
+
+    $effect(() => {
+        if (form?.deleted) showToast("Admin berhasil dihapus dari masjid");
+        if (form?.saved) showToast("Data admin berhasil disimpan");
+        if (form?.error) showToast(form.error, "error");
+    });
 
     // Handle reset password result from form action
     $effect(() => {
@@ -24,8 +38,8 @@
                     email: string;
                     phone: string | null;
                     isActive: number;
-                    lastLoginAt: string | null;
-                    createdAt: string;
+                    lastLoginAt: Date | null;
+                    createdAt: Date;
                     masjids: {
                         masjidId: string;
                         masjidName: string;
@@ -131,16 +145,51 @@
                             {#if a.masjids.length > 0}
                                 <div class="flex flex-wrap gap-1">
                                     {#each a.masjids as m}
-                                        <span
-                                            class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
+                                        <div
+                                            class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
                                         >
                                             {m.masjidName}
                                             {#if m.roleScope !== "owner"}
                                                 <span class="text-slate-400"
                                                     >({m.roleScope})</span
                                                 >
+                                                <form
+                                                    method="POST"
+                                                    action="?/removeMasjid"
+                                                    class="inline"
+                                                >
+                                                    <input
+                                                        type="hidden"
+                                                        name="user_id"
+                                                        value={a.id}
+                                                    />
+                                                    <input
+                                                        type="hidden"
+                                                        name="masjid_id"
+                                                        value={m.masjidId}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        class="text-red-400 hover:text-red-600"
+                                                        onclick={(e) => {
+                                                            const form = (
+                                                                e.currentTarget as HTMLButtonElement
+                                                            ).closest(
+                                                                "form",
+                                                            ) as HTMLFormElement;
+                                                            deleteTarget = {
+                                                                userId: a.id,
+                                                                masjidId:
+                                                                    m.masjidId,
+                                                                masjidName:
+                                                                    m.masjidName,
+                                                            };
+                                                            deleteFormEl = form;
+                                                        }}>✕</button
+                                                    >
+                                                </form>
                                             {/if}
-                                        </span>
+                                        </div>
                                     {/each}
                                 </div>
                             {:else}
@@ -404,6 +453,25 @@
         {/if}
     </section>
 </div>
+
+<ConfirmDialog
+    open={deleteTarget !== null}
+    title="Hapus Admin dari Masjid"
+    message={deleteTarget
+        ? `Hapus admin dari masjid "${deleteTarget.masjidName}"?`
+        : ""}
+    confirmLabel="Ya, Hapus"
+    cancelLabel="Batal"
+    onconfirm={() => {
+        if (deleteFormEl) deleteFormEl.requestSubmit();
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+    oncancel={() => {
+        deleteTarget = null;
+        deleteFormEl = null;
+    }}
+/>
 
 <!-- Create Admin Modal -->
 {#if showCreateModal}

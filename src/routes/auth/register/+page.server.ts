@@ -4,6 +4,7 @@ import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { roles, userRoles, users } from "$lib/server/db/schema";
+import { hashPassword } from "$lib/server/auth/password";
 
 export const load: PageServerLoad = async () => {
   return {};
@@ -63,7 +64,7 @@ export const actions: Actions = {
       };
     }
 
-    const passwordHash = password;
+    const passwordHash = hashPassword(password);
 
     const userId = randomUUID();
     await db.insert(users).values({

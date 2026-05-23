@@ -3,6 +3,7 @@ import type { RequestEvent } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { roles, userRoles, users } from "$lib/server/db/schema";
 import { getAuthenticatedUserFromSession } from "$lib/server/auth/session";
+import { verifyPassword } from "$lib/server/auth/password";
 
 export type AuthUser = {
   id: string;
@@ -70,20 +71,13 @@ export async function findAuthUserByCredentials(
   password: string,
 ): Promise<AuthUser | null> {
   const [user] = await db
-    .select({ id: users.id })
+    .select({ id: users.id, passwordHash: users.passwordHash })
     .from(users)
-    .where(
-      and(
-        eq(users.email, email),
-        eq(users.passwordHash, password),
-        eq(users.isActive, 1),
-      ),
-    )
+    .where(and(eq(users.email, email), eq(users.isActive, 1)))
     .limit(1);
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
+  if (!verifyPassword(password, user.passwordHash)) return null;
 
   return findAuthUserById(user.id);
 }

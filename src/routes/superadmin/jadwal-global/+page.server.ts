@@ -7,6 +7,7 @@ import {
   prayerSyncJobs,
   globalPrayerConfig,
 } from "$lib/server/db/schema";
+import { syncAllMasjids } from "$lib/server/prayer/sync";
 
 export const load = async ({
   locals,
@@ -44,6 +45,8 @@ export const load = async ({
     recentJobs,
     config,
     refreshed: url.searchParams.get("refreshed") === "1",
+    syncOk: url.searchParams.get("syncOk") === "1",
+    syncMsg: url.searchParams.get("syncMsg") ?? null,
   };
 };
 
@@ -60,6 +63,8 @@ export const actions = {
         .set({ baseUrl: baseUrl || null, isActive })
         .where(eq(prayerProviders.id, id));
     }
+
+    return { saved: true };
   },
 
   updateGlobalConfig: async ({ request, locals }) => {
@@ -110,6 +115,8 @@ export const actions = {
     } else {
       await db.insert(globalPrayerConfig).values({ id: 1, ...updateData });
     }
+
+    return { saved: true };
   },
 
   createProvider: async ({ request }) => {
@@ -126,6 +133,8 @@ export const actions = {
         isActive: 1,
       });
     }
+
+    return { saved: true };
   },
 
   deleteProvider: async ({ request }) => {
@@ -137,9 +146,28 @@ export const actions = {
         .set({ isActive: 0 })
         .where(eq(prayerProviders.id, id));
     }
+    return { deleted: true };
   },
 
   refreshAllMasjids: async () => {
-    throw redirect(302, "/superadmin/jadwal-global?refreshed=1");
+    const result = await syncAllMasjids();
+
+    const syncStatus =
+      result.errors.length > 0
+        ? {
+            ok: false,
+            message: `${result.succeeded} berhasil, ${result.failed} gagal`,
+          }
+        : {
+            ok: true,
+            message: `Semua ${result.totalMasjids} masjid berhasil di-sync`,
+          };
+
+    const qp = new URLSearchParams();
+    qp.set("refreshed", "1");
+    qp.set("syncOk", syncStatus.ok ? "1" : "0");
+    qp.set("syncMsg", syncStatus.message);
+
+    throw redirect(302, `/superadmin/jadwal-global?${qp}`);
   },
 };

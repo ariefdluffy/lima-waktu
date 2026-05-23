@@ -1,5 +1,8 @@
 <script lang="ts">
-    let { data } = $props();
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import { showToast } from "$lib/stores/toast";
+
+    let { data, form } = $props();
 
     let showCreateModal = $state(false);
     let editingId = $state<number | null>(null);
@@ -8,6 +11,13 @@
     let editPaletteJson = $state("");
     let editLayoutJson = $state("");
     let editIsGlobal = $state(false);
+    let deleteTarget = $state<{ id: number; name: string } | null>(null);
+    let deleteFormEl = $state<HTMLFormElement | null>(null);
+
+    $effect(() => {
+        if (form?.deleted) showToast("Template berhasil dinonaktifkan");
+        if (form?.saved) showToast("Template berhasil disimpan");
+    });
 
     function openCreate() {
         editingId = null;
@@ -36,10 +46,6 @@
     function closeModal() {
         showCreateModal = false;
         editingId = null;
-    }
-
-    function confirmDelete(name: string) {
-        return confirm(`Hapus template "${name}"?`);
     }
 </script>
 
@@ -151,6 +157,7 @@
                                             method="POST"
                                             action="?/deleteTheme"
                                             class="inline"
+                                            bind:this={deleteFormEl}
                                         >
                                             <input
                                                 type="hidden"
@@ -158,10 +165,13 @@
                                                 value={t.id}
                                             />
                                             <button
+                                                type="button"
                                                 class="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200"
-                                                onclick={(e) => {
-                                                    if (!confirmDelete(t.name))
-                                                        e.preventDefault();
+                                                onclick={() => {
+                                                    deleteTarget = {
+                                                        id: t.id,
+                                                        name: t.name,
+                                                    };
                                                 }}>🗑</button
                                             >
                                         </form>
@@ -176,6 +186,23 @@
             <p class="mt-3 text-sm text-slate-400">Belum ada template.</p>
         {/if}
     </section>
+
+    <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Hapus Template"
+        message={deleteTarget ? `Hapus template "${deleteTarget.name}"?` : ""}
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        onconfirm={() => {
+            if (deleteFormEl) deleteFormEl.requestSubmit();
+            deleteTarget = null;
+            deleteFormEl = null;
+        }}
+        oncancel={() => {
+            deleteTarget = null;
+            deleteFormEl = null;
+        }}
+    />
 
     <!-- Create / Edit Modal -->
     {#if showCreateModal}

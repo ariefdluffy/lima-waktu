@@ -37,44 +37,64 @@ export const load = async ({
       ? sql`${sql.join(whereConditions, sql` AND `)}`
       : undefined;
 
-  const [subRows, totalResult, allMasjids, allPlans] = await Promise.all([
-    db
-      .select({
-        id: subscriptions.id,
-        masjidId: subscriptions.masjidId,
-        packageName: subscriptions.packageName,
-        billingCycle: subscriptions.billingCycle,
-        status: subscriptions.status,
-        startDate: subscriptions.startDate,
-        endDate: subscriptions.endDate,
-        price: subscriptions.price,
-        autoRenew: subscriptions.autoRenew,
-        createdAt: subscriptions.createdAt,
-        masjidName: masjids.name,
-      })
-      .from(subscriptions)
-      .innerJoin(masjids, eq(subscriptions.masjidId, masjids.id))
-      .where(where)
-      .orderBy(desc(subscriptions.createdAt))
-      .limit(limit)
-      .offset(offset),
-    db
-      .select({ val: count() })
-      .from(subscriptions)
-      .innerJoin(masjids, eq(subscriptions.masjidId, masjids.id))
-      .where(where)
-      .then((r) => Number(r[0].val)),
-    db
-      .select({ id: masjids.id, name: masjids.name })
-      .from(masjids)
-      .where(eq(masjids.isActive, 1))
-      .orderBy(masjids.name),
-    db
-      .select()
-      .from(pricingPlans)
-      .where(eq(pricingPlans.isActive, 1))
-      .orderBy(pricingPlans.sortOrder),
-  ]);
+  const [subRows, totalResult, allMasjids, allPlans, statusCounts] =
+    await Promise.all([
+      db
+        .select({
+          id: subscriptions.id,
+          masjidId: subscriptions.masjidId,
+          packageName: subscriptions.packageName,
+          billingCycle: subscriptions.billingCycle,
+          status: subscriptions.status,
+          startDate: subscriptions.startDate,
+          endDate: subscriptions.endDate,
+          price: subscriptions.price,
+          autoRenew: subscriptions.autoRenew,
+          createdAt: subscriptions.createdAt,
+          masjidName: masjids.name,
+        })
+        .from(subscriptions)
+        .innerJoin(masjids, eq(subscriptions.masjidId, masjids.id))
+        .where(where)
+        .orderBy(desc(subscriptions.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ val: count() })
+        .from(subscriptions)
+        .innerJoin(masjids, eq(subscriptions.masjidId, masjids.id))
+        .where(where)
+        .then((r) => Number(r[0].val)),
+      db
+        .select({ id: masjids.id, name: masjids.name })
+        .from(masjids)
+        .where(eq(masjids.isActive, 1))
+        .orderBy(masjids.name),
+      db
+        .select()
+        .from(pricingPlans)
+        .where(eq(pricingPlans.isActive, 1))
+        .orderBy(pricingPlans.sortOrder),
+      // Total counts per status (for quick stats)
+      db
+        .select({
+          status: subscriptions.status,
+          val: count(),
+        })
+        .from(subscriptions)
+        .groupBy(subscriptions.status),
+    ]);
+
+  const statusCountMap: Record<string, number> = {
+    active: 0,
+    trial: 0,
+    grace: 0,
+    expired: 0,
+    cancelled: 0,
+  };
+  for (const s of statusCounts) {
+    statusCountMap[s.status] = Number(s.val);
+  }
 
   return {
     subscriptions: subRows.map((s) => ({
@@ -87,6 +107,8 @@ export const load = async ({
     totalPages: Math.ceil(totalResult / limit),
     search,
     statusFilter,
+    totalCount: totalResult,
+    statusCounts: statusCountMap,
   };
 };
 
@@ -114,6 +136,8 @@ export const actions = {
       .update(subscriptions)
       .set(updateData)
       .where(eq(subscriptions.id, Number(id)));
+
+    return { saved: true };
   },
 
   deleteSubscription: async ({ request }) => {
@@ -122,5 +146,6 @@ export const actions = {
     if (id) {
       await db.delete(subscriptions).where(eq(subscriptions.id, Number(id)));
     }
+    return { deleted: true };
   },
 };

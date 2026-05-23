@@ -1,9 +1,12 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { page } from "$app/stores";
+    import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import { showToast } from "$lib/stores/toast";
 
-    let { data } = $props();
+    let { data, form } = $props();
     let showCreateModal = $state(false);
+    let deleteTarget = $state<{ id: string; name: string } | null>(null);
 
     const STATUS_COLORS: Record<string, string> = {
         active: "bg-emerald-100 text-emerald-700",
@@ -38,26 +41,15 @@
         goto(`/superadmin/masjids?${params}`);
     }
 
-    let confirmDelete = $state<string | null>(null);
-
     function askDelete(id: string, name: string) {
-        if (
-            confirm(
-                `Hapus masjid "${name}"? Semua data terkait akan ikut terhapus.`,
-            )
-        ) {
-            const form = document.createElement("form");
-            form.method = "POST";
-            form.action = "?/deleteMasjid";
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "masjid_id";
-            input.value = id;
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-        }
+        deleteTarget = { id, name };
     }
+
+    $effect(() => {
+        if (form?.saved) showToast("Masjid berhasil diupdate");
+        if (form?.deleted) showToast("Masjid berhasil dihapus");
+        if (data.deleted) showToast("Masjid berhasil dihapus");
+    });
 </script>
 
 <div class="space-y-6">
@@ -102,6 +94,10 @@
     </form>
 
     <!-- Success Toast -->
+    <form method="POST" action="?/deleteMasjid" id="delete-masjid-form">
+        <input type="hidden" name="masjid_id" id="delete-masjid-input" />
+    </form>
+
     {#if data.createSuccess}
         <div
             class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-700"
@@ -254,6 +250,30 @@
     {/if}
 
     <!-- Create Modal -->
+    <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Hapus Masjid"
+        message={deleteTarget
+            ? `Hapus masjid "${deleteTarget.name}"? Semua data terkait akan ikut terhapus.`
+            : ""}
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        onconfirm={() => {
+            if (deleteTarget) {
+                const input = document.getElementById(
+                    "delete-masjid-input",
+                ) as HTMLInputElement;
+                input.value = deleteTarget.id;
+                const form = document.getElementById(
+                    "delete-masjid-form",
+                ) as HTMLFormElement;
+                form.requestSubmit();
+            }
+            deleteTarget = null;
+        }}
+        oncancel={() => (deleteTarget = null)}
+    />
+
     {#if showCreateModal}
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"

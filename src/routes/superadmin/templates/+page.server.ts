@@ -45,6 +45,8 @@ export const actions = {
     if (layoutJson) val.layoutJson = JSON.parse(layoutJson);
 
     await db.insert(themes).values(val);
+
+    return { saved: true };
   },
 
   updateTheme: async ({ request }) => {
@@ -63,6 +65,8 @@ export const actions = {
     if (layoutJson) updateData.layoutJson = JSON.parse(layoutJson);
 
     await db.update(themes).set(updateData).where(eq(themes.id, id));
+
+    return { saved: true };
   },
 
   toggleActive: async ({ request }) => {
@@ -75,6 +79,8 @@ export const actions = {
       .update(themes)
       .set({ isActive: currentActive ? 0 : 1 })
       .where(eq(themes.id, id));
+
+    return { saved: true };
   },
 
   deleteTheme: async ({ request }) => {
@@ -83,5 +89,7 @@ export const actions = {
     if (!id) return;
 
     await db.update(themes).set({ isActive: 0 }).where(eq(themes.id, id));
+
+    return { deleted: true };
   },
 };

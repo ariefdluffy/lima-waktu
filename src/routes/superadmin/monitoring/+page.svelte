@@ -1,5 +1,11 @@
 <script lang="ts">
-    let { data } = $props();
+    import { showToast } from "$lib/stores/toast";
+
+    let { data, form } = $props();
+
+    $effect(() => {
+        if (form?.success) showToast("Sync berhasil dijadwalkan ulang");
+    });
 
     function formatDate(d: unknown): string {
         if (!d) return "-";
