@@ -675,14 +675,14 @@
 
     .screensaver-masjid-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(18px, 3.5vw, 106px);
+        font-size: clamp(18px, 3vw, 96px);
         font-weight: 600;
         color: var(--text-secondary);
         letter-spacing: 0.05em;
     }
 
     .screensaver-time {
-        font-size: clamp(48px, 16vw, 320px);
+        font-size: clamp(48px, 16vw, 200px);
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.02em;
@@ -698,12 +698,12 @@
     }
 
     .screensaver-date {
-        font-size: clamp(14px, 16vw, 104px);
+        font-size: clamp(14px, 16vw, 74px);
         color: var(--text-muted);
     }
 
     .screensaver-hijri {
-        font-size: clamp(12px, 13vw, 84px);
+        font-size: clamp(12px, 13vw, 64px);
         color: var(--accent-muted);
         margin-top: 4px;
     }
