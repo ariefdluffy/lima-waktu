@@ -42,11 +42,12 @@ CREATE TABLE `platform_announcements` (
 	CONSTRAINT `platform_announcements_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-ALTER TABLE `masjids` ADD `khusuk_screen_duration` int DEFAULT 10 NOT NULL;--> statement-breakpoint
-ALTER TABLE `masjids` ADD `screensaver_delay_minutes` int DEFAULT 120 NOT NULL;--> statement-breakpoint
-ALTER TABLE `masjids` ADD `screensaver_wake_minutes` int DEFAULT 60 NOT NULL;--> statement-breakpoint
-ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_primary_provider_id_prayer_providers_id_fk` FOREIGN KEY (`primary_provider_id`) REFERENCES `prayer_providers`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_fallback_provider_id_prayer_providers_id_fk` FOREIGN KEY (`fallback_provider_id`) REFERENCES `prayer_providers`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_default_method_id_prayer_calculation_methods_id_fk` FOREIGN KEY (`default_method_id`) REFERENCES `prayer_calculation_methods`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_updated_by_users_id_fk` FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_primary_provider_id_prayer_providers_id_fk` FOREIGN KEY (`primary_provider_id`) REFERENCES `prayer_providers`(`id`) ON DELETE set null ON UPDATE no action;
+--> statement-breakpoint
+ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_fallback_provider_id_prayer_providers_id_fk` FOREIGN KEY (`fallback_provider_id`) REFERENCES `prayer_providers`(`id`) ON DELETE set null ON UPDATE no action;
+--> statement-breakpoint
+ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_default_method_id_prayer_calculation_methods_id_fk` FOREIGN KEY (`default_method_id`) REFERENCES `prayer_calculation_methods`(`id`) ON DELETE set null ON UPDATE no action;
+--> statement-breakpoint
+ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_updated_by_users_id_fk` FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;
+--> statement-breakpoint
 ALTER TABLE `platform_announcements` ADD CONSTRAINT `platform_announcements_created_by_users_id_fk` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;
