@@ -683,23 +683,17 @@
     }
 
     .screensaver-time {
-        font-size: clamp(48px, 7vw, 120px);
+        font-size: clamp(48px, 9vw, 120px);
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.02em;
-        background: linear-gradient(
-            135deg,
-            var(--text-primary) 0%,
-            var(--text-muted) 100%
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--text-primary);
+        text-shadow: 0 0 20px var(--accent-muted);
         margin-top: 8px;
     }
 
     .screensaver-date {
-        font-size: clamp(14px, 5vw, 54px);
+        font-size: clamp(14px, 5vw, 44px);
         color: var(--text-muted);
     }
 
@@ -790,14 +784,8 @@
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.03em;
-        background: linear-gradient(
-            135deg,
-            var(--text-primary) 0%,
-            var(--text-muted) 100%
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        color: var(--text-primary);
+        text-shadow: 0 0 20px var(--accent-muted);
     }
 
     .tahajud-sub {
