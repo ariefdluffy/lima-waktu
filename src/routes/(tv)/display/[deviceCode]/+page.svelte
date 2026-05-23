@@ -683,7 +683,7 @@
     }
 
     .screensaver-time {
-        font-size: clamp(48px, 10vw, 180px);
+        font-size: clamp(48px, 10vw, 150px);
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.02em;
@@ -699,12 +699,12 @@
     }
 
     .screensaver-date {
-        font-size: clamp(14px, 16vw, 74px);
+        font-size: clamp(14px, 13vw, 74px);
         color: var(--text-muted);
     }
 
     .screensaver-hijri {
-        font-size: clamp(12px, 13vw, 64px);
+        font-size: clamp(12px, 10vw, 64px);
         color: var(--accent-muted);
         margin-top: 4px;
     }
