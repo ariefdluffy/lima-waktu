@@ -1,0 +1,723 @@
+[36mvite v8.0.13 [32mbuilding ssr environment for production...[36m[39m
+[2Ktransforming...11:15:58 AM [vite-plugin-svelte] src/routes/(tv)/display/[deviceCode]/+page.svelte:963:4 Unused CSS selector ".header-tz"
+https://svelte.dev/e/css_unused_selector
+961:     }
+962: 
+963:     .header-tz {
+                   ^
+964:         font-size: 0.35em;
+965:         font-weight: 600;
+11:15:59 AM [vite-plugin-svelte] src/routes/admin/+page.svelte:2800:48 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+2798:                                         <div class="grid grid-cols-2 gap-3">
+2799:                                             <div>
+2800:                                                 <label
+                                                       ^
+2801:                                                     class="text-xs font-medium text-slate-500"
+2802:                                                     >Tanggal</label
+11:15:59 AM [vite-plugin-svelte] src/routes/admin/+page.svelte:2811:48 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+2809:                                             </div>
+2810:                                             <div>
+2811:                                                 <label
+                                                       ^
+2812:                                                     class="text-xs font-medium text-slate-500"
+2813:                                                     >Jam (opsional)</label
+11:15:59 AM [vite-plugin-svelte] src/routes/admin/+page.svelte:4067:48 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+4065:                                             />
+4066:                                             <div class="flex-1 min-w-40">
+4067:                                                 <label
+                                                       ^
+4068:                                                     class="mb-1 block text-xs font-medium text-slate-600"
+4069:                                                     >Pilih Tema</label
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:285:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+283: <!-- Create Admin Modal -->
+284: {#if showCreateModal}
+285:     <div
+             ^
+286:         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+287:         onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:285:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+283: <!-- Create Admin Modal -->
+284: {#if showCreateModal}
+285:     <div
+             ^
+286:         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+287:         onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:289:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+287:         onclick={() => (showCreateModal = false)}
+288:     >
+289:         <div
+                 ^
+290:             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+291:             onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:289:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+287:         onclick={() => (showCreateModal = false)}
+288:     >
+289:         <div
+                 ^
+290:             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+291:             onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:298:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+296:             <form method="POST" action="?/createAdmin" class="mt-4 grid gap-3">
+297:                 <div>
+298:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+299:                         >Nama Lengkap *</label
+300:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:308:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+306:                 </div>
+307:                 <div>
+308:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+309:                         >Email *</label
+310:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:319:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+317:                 </div>
+318:                 <div>
+319:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+320:                         >No. HP</label
+321:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:328:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+326:                 </div>
+327:                 <div>
+328:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+329:                         >Password * (min 6 karakter)</label
+330:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:340:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+338:                 </div>
+339:                 <div>
+340:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+341:                         >Masjid</label
+342:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/admins/+page.svelte:354:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+352:                 </div>
+353:                 <div>
+354:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+355:                         >Role</label
+356:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:258:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+256:     <!-- Create Modal -->
+257:     {#if showCreateModal}
+258:         <div
+                 ^
+259:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+260:             onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:258:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+256:     <!-- Create Modal -->
+257:     {#if showCreateModal}
+258:         <div
+                 ^
+259:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+260:             onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:262:12 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+260:             onclick={() => (showCreateModal = false)}
+261:         >
+262:             <div
+                     ^
+263:                 class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+264:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:262:12 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+260:             onclick={() => (showCreateModal = false)}
+261:         >
+262:             <div
+                     ^
+263:                 class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+264:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:275:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+273:                 >
+274:                     <div class="sm:col-span-2">
+275:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+276:                             >Nama Masjid *</label
+277:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:285:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+283:                     </div>
+284:                     <div>
+285:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+286:                             >Kota</label
+287:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:294:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+292:                     </div>
+293:                     <div>
+294:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+295:                             >Provinsi</label
+296:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:303:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+301:                     </div>
+302:                     <div class="sm:col-span-2">
+303:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+304:                             >Kecamatan</label
+305:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:312:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+310:                     </div>
+311:                     <div class="sm:col-span-2">
+312:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+313:                             >Alamat</label
+314:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:322:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+320:                     </div>
+321:                     <div>
+322:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+323:                             >Timezone</label
+324:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/+page.svelte:341:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+339:                     </div>
+340:                     <div>
+341:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+342:                             >Admin Masjid</label
+343:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:100:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+ 98:             >
+ 99:                 <div class="sm:col-span-2">
+100:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+101:                         >Nama Masjid</label
+102:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:111:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+109:                 </div>
+110:                 <div>
+111:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+112:                         >Kota</label
+113:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:121:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+119:                 </div>
+120:                 <div>
+121:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+122:                         >Provinsi</label
+123:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:131:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+129:                 </div>
+130:                 <div>
+131:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+132:                         >Kecamatan</label
+133:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:141:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+139:                 </div>
+140:                 <div>
+141:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+142:                         >Latitude</label
+143:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:153:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+151:                 </div>
+152:                 <div>
+153:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+154:                         >Longitude</label
+155:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:165:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+163:                 </div>
+164:                 <div>
+165:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+166:                         >Hijri Offset</label
+167:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:176:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+174:                 </div>
+175:                 <div>
+176:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+177:                         >Durasi Layar Adzan (detik)</label
+178:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:187:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+185:                 </div>
+186:                 <div>
+187:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+188:                         >Durasi Layar Khusuk (detik)</label
+189:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:198:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+196:                 </div>
+197:                 <div>
+198:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+199:                         >Screensaver Delay (menit)</label
+200:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:209:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+207:                 </div>
+208:                 <div>
+209:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+210:                         >Screensaver Wake (menit)</label
+211:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:220:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+218:                 </div>
+219:                 <div>
+220:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+221:                         >Timezone</label
+222:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/masjids/[id]/+page.svelte:245:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+243:                 </div>
+244:                 <div class="sm:col-span-2">
+245:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+246:                         >Alamat</label
+247:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/+page.svelte:256:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+254:     <!-- Edit Modal -->
+255:     {#if editingId !== null}
+256:         <div
+                 ^
+257:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+258:             onclick={closeEdit}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/+page.svelte:256:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+254:     <!-- Edit Modal -->
+255:     {#if editingId !== null}
+256:         <div
+                 ^
+257:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+258:             onclick={closeEdit}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/+page.svelte:260:12 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+258:             onclick={closeEdit}
+259:         >
+260:             <div
+                     ^
+261:                 class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+262:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/+page.svelte:260:12 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+258:             onclick={closeEdit}
+259:         >
+260:             <div
+                     ^
+261:                 class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+262:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/+page.svelte:274:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+272:                     <input type="hidden" name="id" value={editingId} />
+273:                     <div>
+274:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+275:                             >Status</label
+276:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/+page.svelte:290:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+288:                     </div>
+289:                     <div>
+290:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+291:                             >Tanggal Berakhir</label
+292:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/+page.svelte:308:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+306:                             class="rounded border-slate-300 text-emerald-600"
+307:                         />
+308:                         <label class="text-sm text-slate-600">Auto Renew</label>
+                                                                                     ^
+309:                     </div>
+310:                     <div class="flex items-center justify-end gap-2">
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:215:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+213: <!-- Create Announcement Modal -->
+214: {#if showCreateModal}
+215:     <div
+             ^
+216:         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+217:         onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:215:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+213: <!-- Create Announcement Modal -->
+214: {#if showCreateModal}
+215:     <div
+             ^
+216:         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+217:         onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:219:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+217:         onclick={() => (showCreateModal = false)}
+218:     >
+219:         <div
+                 ^
+220:             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+221:             onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:219:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+217:         onclick={() => (showCreateModal = false)}
+218:     >
+219:         <div
+                 ^
+220:             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+221:             onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:232:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+230:             >
+231:                 <div>
+232:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+233:                         >Judul *</label
+234:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:242:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+240:                 </div>
+241:                 <div>
+242:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+243:                         >Konten</label
+244:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:252:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+250:                 </div>
+251:                 <div>
+252:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+253:                         >Severity</label
+254:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:265:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+263:                 </div>
+264:                 <div>
+265:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+266:                         >Target Audiens</label
+267:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:278:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+276:                 </div>
+277:                 <div>
+278:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+279:                         >Mulai</label
+280:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/konten-global/+page.svelte:288:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+286:                 </div>
+287:                 <div>
+288:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+289:                         >Berakhir</label
+290:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:85:4 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+83: <!-- Create Modal -->
+84: {#if showCreateModal}
+85:     <div
+            ^
+86:         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+87:         onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:85:4 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+83: <!-- Create Modal -->
+84: {#if showCreateModal}
+85:     <div
+            ^
+86:         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+87:         onclick={() => (showCreateModal = false)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:89:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+87:         onclick={() => (showCreateModal = false)}
+88:     >
+89:         <div
+                ^
+90:             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+91:             onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:89:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+87:         onclick={() => (showCreateModal = false)}
+88:     >
+89:         <div
+                ^
+90:             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+91:             onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:98:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+ 96:             <form method="POST" action="?/createPlan" class="mt-4 grid gap-3">
+ 97:                 <div>
+ 98:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+ 99:                         >Nama Paket *</label
+100:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:109:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+107:                 <div class="grid grid-cols-2 gap-3">
+108:                     <div>
+109:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+110:                             >Badge (contoh: "Populer")</label
+111:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:118:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+116:                     </div>
+117:                     <div>
+118:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+119:                             >Sort Order</label
+120:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:131:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+129:                 <div class="grid grid-cols-2 gap-3">
+130:                     <div>
+131:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+132:                             >Harga Bulanan (Rp)</label
+133:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:142:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+140:                     </div>
+141:                     <div>
+142:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+143:                             >Harga Tahunan (Rp)</label
+144:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:154:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+152:                 </div>
+153:                 <div>
+154:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+155:                         >Catatan Harga</label
+156:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:164:20 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+162:                 </div>
+163:                 <div>
+164:                     <label class="block text-xs font-medium text-slate-500"
+                          ^
+165:                         >Fitur (JSON array)</label
+166:                     >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:177:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+175:                 <div class="grid grid-cols-2 gap-3">
+176:                     <div>
+177:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+178:                             >CTA Label</label
+179:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:187:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+185:                     </div>
+186:                     <div>
+187:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+188:                             >CTA Link</label
+189:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:223:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+221:     {@const plan = data.plans.find((p: { id: number }) => p.id === editId)}
+222:     {#if plan}
+223:         <div
+                 ^
+224:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+225:             onclick={() => (editId = null)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:223:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+221:     {@const plan = data.plans.find((p: { id: number }) => p.id === editId)}
+222:     {#if plan}
+223:         <div
+                 ^
+224:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+225:             onclick={() => (editId = null)}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:227:12 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+225:             onclick={() => (editId = null)}
+226:         >
+227:             <div
+                     ^
+228:                 class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+229:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:227:12 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+225:             onclick={() => (editId = null)}
+226:         >
+227:             <div
+                     ^
+228:                 class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+229:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:241:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+239:                     <input type="hidden" name="id" value={plan.id} />
+240:                     <div>
+241:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+242:                             >Nama Paket</label
+243:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:253:28 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+251:                     <div class="grid grid-cols-2 gap-3">
+252:                         <div>
+253:                             <label
+                                  ^
+254:                                 class="block text-xs font-medium text-slate-500"
+255:                                 >Badge</label
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:264:28 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+262:                         </div>
+263:                         <div>
+264:                             <label
+                                  ^
+265:                                 class="block text-xs font-medium text-slate-500"
+266:                                 >Sort Order</label
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:278:28 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+276:                     <div class="grid grid-cols-2 gap-3">
+277:                         <div>
+278:                             <label
+                                  ^
+279:                                 class="block text-xs font-medium text-slate-500"
+280:                                 >Harga Bulanan</label
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:290:28 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+288:                         </div>
+289:                         <div>
+290:                             <label
+                                  ^
+291:                                 class="block text-xs font-medium text-slate-500"
+292:                                 >Harga Tahunan</label
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/subscriptions/plans/+page.svelte:303:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+301:                     </div>
+302:                     <div>
+303:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+304:                             >Fitur (JSON)</label
+305:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:182:8 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+180:     <!-- Create / Edit Modal -->
+181:     {#if showCreateModal}
+182:         <div
+                 ^
+183:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+184:             onclick={closeModal}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:182:8 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+180:     <!-- Create / Edit Modal -->
+181:     {#if showCreateModal}
+182:         <div
+                 ^
+183:             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+184:             onclick={closeModal}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:186:12 Visible, non-interactive elements with a click event must be accompanied by a keyboard event handler. Consider whether an interactive element such as `<button type="button">` or `<a>` might be more appropriate
+https://svelte.dev/e/a11y_click_events_have_key_events
+184:             onclick={closeModal}
+185:         >
+186:             <div
+                     ^
+187:                 class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+188:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:186:12 `<div>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+184:             onclick={closeModal}
+185:         >
+186:             <div
+                     ^
+187:                 class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+188:                 onclick={(e) => e.stopPropagation()}
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:206:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+204:                     {/if}
+205:                     <div class="sm:col-span-2">
+206:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+207:                             >Nama Template *</label
+208:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:217:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+215:                     </div>
+216:                     <div class="sm:col-span-2">
+217:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+218:                             >Theme Key *</label
+219:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:228:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+226:                     </div>
+227:                     <div class="sm:col-span-2">
+228:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+229:                             >Palette JSON</label
+230:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:240:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+238:                     </div>
+239:                     <div class="sm:col-span-2">
+240:                         <label class="block text-xs font-medium text-slate-500"
+                              ^
+241:                             >Layout JSON</label
+242:                         >
+11:15:59 AM [vite-plugin-svelte] src/routes/superadmin/templates/+page.svelte:258:24 A form label must be associated with a control
+https://svelte.dev/e/a11y_label_has_associated_control
+256:                             class="rounded border-slate-300 text-emerald-600"
+257:                         />
+258:                         <label class="text-sm text-slate-600"
+                              ^
+259:                             >Template Global</label
+260:                         >
+✓ 249 modules transformed.
+[31m✗[39m Build failed in 3.20s
+[31merror during build:
+[31mBuild failed with 1 error:
+
+[31m[builtin:vite-transform] [0mExpected `,` or `]` but found `Identifier`
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/routes/superadmin/dashboard/+page.server.ts:138:5 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m 34 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m][0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0m[38;5;249ma[0m[38;5;249mw[0m[38;5;249ma[0m[38;5;249mi[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249mP[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mi[0m[38;5;249ms[0m[38;5;249me[0m[38;5;249m.[0m[38;5;249ma[0m[38;5;249ml[0m[38;5;249ml[0m[38;5;249m([0m[
+ [38;5;240m    │[0m                         ┬  
+ [38;5;240m    │[0m                         ╰── Opened here
+ [38;5;240m    │[0m 
+ [38;5;246m138 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0mdb
+ [38;5;240m    │[0m     ─┬  
+ [38;5;240m    │[0m      ╰── `,` or `]` expected
+[38;5;246m─────╯[0m
+[31m
+    at aggregateBindingErrorsIntoJsError (file:///C:/Users/pkmf/Documents/svelte/lima-waktu/node_modules/rolldown/dist/shared/error-CkdMJ9ps.mjs:48:18)
+    at unwrapBindingResult (file:///C:/Users/pkmf/Documents/svelte/lima-waktu/node_modules/rolldown/dist/shared/error-CkdMJ9ps.mjs:18:128)
+    at #build (file:///C:/Users/pkmf/Documents/svelte/lima-waktu/node_modules/rolldown/dist/shared/rolldown-build-BVD3dIdE.mjs:3275:34)
+    at async buildEnvironment (file:///C:/Users/pkmf/Documents/svelte/lima-waktu/node_modules/vite/dist/node/chunks/node.js:33133:64)
+    at async Object.build (file:///C:/Users/pkmf/Documents/svelte/lima-waktu/node_modules/vite/dist/node/chunks/node.js:33555:19)
+    at async Object.buildApp (file:///C:/Users/pkmf/Documents/svelte/lima-waktu/node_modules/vite/dist/node/chunks/node.js:33552:153)
+    at async CAC.<anonymous> (file:///C:/Users/pkmf/Documents/svelte/lima-waktu/node_modules/vite/dist/node/cli.js:777:3) {
+  errors: [Getter/Setter]
+}[39m

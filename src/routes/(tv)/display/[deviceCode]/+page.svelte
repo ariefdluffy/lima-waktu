@@ -12,7 +12,11 @@
 
     // Extracted modules
     import { prayer, updatePrayerState } from "$lib/display/prayer.svelte";
-    import { audio, handleUnlockAudio } from "$lib/display/audio.svelte";
+    import {
+        audio,
+        handleUnlockAudio,
+        initAudio,
+    } from "$lib/display/audio.svelte";
     import {
         weather,
         fetchWeather,
@@ -118,6 +122,7 @@
     }
 
     onMount(() => {
+        initAudio();
         fetchData();
 
         const clockInterval = setInterval(updateClock, 1000);

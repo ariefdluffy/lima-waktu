@@ -6,7 +6,10 @@
     let { children, data } = $props();
 
     // Sembunyikan navbar di halaman display publik
-    let isDisplayRoute = $derived($page.url.pathname.startsWith("/display/"));
+    let isDisplayRoute = $derived(
+        $page.url.pathname.startsWith("/display/") ||
+            $page.url.pathname.startsWith("/display-preview"),
+    );
     let isAdminRoute = $derived(
         $page.url.pathname.startsWith("/admin") ||
             $page.url.pathname.startsWith("/superadmin"),

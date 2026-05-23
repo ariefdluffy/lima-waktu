@@ -56,6 +56,9 @@ const TABLES = [
   "subscriptions",
   "invoices",
   "pricing_plans",
+  "platform_announcements",
+  "holiday_templates",
+  "global_prayer_config",
   "audit_logs",
 ];
 

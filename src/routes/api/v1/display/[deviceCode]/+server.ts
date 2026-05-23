@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, or, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, or, isNull, sql } from "drizzle-orm";
 import { json, type RequestHandler } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import {
@@ -53,11 +53,11 @@ export const GET: RequestHandler = async ({ params, request }) => {
     );
   }
 
-  // Heartbeat update — ringan, sekali per request
+  // Heartbeat update — pakai NOW() biar konsisten dengan MySQL server time
   await db
     .update(devices)
     .set({
-      lastSeenAt: new Date(),
+      lastSeenAt: sql`NOW()`,
       status: "online",
     })
     .where(eq(devices.id, device.id));

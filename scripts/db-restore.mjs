@@ -43,13 +43,17 @@ const backup = JSON.parse(raw);
 
 console.log(`   Backup dibuat pada : ${backup.meta.createdAt}`);
 console.log(`   Sumber DB          : ${backup.meta.databaseUrl}`);
-console.log(`   Mod                : ${dryRun ? "DRY RUN (tiada tulis)" : doTruncate ? "TRUNCATE + INSERT" : "INSERT (skip duplikat)"}`);
+console.log(
+  `   Mod                : ${dryRun ? "DRY RUN (tiada tulis)" : doTruncate ? "TRUNCATE + INSERT" : "INSERT (skip duplikat)"}`,
+);
 console.log("");
 
 if (dryRun) {
   console.log("🔍 DRY RUN — tiada perubahan dibuat ke database.\n");
   for (const [table, rows] of Object.entries(backup.data)) {
-    console.log(`  📋 ${table.padEnd(40)} ${rows.length} baris akan di-restore`);
+    console.log(
+      `  📋 ${table.padEnd(40)} ${rows.length} baris akan di-restore`,
+    );
   }
   console.log("\n✅ Dry run selesai.");
   process.exit(0);
@@ -85,6 +89,9 @@ const TABLE_ORDER = [
   "subscriptions",
   "invoices",
   "pricing_plans",
+  "platform_announcements",
+  "holiday_templates",
+  "global_prayer_config",
   "audit_logs",
 ];
 
@@ -128,7 +135,12 @@ for (const table of tablesToRestore) {
         .map((c) => `\`${c}\``)
         .join(", ");
       const placeholders = chunk
-        .map((row) => `(${Object.keys(row).map(() => "?").join(", ")})`)
+        .map(
+          (row) =>
+            `(${Object.keys(row)
+              .map(() => "?")
+              .join(", ")})`,
+        )
         .join(", ");
       const values = chunk.flatMap((row) =>
         Object.values(row).map((v) => {

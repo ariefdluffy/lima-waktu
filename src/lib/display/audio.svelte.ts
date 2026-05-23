@@ -7,16 +7,49 @@ export const audio = $state({
   attempted: false,
 });
 
+// ── Auto-retry AudioContext resume ──────────────────────────────
+let resumeTimer: ReturnType<typeof setInterval> | null = null;
+
+function startAutoResume() {
+  if (resumeTimer) return;
+  resumeTimer = setInterval(() => {
+    if (!beepCtx) return;
+    if (beepCtx.state === "suspended") {
+      beepCtx
+        .resume()
+        .then(() => {
+          audio.blocked = false;
+          stopAutoResume();
+        })
+        .catch(() => {
+          audio.blocked = true;
+        });
+    } else if (beepCtx.state === "running") {
+      audio.blocked = false;
+      stopAutoResume();
+    }
+  }, 1000);
+}
+
+function stopAutoResume() {
+  if (resumeTimer) {
+    clearInterval(resumeTimer);
+    resumeTimer = null;
+  }
+}
+
 // ── Internal ─────────────────────────────────────────────────────
 function ensureCtx(): AudioContext | null {
   if (!beepCtx) {
     beepCtx = new AudioContext();
+    startAutoResume();
   }
   if (beepCtx.state === "suspended") {
     beepCtx
       .resume()
       .then(() => {
         audio.blocked = false;
+        stopAutoResume();
       })
       .catch(() => {
         audio.blocked = true;
@@ -26,6 +59,11 @@ function ensureCtx(): AudioContext | null {
 }
 
 // ── Public ───────────────────────────────────────────────────────
+/** Panggil dari onMount component — init AudioContext sedini mungkin */
+export function initAudio() {
+  ensureCtx();
+}
+
 export function playBeep() {
   try {
     const ctx = ensureCtx();
@@ -37,6 +75,7 @@ export function playBeep() {
         .then((buf) => ctx.decodeAudioData(buf))
         .then((decoded) => {
           beepBuffer = decoded;
+          // Replay setelah buffer siap (selama tidak terblokir)
           if (!audio.blocked) playBeep();
         })
         .catch(() => {});
@@ -68,15 +107,16 @@ export function playIqamahBeep() {
 }
 
 export function handleUnlockAudio() {
-  const ctx = ensureCtx();
-  if (!ctx) return;
+  ensureCtx();
 
   if (!beepBuffer) {
     fetch("/beep-alarm.mp3")
       .then((r) => r.arrayBuffer())
-      .then((buf) => ctx.decodeAudioData(buf))
+      .then((buf) => {
+        if (beepCtx) return beepCtx.decodeAudioData(buf);
+      })
       .then((decoded) => {
-        beepBuffer = decoded;
+        if (decoded) beepBuffer = decoded;
       })
       .catch(() => {});
   }

@@ -653,3 +653,67 @@ export const auditLogs = mysqlTable("audit_logs", {
   userAgent: text("user_agent"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+export const platformAnnouncements = mysqlTable("platform_announcements", {
+  id: bigint("id", { mode: "number", unsigned: true })
+    .autoincrement()
+    .primaryKey(),
+  title: varchar("title", { length: 180 }).notNull(),
+  content: text("content"),
+  severity: mysqlEnum("severity", ["info", "warning", "critical"])
+    .default("info")
+    .notNull(),
+  targetAudience: mysqlEnum("target_audience", ["all", "admins", "superadmins"])
+    .default("all")
+    .notNull(),
+  startAt: datetime("start_at"),
+  endAt: datetime("end_at"),
+  isActive: int("is_active").default(1).notNull(),
+  createdBy: char("created_by", { length: 36 }).references(() => users.id, {
+    onDelete: "set null",
+  }),
+  ...timestamps,
+});
+
+export const holidayTemplates = mysqlTable("holiday_templates", {
+  id: bigint("id", { mode: "number", unsigned: true })
+    .autoincrement()
+    .primaryKey(),
+  name: varchar("name", { length: 120 }).notNull(),
+  eventType: varchar("event_type", { length: 64 }).notNull(),
+  description: text("description"),
+  slideConfigJson: json("slide_config_json"),
+  paletteJson: json("palette_json"),
+  isActive: int("is_active").default(1).notNull(),
+  ...timestamps,
+});
+
+export const globalPrayerConfig = mysqlTable("global_prayer_config", {
+  id: int("id").primaryKey().default(1),
+  primaryProviderId: bigint("primary_provider_id", {
+    mode: "number",
+    unsigned: true,
+  }).references(() => prayerProviders.id, { onDelete: "set null" }),
+  fallbackProviderId: bigint("fallback_provider_id", {
+    mode: "number",
+    unsigned: true,
+  }).references(() => prayerProviders.id, { onDelete: "set null" }),
+  defaultMethodId: bigint("default_method_id", {
+    mode: "number",
+    unsigned: true,
+  }).references(() => prayerCalculationMethods.id, { onDelete: "set null" }),
+  defaultTimezone: varchar("default_timezone", { length: 64 })
+    .default("Asia/Jakarta")
+    .notNull(),
+  apiKey: varchar("api_key", { length: 255 }),
+  syncFrequency: mysqlEnum("sync_frequency", ["daily", "weekly", "manual"])
+    .default("daily")
+    .notNull(),
+  syncTime: time("sync_time").default("03:00:00").notNull(),
+  lockProvider: int("lock_provider").default(0).notNull(),
+  lockMethod: int("lock_method").default(0).notNull(),
+  updatedBy: char("updated_by", { length: 36 }).references(() => users.id, {
+    onDelete: "set null",
+  }),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});

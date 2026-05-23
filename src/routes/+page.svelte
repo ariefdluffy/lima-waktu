@@ -14,6 +14,18 @@
     function getFeatures(plan: { featuresJson: unknown }): string[] {
         if (Array.isArray(plan.featuresJson))
             return plan.featuresJson as string[];
+        if (typeof plan.featuresJson === "string") {
+            const trimmed = plan.featuresJson.trim();
+            if (trimmed.startsWith("[")) {
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    if (Array.isArray(parsed)) return parsed as string[];
+                } catch {
+                    /* ignore */
+                }
+            }
+            return trimmed.split(",").map((f) => f.trim());
+        }
         return [];
     }
 
