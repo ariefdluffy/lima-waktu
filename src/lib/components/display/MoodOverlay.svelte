@@ -75,7 +75,7 @@
     <div class="mood-overlay mood-overlay--iqamah">
         <div class="mood-icon">🕌</div>
         <div class="mood-title">WAKTU MENUNGGU IQAMAH</div>
-        <div class="mood-subtitle">BERSEGERA KE MASJID</div>
+        <div class="mood-subtitle">BERSEGERA WUDHU DAN SHOLAT SUNNAH</div>
         <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
         {#if countdown}
             <div class="mood-countdown">
@@ -198,7 +198,7 @@
     }
 
     .mood-prayer {
-        font-size: clamp(18px, 3.5vw, 90px);
+        font-size: clamp(18px, 3.5vw, 120px);
         font-weight: 600;
         color: var(--accent-secondary);
         text-align: center;
@@ -246,7 +246,7 @@
     }
 
     .mood-countdown-val {
-        font-size: clamp(28px, 5vw, 110px);
+        font-size: clamp(28px, 5vw, 120px);
         font-weight: 700;
         color: var(--accent-primary);
         font-variant-numeric: tabular-nums;
