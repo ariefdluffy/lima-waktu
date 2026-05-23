@@ -78,12 +78,17 @@ export const load = async ({
       .select({
         id: auditLogs.id,
         userId: auditLogs.userId,
+        userFullName: users.fullName,
         action: auditLogs.action,
         entity: auditLogs.entity,
         entityId: auditLogs.entityId,
+        masjidId: auditLogs.masjidId,
+        changesJson: auditLogs.changesJson,
+        ipAddress: auditLogs.ipAddress,
         createdAt: auditLogs.createdAt,
       })
       .from(auditLogs)
+      .leftJoin(users, eq(auditLogs.userId, users.id))
       .orderBy(desc(auditLogs.createdAt))
       .limit(20),
   ]);

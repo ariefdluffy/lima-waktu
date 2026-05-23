@@ -435,16 +435,68 @@
     <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-sm font-semibold text-slate-800">Aktivitas Terbaru</h2>
         {#if data.auditLogs.length > 0}
-            <div class="mt-3 space-y-1">
+            <div class="mt-3 space-y-2">
                 {#each data.auditLogs as log}
+                    {@const changes = log.changesJson
+                        ? typeof log.changesJson === "string"
+                            ? JSON.parse(log.changesJson)
+                            : log.changesJson
+                        : null}
                     <div
-                        class="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs text-slate-600"
+                        class="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600"
                     >
-                        <span class="shrink-0 font-mono text-slate-400"
-                            >{formatDate(log.createdAt)}</span
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="shrink-0 font-mono text-slate-400"
+                                    >{formatDate(log.createdAt)}</span
+                                >
+                                <span class="font-semibold">{log.action}</span>
+                                <span class="text-slate-500"
+                                    >— {log.entity}</span
+                                >
+                            </div>
+                            {#if log.ipAddress}
+                                <span
+                                    class="shrink-0 font-mono text-[10px] text-slate-300"
+                                    >{log.ipAddress}</span
+                                >
+                            {/if}
+                        </div>
+                        <div
+                            class="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-slate-400"
                         >
-                        <span class="font-semibold">{log.action}</span>
-                        <span class="text-slate-500">— {log.entity}</span>
+                            {#if log.userFullName}
+                                <span
+                                    >Oleh:
+                                    <span class="font-medium text-slate-500"
+                                        >{log.userFullName}</span
+                                    ></span
+                                >
+                            {/if}
+                            {#if log.entityId}
+                                <span
+                                    >ID:
+                                    <span class="font-mono text-slate-500"
+                                        >{log.entityId}</span
+                                    ></span
+                                >
+                            {/if}
+                            {#if log.masjidId}
+                                <span
+                                    >Masjid ID:
+                                    <span class="font-mono text-slate-500"
+                                        >{log.masjidId}</span
+                                    ></span
+                                >
+                            {/if}
+                        </div>
+                        {#if changes}
+                            <div
+                                class="mt-1 rounded bg-white/60 px-2 py-1 font-mono text-[10px] text-slate-400"
+                            >
+                                {JSON.stringify(changes)}
+                            </div>
+                        {/if}
                     </div>
                 {/each}
             </div>
