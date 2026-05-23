@@ -215,6 +215,28 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-500"
+                        >Screensaver Pagi Delay (menit stlh Syuruq)</label
+                    >
+                    <input
+                        name="screensaverMorningDelayMinutes"
+                        type="number"
+                        value={data.masjid.screensaverMorningDelayMinutes ?? 60}
+                        class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                    />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500"
+                        >Screensaver Pagi Wake (menit sblm Dzuhur)</label
+                    >
+                    <input
+                        name="screensaverMorningWakeMinutes"
+                        type="number"
+                        value={data.masjid.screensaverMorningWakeMinutes ?? 120}
+                        class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                    />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500"
                         >Timezone</label
                     >
                     <select

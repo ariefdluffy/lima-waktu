@@ -349,6 +349,37 @@
         font-size: clamp(8px, 0.8vw, 16px);
     }
 
+    .screensaver-next-prayer {
+        padding: 14px 28px;
+        margin-top: 10px;
+        min-width: 200px;
+        gap: 4px;
+    }
+
+    .screensaver-next-label {
+        font-size: clamp(7px, 0.65vw, 13px);
+    }
+
+    .screensaver-next-name {
+        font-size: clamp(14px, 1.8vw, 36px);
+    }
+
+    .screensaver-next-time {
+        font-size: clamp(18px, 2.6vw, 52px);
+    }
+
+    .screensaver-next-iqamah {
+        font-size: clamp(8px, 0.75vw, 18px);
+    }
+
+    .screensaver-next-countdown {
+        font-size: clamp(11px, 1.3vw, 28px);
+    }
+
+    .screensaver-next-cd-icon {
+        font-size: clamp(10px, 1vw, 20px);
+    }
+
     .screensaver-logo {
         width: 80px;
         height: 80px;

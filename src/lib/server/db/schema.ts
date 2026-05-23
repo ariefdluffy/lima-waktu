@@ -4,6 +4,7 @@ import {
   date,
   datetime,
   decimal,
+  foreignKey,
   int,
   json,
   mysqlEnum,
@@ -86,12 +87,11 @@ export const userSessions = mysqlTable(
 export const rolePermissions = mysqlTable(
   "role_permissions",
   {
-    roleId: bigint("role_id", { mode: "number", unsigned: true })
-      .notNull()
-      .references(() => roles.id, { onDelete: "cascade" }),
-    permissionId: bigint("permission_id", { mode: "number", unsigned: true })
-      .notNull()
-      .references(() => permissions.id, { onDelete: "cascade" }),
+    roleId: bigint("role_id", { mode: "number", unsigned: true }).notNull(),
+    permissionId: bigint("permission_id", {
+      mode: "number",
+      unsigned: true,
+    }).notNull(),
     ...timestamps,
   },
   (table) => [
@@ -99,18 +99,22 @@ export const rolePermissions = mysqlTable(
       columns: [table.roleId, table.permissionId],
       name: "role_permissions_pk",
     }),
+    foreignKey({
+      columns: [table.roleId],
+      foreignColumns: [roles.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.permissionId],
+      foreignColumns: [permissions.id],
+    }).onDelete("cascade"),
   ],
 );
 
 export const userRoles = mysqlTable(
   "user_roles",
   {
-    userId: char("user_id", { length: 36 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    roleId: bigint("role_id", { mode: "number", unsigned: true })
-      .notNull()
-      .references(() => roles.id, { onDelete: "cascade" }),
+    userId: char("user_id", { length: 36 }).notNull(),
+    roleId: bigint("role_id", { mode: "number", unsigned: true }).notNull(),
     ...timestamps,
   },
   (table) => [
@@ -118,6 +122,14 @@ export const userRoles = mysqlTable(
       columns: [table.userId, table.roleId],
       name: "user_roles_pk",
     }),
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.roleId],
+      foreignColumns: [roles.id],
+    }).onDelete("cascade"),
   ],
 );
 
@@ -140,6 +152,12 @@ export const masjids = mysqlTable("masjids", {
     .default(120)
     .notNull(),
   screensaverWakeMinutes: int("screensaver_wake_minutes").default(60).notNull(),
+  screensaverMorningDelayMinutes: int("screensaver_morning_delay_minutes")
+    .default(60)
+    .notNull(),
+  screensaverMorningWakeMinutes: int("screensaver_morning_wake_minutes")
+    .default(120)
+    .notNull(),
   logoUrl: varchar("logo_url", { length: 500 }),
   isActive: int("is_active").default(1).notNull(),
   ...timestamps,

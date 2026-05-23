@@ -109,6 +109,8 @@ export type DisplayPayload = {
     khusukScreenDuration: number;
     screensaverDelayMinutes: number;
     screensaverWakeMinutes: number;
+    screensaverMorningDelayMinutes: number;
+    screensaverMorningWakeMinutes: number;
     logoUrl: string | null;
   };
   schedule: {

@@ -91,6 +91,8 @@ function makeMockPayload(): DisplayPayload {
       khusukScreenDuration: 10,
       screensaverDelayMinutes: 120,
       screensaverWakeMinutes: 60,
+      screensaverMorningDelayMinutes: 60,
+      screensaverMorningWakeMinutes: 120,
       logoUrl: null,
     },
     schedule: {

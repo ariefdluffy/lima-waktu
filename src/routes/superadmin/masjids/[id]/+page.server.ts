@@ -89,6 +89,12 @@ export const actions = {
     const screensaverWakeMinutes = Number(
       form.get("screensaverWakeMinutes") ?? 60,
     );
+    const screensaverMorningDelayMinutes = Number(
+      form.get("screensaverMorningDelayMinutes") ?? 60,
+    );
+    const screensaverMorningWakeMinutes = Number(
+      form.get("screensaverMorningWakeMinutes") ?? 120,
+    );
 
     if (!name) return { error: "Nama wajib diisi" };
 
@@ -108,6 +114,8 @@ export const actions = {
         khusukScreenDuration,
         screensaverDelayMinutes,
         screensaverWakeMinutes,
+        screensaverMorningDelayMinutes,
+        screensaverMorningWakeMinutes,
       })
       .where(eq(masjids.id, params.id));
 

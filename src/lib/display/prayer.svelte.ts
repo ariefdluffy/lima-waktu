@@ -250,12 +250,15 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
   const dzuhurMin = timeToMinutes(resolved.dzuhur);
   const SCREENSAVER_DELAY = payload?.masjid?.screensaverDelayMinutes ?? 120;
   const SCREENSAVER_WAKE = payload?.masjid?.screensaverWakeMinutes ?? 60;
+  const MORNING_DELAY = payload?.masjid?.screensaverMorningDelayMinutes ?? 60;
+  const MORNING_WAKE = payload?.masjid?.screensaverMorningWakeMinutes ?? 120;
 
   const dalamJendelaMalam =
     currentMinutes >= isyaMin + SCREENSAVER_DELAY ||
     currentMinutes < subuhMin - SCREENSAVER_WAKE;
   const dalamJendelaPagi =
-    currentMinutes >= syuruqMin + 60 && currentMinutes < dzuhurMin - 120;
+    currentMinutes >= syuruqMin + MORNING_DELAY &&
+    currentMinutes < dzuhurMin - MORNING_WAKE;
   prayer.screensaver = dalamJendelaMalam || dalamJendelaPagi;
   prayer.tahajudMode =
     currentMinutes >= subuhMin - SCREENSAVER_WAKE && currentMinutes < subuhMin;

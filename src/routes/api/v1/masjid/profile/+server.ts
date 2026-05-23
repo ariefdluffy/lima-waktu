@@ -19,6 +19,8 @@ type UpdateProfileBody = {
   khusukScreenDuration?: number;
   screensaverDelayMinutes?: number;
   screensaverWakeMinutes?: number;
+  screensaverMorningDelayMinutes?: number;
+  screensaverMorningWakeMinutes?: number;
   logoUrl?: string;
   isActive?: boolean;
 };
@@ -101,6 +103,14 @@ export const PUT: RequestHandler = async (event) => {
       screensaverWakeMinutes:
         body.screensaverWakeMinutes !== undefined
           ? body.screensaverWakeMinutes
+          : undefined,
+      screensaverMorningDelayMinutes:
+        body.screensaverMorningDelayMinutes !== undefined
+          ? body.screensaverMorningDelayMinutes
+          : undefined,
+      screensaverMorningWakeMinutes:
+        body.screensaverMorningWakeMinutes !== undefined
+          ? body.screensaverMorningWakeMinutes
           : undefined,
       logoUrl: body.logoUrl !== undefined ? body.logoUrl : undefined,
       isActive:

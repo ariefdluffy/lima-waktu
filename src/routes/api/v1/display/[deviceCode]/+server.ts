@@ -240,6 +240,10 @@ export const GET: RequestHandler = async ({ params, request }) => {
         khusukScreenDuration: masjid.khusukScreenDuration ?? 10,
         screensaverDelayMinutes: masjid.screensaverDelayMinutes ?? 120,
         screensaverWakeMinutes: masjid.screensaverWakeMinutes ?? 60,
+        screensaverMorningDelayMinutes:
+          masjid.screensaverMorningDelayMinutes ?? 60,
+        screensaverMorningWakeMinutes:
+          masjid.screensaverMorningWakeMinutes ?? 120,
         logoUrl: masjid.logoUrl ?? null,
       },
       schedule,

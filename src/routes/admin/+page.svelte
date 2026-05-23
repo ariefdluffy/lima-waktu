@@ -428,6 +428,18 @@
             return v ?? 60;
         })(),
     );
+    let morningDelay = $state(
+        (() => {
+            const v = data.masjid?.screensaverMorningDelayMinutes;
+            return v ?? 60;
+        })(),
+    );
+    let morningWake = $state(
+        (() => {
+            const v = data.masjid?.screensaverMorningWakeMinutes;
+            return v ?? 120;
+        })(),
+    );
     let screensaverSaving = $state(false);
     let screensaverSuccess = $state(false);
 
@@ -441,6 +453,8 @@
                 body: JSON.stringify({
                     screensaverDelayMinutes: Number(screensaverDelay),
                     screensaverWakeMinutes: Number(screensaverWake),
+                    screensaverMorningDelayMinutes: Number(morningDelay),
+                    screensaverMorningWakeMinutes: Number(morningWake),
                 }),
             });
             const json = await res.json();
@@ -2551,7 +2565,8 @@
                                     </h2>
                                     <p class="mt-0.5 text-xs text-slate-500">
                                         Layar akan masuk mode hemat setelah Isya
-                                        dan aktif kembali sebelum Subuh.
+                                        dan aktif kembali sebelum Subuh. Juga
+                                        bisa aktif di pagi hari setelah Syuruq.
                                     </p>
                                 </div>
                             </div>
@@ -2613,6 +2628,73 @@
                                     </div>
                                 </div>
                             </div>
+                            <h3
+                                class="mt-6 text-sm font-semibold text-emerald-800"
+                            >
+                                🌅 Mode Hemat Pagi
+                            </h3>
+                            <p class="mt-0.5 text-xs text-slate-500">
+                                Layar masuk mode hemat setelah Syuruq dan aktif
+                                kembali sebelum Dzuhur.
+                            </p>
+                            <div class="mt-3 grid gap-4 sm:grid-cols-2">
+                                <div
+                                    class="rounded-xl border border-amber-100 bg-amber-50/40 p-5"
+                                >
+                                    <h3
+                                        class="text-sm font-semibold text-amber-800"
+                                    >
+                                        Aktif Setelah Syuruq
+                                    </h3>
+                                    <p class="mt-1 text-xs text-slate-500">
+                                        Berapa menit setelah Syuruq layar masuk
+                                        mode hemat.
+                                    </p>
+                                    <div class="mt-4">
+                                        <label
+                                            for="morning-delay"
+                                            class="mb-1 block text-xs font-medium text-slate-600"
+                                            >Menit setelah Syuruq</label
+                                        >
+                                        <input
+                                            id="morning-delay"
+                                            type="number"
+                                            min="0"
+                                            max="300"
+                                            bind:value={morningDelay}
+                                            class="w-32 rounded-xl border border-amber-200 px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                                <div
+                                    class="rounded-xl border border-amber-100 bg-amber-50/40 p-5"
+                                >
+                                    <h3
+                                        class="text-sm font-semibold text-amber-800"
+                                    >
+                                        Bangun Sebelum Dzuhur
+                                    </h3>
+                                    <p class="mt-1 text-xs text-slate-500">
+                                        Berapa menit sebelum Dzuhur layar aktif
+                                        kembali.
+                                    </p>
+                                    <div class="mt-4">
+                                        <label
+                                            for="morning-wake"
+                                            class="mb-1 block text-xs font-medium text-slate-600"
+                                            >Menit sebelum Dzuhur</label
+                                        >
+                                        <input
+                                            id="morning-wake"
+                                            type="number"
+                                            min="0"
+                                            max="300"
+                                            bind:value={morningWake}
+                                            class="w-32 rounded-xl border border-amber-200 px-3 py-2 text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                             <div class="mt-4 flex items-center gap-3">
                                 <button
                                     onclick={saveScreensaver}
@@ -2630,8 +2712,10 @@
                                 {/if}
                             </div>
                             <p class="mt-3 text-xs text-slate-400">
-                                Hemat aktif {screensaverDelay} menit setelah Isya,
-                                bangun {screensaverWake} menit sebelum Subuh.
+                                Hemat malam: aktif {screensaverDelay} menit setelah
+                                Isya, bangun {screensaverWake} menit sebelum Subuh.
+                                Hemat pagi: aktif {morningDelay} menit setelah Syuruq,
+                                bangun {morningWake} menit sebelum Dzuhur.
                             </p>
                         </section>
                     {/if}

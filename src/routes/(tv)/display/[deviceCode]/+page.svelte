@@ -275,10 +275,27 @@
                 <div class="screensaver-hijri">
                     {hijriyahDate || "—"}
                 </div>
-                <div class="screensaver-sub">
-                    Display dalam mode hemat • Akan aktif kembali 1 Jam sebelum
-                    waktu sholat
+                <!-- Next Prayer Card -->
+                <div class="screensaver-next-prayer">
+                    <div class="screensaver-next-label">SHOLAT BERIKUTNYA</div>
+                    <div class="screensaver-next-name">
+                        {prayer.nextPrayerName}
+                    </div>
+                    <div class="screensaver-next-time">
+                        {prayer.nextPrayerTime}
+                    </div>
+                    {#if prayer.iqamahTime}
+                        <div class="screensaver-next-iqamah">
+                            Iqamah {prayer.iqamahTime}
+                        </div>
+                    {/if}
+                    <div class="screensaver-next-countdown">
+                        <span class="screensaver-next-cd-icon">⏳</span>
+                        {prayer.countdown}
+                    </div>
                 </div>
+
+                <div class="screensaver-sub">Mode hemat energi aktif</div>
             </div>
         </div>
     {:else if prayer.tahajudMode}
@@ -709,6 +726,86 @@
         text-align: center;
         width: 100%;
         padding: 0 24px;
+    }
+
+    /* SCREENSAVER — Next Prayer Card */
+    .screensaver-next-prayer {
+        margin-top: 16px;
+        padding: 20px 40px;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0.02) 100%
+        );
+        border: 1px solid var(--border-accent, rgba(200, 168, 75, 0.25));
+        border-radius: var(--border-radius, 16px);
+        backdrop-filter: blur(12px);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        animation: screensaverCardPulse 4s ease-in-out infinite;
+        min-width: 280px;
+    }
+
+    @keyframes screensaverCardPulse {
+        0%,
+        100% {
+            box-shadow:
+                0 0 20px rgba(200, 168, 75, 0.08),
+                inset 0 0 20px rgba(200, 168, 75, 0.03);
+        }
+        50% {
+            box-shadow:
+                0 0 30px rgba(200, 168, 75, 0.15),
+                inset 0 0 30px rgba(200, 168, 75, 0.06);
+        }
+    }
+
+    .screensaver-next-label {
+        font-size: clamp(8px, 0.7vw, 16px);
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        color: var(--accent-muted, #c8a84b);
+        text-transform: uppercase;
+    }
+
+    .screensaver-next-name {
+        font-family: var(--font-heading), serif;
+        font-size: clamp(18px, 2.5vw, 52px);
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.08em;
+    }
+
+    .screensaver-next-time {
+        font-size: clamp(24px, 3.5vw, 72px);
+        font-weight: 700;
+        color: var(--accent-primary, #c8a84b);
+        line-height: 1.1;
+        text-shadow: 0 0 12px var(--accent-muted, rgba(200, 168, 75, 0.3));
+    }
+
+    .screensaver-next-iqamah {
+        font-size: clamp(10px, 1vw, 24px);
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .screensaver-next-countdown {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: clamp(14px, 1.8vw, 38px);
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-variant-numeric: tabular-nums;
+        margin-top: 4px;
+    }
+
+    .screensaver-next-cd-icon {
+        font-size: clamp(12px, 1.4vw, 28px);
     }
 
     /* TAHAJUD MODE */
