@@ -1,0 +1,450 @@
+/* Display TV Responsive untuk 1366x768 (TV 24-27 inch) */
+/* Optimasi layout dan font size untuk resolusi lebih kecil */
+
+@media (max-width: 1366px) {
+  :root {
+    --panel-gap: 1%;
+    --panel-padding: 1%;
+    --header-height: 11%;
+    --running-bar-height: 9%;
+  }
+
+  /* ============================================================
+     HEADER SECTION
+     ============================================================ */
+
+  .header {
+    padding: 0.8% 2%;
+    height: var(--header-height);
+  }
+
+  .masjid-logo-area {
+    gap: 1%;
+  }
+
+  .masjid-logo {
+    width: 7%;
+    font-size: clamp(16px, 3vw, 48px);
+  }
+
+  .masjid-name {
+    font-size: clamp(10px, 2vw, 32px);
+    line-height: 1;
+  }
+
+  .masjid-loc {
+    font-size: clamp(7px, 0.9vw, 16px);
+    margin-top: 0px;
+  }
+
+  .header-time {
+    font-size: clamp(24px, 4.8vw, 88px);
+  }
+
+  /* ============================================================
+     MAIN BODY LAYOUT
+     ============================================================ */
+
+  .main-body {
+    gap: var(--panel-gap);
+    padding: var(--panel-padding);
+  }
+
+  /* LEFT PANEL */
+  .left-panel {
+    width: 24%;
+    padding: 1% 1.5%;
+    gap: 0.8%;
+    max-height: calc(100vh - var(--header-height) - var(--running-bar-height));
+  }
+
+  .left-date {
+    font-size: clamp(10px, 1.6vw, 44px);
+    margin-bottom: 1px;
+  }
+
+  .next-label {
+    font-size: clamp(8px, 1vw, 36px);
+  }
+
+  .next-prayer-name {
+    font-size: clamp(24px, 4.5vw, 92px);
+  }
+
+  .next-prayer-time {
+    font-size: clamp(44px, 5.8vw, 128px);
+  }
+
+  .countdown-box {
+    padding: 2% 1.5%;
+  }
+
+  .countdown-label {
+    font-size: clamp(7px, 1.6vw, 32px);
+    margin-bottom: 1px;
+  }
+
+  .countdown-val {
+    font-size: clamp(20px, 4.4vw, 80px);
+  }
+
+  .progress-track {
+    height: 6px;
+    margin-top: 6px;
+  }
+
+  .iqamah-box {
+    padding: 1.5% 1.5%;
+  }
+
+  .iqamah-label {
+    font-size: clamp(7px, 2.2vw, 76px);
+  }
+
+  .iqamah-val {
+    font-size: clamp(12px, 3.6vw, 68px);
+    margin-top: 4px;
+  }
+
+  /* CENTER PANEL */
+  .center-panel {
+    flex: 1;
+    padding: 1% 0.8%;
+    gap: 1%;
+  }
+
+  .prayer-grid {
+    gap: 0.8%;
+    height: 50%;
+  }
+
+  .prayer-card {
+    gap: 1.5%;
+    padding: 1.5%;
+  }
+
+  .prayer-card-icon {
+    font-size: clamp(14px, 1.8vw, 28px);
+  }
+
+  .prayer-card-name {
+    font-size: clamp(12px, 2vw, 44px);
+  }
+
+  .prayer-card-time {
+    font-size: clamp(24px, 4vw, 88px);
+  }
+
+  .prayer-iqamah {
+    font-size: clamp(9px, 1.2vw, 44px);
+  }
+
+  .active-badge {
+    font-size: clamp(7px, 0.9vw, 52px);
+    padding: 1px 6px;
+  }
+
+  .slide-area {
+    padding: 0.8%;
+  }
+
+  .slide-content {
+    padding: 2%;
+  }
+
+  .slide-arabic {
+    font-size: clamp(28px, 3.2vw, 56px);
+    margin-bottom: 2%;
+  }
+
+  .slide-translation {
+    font-size: clamp(12px, 1.6vw, 32px);
+  }
+
+  .slide-source {
+    font-size: clamp(8px, 1vw, 20px);
+    margin-top: 1%;
+  }
+
+  .slide-dots {
+    bottom: 4px;
+    gap: 3px;
+  }
+
+  .dot {
+    width: 4px;
+    height: 4px;
+  }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    width: 22%;
+    padding: 1% 1%;
+    gap: 1%;
+  }
+
+  .info-card {
+    padding: 2% 5%;
+  }
+
+  .info-card-title {
+    font-size: clamp(9px, 1.1vw, 32px);
+    margin-bottom: 3%;
+  }
+
+  .info-card-value {
+    font-size: clamp(14px, 1.8vw, 32px);
+    margin-top: 4px;
+  }
+
+  .info-card-sub {
+    font-size: clamp(10px, 1.2vw, 32px);
+    margin-top: 2px;
+  }
+
+  .hijriyah-card {
+    text-align: center;
+  }
+
+  .hijriyah-value {
+    font-size: clamp(10px, 1.3vw, 28px);
+    margin-top: 3%;
+  }
+
+  .weather-body {
+    gap: 6%;
+    margin-top: 3%;
+  }
+
+  .weather-icon {
+    font-size: clamp(20px, 2.8vw, 40px);
+  }
+
+  .weather-temp {
+    font-size: clamp(16px, 2.2vw, 32px);
+  }
+
+  .weather-desc {
+    font-size: clamp(9px, 1vw, 14px);
+  }
+
+  .weather-city {
+    font-size: clamp(8px, 1vw, 56px);
+    margin-top: 2%;
+  }
+
+  .weather-loading {
+    font-size: clamp(9px, 1vw, 14px);
+    margin-top: 3%;
+  }
+
+  .event-card {
+    text-align: center;
+  }
+
+  .event-days {
+    font-size: clamp(28px, 4vw, 60px);
+  }
+
+  .event-label {
+    font-size: clamp(10px, 1.1vw, 24px);
+    margin-top: 2%;
+  }
+
+  .imsakiyah-row {
+    margin-top: 3%;
+  }
+
+  .imsakiyah-time {
+    font-size: clamp(16px, 2vw, 40px);
+  }
+
+  .imsakiyah-sep {
+    font-size: clamp(16px, 2vw, 40px);
+  }
+
+  .jumat-card {
+    border-color: rgba(200, 168, 75, 0.3);
+    background: rgba(200, 168, 75, 0.06);
+  }
+
+  .jumat-body {
+    margin-top: 3%;
+  }
+
+  .jumbotron-card {
+    border-color: rgba(100, 200, 255, 0.2);
+    background: rgba(100, 200, 255, 0.04);
+  }
+
+  .jumbotron-title {
+    font-size: clamp(10px, 1.2vw, 32px);
+    margin-top: 3%;
+  }
+
+  .jumbotron-content {
+    font-size: clamp(9px, 1vw, 28px);
+    margin-top: 2%;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
+
+  /* ============================================================
+     RUNNING BAR
+     ============================================================ */
+
+  .running-bar {
+    height: var(--running-bar-height);
+  }
+
+  .running-icon {
+    width: 7%;
+    font-size: clamp(14px, 1.8vw, 28px);
+  }
+
+  .running-text {
+    font-size: clamp(18px, 2.2vw, 40px);
+  }
+
+  /* ============================================================
+     SCROLLBAR
+     ============================================================ */
+
+  .right-panel::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .right-panel::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+  }
+}
+
+/* ============================================================
+   EXTRA SMALL TV (1024x768 dan lebih kecil)
+   ============================================================ */
+
+@media (max-width: 1024px) {
+  :root {
+    --panel-gap: 0.8%;
+    --panel-padding: 0.8%;
+    --header-height: 12%;
+    --running-bar-height: 10%;
+  }
+
+  .header {
+    padding: 0.6% 1.5%;
+  }
+
+  .masjid-logo {
+    width: 8%;
+    font-size: clamp(14px, 2.5vw, 40px);
+  }
+
+  .masjid-name {
+    font-size: clamp(9px, 1.8vw, 28px);
+  }
+
+  .masjid-loc {
+    font-size: clamp(6px, 0.8vw, 14px);
+  }
+
+  .header-time {
+    font-size: clamp(20px, 4vw, 72px);
+  }
+
+  .left-panel {
+    width: 25%;
+    padding: 0.8% 1%;
+    gap: 0.6%;
+  }
+
+  .left-date {
+    font-size: clamp(9px, 1.4vw, 36px);
+  }
+
+  .next-label {
+    font-size: clamp(7px, 0.9vw, 32px);
+  }
+
+  .next-prayer-name {
+    font-size: clamp(20px, 4vw, 80px);
+  }
+
+  .next-prayer-time {
+    font-size: clamp(36px, 5vw, 108px);
+  }
+
+  .countdown-label {
+    font-size: clamp(6px, 1.4vw, 28px);
+  }
+
+  .countdown-val {
+    font-size: clamp(16px, 3.8vw, 68px);
+  }
+
+  .iqamah-label {
+    font-size: clamp(6px, 2vw, 64px);
+  }
+
+  .iqamah-val {
+    font-size: clamp(10px, 3.2vw, 60px);
+  }
+
+  .center-panel {
+    padding: 0.8% 0.6%;
+    gap: 0.8%;
+  }
+
+  .prayer-grid {
+    gap: 0.6%;
+  }
+
+  .prayer-card {
+    gap: 1%;
+    padding: 1%;
+  }
+
+  .prayer-card-icon {
+    font-size: clamp(12px, 1.6vw, 24px);
+  }
+
+  .prayer-card-name {
+    font-size: clamp(10px, 1.8vw, 40px);
+  }
+
+  .prayer-card-time {
+    font-size: clamp(20px, 3.6vw, 76px);
+  }
+
+  .prayer-iqamah {
+    font-size: clamp(8px, 1.1vw, 40px);
+  }
+
+  .right-panel {
+    width: 23%;
+    padding: 0.8% 0.8%;
+    gap: 0.8%;
+  }
+
+  .info-card {
+    padding: 1.5% 4%;
+  }
+
+  .info-card-title {
+    font-size: clamp(8px, 1vw, 28px);
+  }
+
+  .info-card-value {
+    font-size: clamp(12px, 1.6vw, 28px);
+  }
+
+  .running-icon {
+    width: 8%;
+    font-size: clamp(12px, 1.6vw, 24px);
+  }
+
+  .running-text {
+    font-size: clamp(14px, 2vw, 32px);
+  }
+}

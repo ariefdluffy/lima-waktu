@@ -10,6 +10,7 @@
     import MoodOverlay from "$lib/components/display/MoodOverlay.svelte";
     import "$lib/styles/display-fullhd.css";
     import "$lib/styles/display-layout-fix.css";
+    import "$lib/styles/display-responsive-1366.css";
     import { DEFAULT_SLIDES } from "$lib/utils/prayer";
 
     // Extracted modules
