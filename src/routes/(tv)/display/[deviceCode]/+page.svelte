@@ -915,7 +915,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: clamp(24px, 4.5vw, 86px);
+        font-size: clamp(24px, 3vw, 82px);
         margin-top: 3%;
     }
 
@@ -932,7 +932,7 @@
 
     .masjid-name {
         font-family: var(--font-heading, "Cinzel"), serif;
-        font-size: clamp(12px, 2.2vw, 36px);
+        font-size: clamp(12px, 3.2vw, 36px);
         font-weight: 700;
         color: var(--accent-primary);
         letter-spacing: 0.05em;
@@ -940,7 +940,7 @@
     }
 
     .masjid-loc {
-        font-size: clamp(8px, 1vw, 20px);
+        font-size: clamp(8px, 1.2vw, 20px);
         color: var(--text-secondary);
         margin-top: 1px;
         letter-spacing: 0.08em;
@@ -951,7 +951,7 @@
     }
 
     .header-time {
-        font-size: clamp(28px, 8.6vw, 144px);
+        font-size: clamp(28px, 6.5vw, 144px);
         font-weight: 700;
         color: var(--accent-primary);
         font-variant-numeric: tabular-nums;
@@ -985,9 +985,9 @@
         background: var(--border-accent);
         border: 1px solid var(--accent-muted);
         border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        font-size: 16px;
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
         cursor: pointer;
         display: flex;
         align-items: center;
