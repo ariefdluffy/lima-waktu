@@ -941,17 +941,18 @@
     }
 
     .masjid-name {
-        font-family: var(--font-heading), serif;
-        font-size: clamp(18px, 4.2vw, 56px);
+        font-family: var(--font-heading, "Cinzel"), serif;
+        font-size: clamp(12px, 2.2vw, 36px);
         font-weight: 700;
         color: var(--accent-primary);
         letter-spacing: 0.05em;
+        line-height: 1.1;
     }
 
     .masjid-loc {
-        font-size: clamp(11px, 2.5vw, 32px);
+        font-size: clamp(8px, 1vw, 20px);
         color: var(--text-secondary);
-        margin-top: 2px;
+        margin-top: 1px;
         letter-spacing: 0.08em;
     }
 

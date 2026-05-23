@@ -47,25 +47,26 @@
         width: 23%;
         display: flex;
         flex-direction: column;
-        padding: 1% 2% 0.3% 2.5%;
+        padding: 1.5% 2%;
         border-right: 1px solid var(--border-accent);
         background: var(--bg-secondary);
         justify-content: center;
         align-items: center;
-        align-self: stretch;
-        gap: 1.5%;
+        gap: 1%;
         overflow: hidden;
+        flex-shrink: 0;
+        max-height: calc(100vh - 10% - 8%);
     }
 
     .left-date {
-        font-size: clamp(14px, 2vw, 56px);
+        font-size: clamp(12px, 1.8vw, 52px);
         color: var(--accent-primary);
         font-weight: 600;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
 
     .next-label {
-        font-size: clamp(11px, 1.2vw, 48px);
+        font-size: clamp(10px, 1.1vw, 44px);
         color: var(--text-secondary);
         letter-spacing: 0.15em;
         text-transform: uppercase;
@@ -73,7 +74,7 @@
 
     .next-prayer-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(32px, 5.5vw, 120px);
+        font-size: clamp(28px, 5vw, 108px);
         font-weight: 700;
         color: var(--accent-primary);
         text-align: center;
@@ -81,7 +82,7 @@
     }
 
     .next-prayer-time {
-        font-size: clamp(56px, 7vw, 160px);
+        font-size: clamp(50px, 6.5vw, 148px);
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;
@@ -99,7 +100,7 @@
     }
 
     .countdown-label {
-        font-size: clamp(9px, 2vw, 40px);
+        font-size: clamp(8px, 1.8vw, 36px);
         color: var(--text-muted);
         letter-spacing: 0.12em;
         display: block;
@@ -107,7 +108,7 @@
     }
 
     .countdown-val {
-        font-size: clamp(24px, 5.2vw, 96px);
+        font-size: clamp(22px, 4.8vw, 88px);
         font-weight: 700;
         color: var(--accent-secondary);
         font-variant-numeric: tabular-nums;
@@ -139,13 +140,13 @@
     }
 
     .iqamah-label {
-        font-size: clamp(9px, 2.8vw, 92px);
+        font-size: clamp(8px, 2.4vw, 84px);
         color: var(--text-muted);
         letter-spacing: 0.1em;
     }
 
     .iqamah-val {
-        font-size: clamp(16px, 4.3vw, 84px);
+        font-size: clamp(14px, 3.9vw, 76px);
         color: var(--text-secondary);
         font-weight: 500;
     }

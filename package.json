@@ -21,7 +21,9 @@
     "db:backup:local": "node --env-file=.env.local scripts/db-backup.mjs",
     "db:restore:local": "node --env-file=.env.local scripts/db-restore.mjs",
     "db:backup": "node --env-file=.env scripts/db-backup.mjs",
-    "db:restore": "node --env-file=.env scripts/db-restore.mjs"
+    "db:restore": "node --env-file=.env scripts/db-restore.mjs",
+    "reset:passwords:local": "node scripts/reset-passwords.mjs",
+    "reset:passwords": "node --env-file=.env scripts/reset-passwords.mjs"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.5.4",

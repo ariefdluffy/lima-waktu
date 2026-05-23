@@ -155,7 +155,7 @@
     }
 
     .prayer-card-name {
-        font-size: clamp(16px, 2.4vw, 52px);
+        font-size: clamp(14px, 2.2vw, 48px);
         color: var(--text-secondary);
         letter-spacing: 0.08em;
         font-weight: 500;
@@ -166,7 +166,7 @@
     }
 
     .prayer-card-time {
-        font-size: clamp(32px, 4.8vw, 104px);
+        font-size: clamp(28px, 4.4vw, 96px);
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;
@@ -175,7 +175,7 @@
     }
 
     .prayer-iqamah {
-        font-size: clamp(12px, 1.5vw, 52px);
+        font-size: clamp(10px, 1.3vw, 48px);
         color: var(--text-muted);
         white-space: nowrap;
     }
