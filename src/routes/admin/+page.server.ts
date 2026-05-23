@@ -14,6 +14,7 @@ import {
   prayerSchedules,
   runningTexts,
   slides,
+  subscriptions,
   themes,
   youtubeItems,
 } from "$lib/server/db/schema";
@@ -252,6 +253,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     .where(eq(themes.isActive, 1))
     .orderBy(desc(themes.isGlobal), desc(themes.createdAt));
 
+  // Load subscription data
+  const [subscriptionRow] = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.masjidId, masjidId))
+    .orderBy(desc(subscriptions.createdAt))
+    .limit(1);
+
   return {
     masjid,
     runningTexts: runningTextRows,
@@ -302,6 +311,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       name: t.name,
       isGlobal: t.isGlobal === 1,
     })),
+    subscription: subscriptionRow ?? null,
   };
 };
 
@@ -779,6 +789,22 @@ export const actions: Actions = {
       userId: locals.user.id,
       roleScope: "owner",
       isActive: 1,
+    });
+
+    // Auto-create 14-day trial subscription
+    const today = new Date();
+    const endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + 14);
+
+    await db.insert(subscriptions).values({
+      masjidId,
+      packageName: "Trial",
+      billingCycle: "monthly",
+      status: "trial",
+      startDate: today,
+      endDate: endDate,
+      price: "0.00",
+      autoRenew: 0,
     });
 
     return { success: true };

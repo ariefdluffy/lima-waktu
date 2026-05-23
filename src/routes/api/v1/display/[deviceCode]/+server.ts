@@ -9,6 +9,7 @@ import {
   runningTexts,
   slides,
   mediaAssets,
+  subscriptions,
   themes,
   youtubeItems,
 } from "$lib/server/db/schema";
@@ -51,6 +52,26 @@ export const GET: RequestHandler = async ({ params, request }) => {
       { ok: false, message: "Masjid tidak ditemukan untuk device ini" },
       { status: 404 },
     );
+  }
+
+  // Check subscription status — watermark if expired
+  let watermark: string | null = null;
+  const [sub] = await db
+    .select()
+    .from(subscriptions)
+    .where(eq(subscriptions.masjidId, masjid.id))
+    .orderBy(desc(subscriptions.createdAt))
+    .limit(1);
+
+  if (sub) {
+    const now = new Date();
+    const endDate = new Date(sub.endDate);
+    const isExpired =
+      sub.status === "expired" ||
+      ((sub.status === "trial" || sub.status === "grace") && endDate < now);
+    if (isExpired) {
+      watermark = "LIMAWAKU.MY.ID — Aktifkan langganan di menu Admin";
+    }
   }
 
   // Heartbeat update — pakai NOW() biar konsisten dengan MySQL server time
@@ -193,6 +214,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
 
   return json({
     ok: true,
+    watermark,
     data: {
       generatedAt: new Date().toISOString(),
       device: {

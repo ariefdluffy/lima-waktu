@@ -50,7 +50,7 @@
     {:else}
         <!-- LAYAR ADZAN BIASA -->
         <div class="mood-overlay mood-overlay--adzan">
-            <div class="mood-icon">🔔</div>
+            <div class="mood-icon">🕌</div>
             <div class="mood-title">وَقْتُ الْأَذَان</div>
             <div class="mood-subtitle">WAKTU ADZAN</div>
             <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
@@ -113,6 +113,9 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: clamp(2px, 0.6vh, 10px);
+        overflow: hidden;
+        padding: 2vh 0;
         animation: moodFadeIn 0.6s ease-out;
     }
 
@@ -136,7 +139,6 @@
         border: 1px solid var(--accent-muted, rgba(255, 255, 255, 0.2));
         border-radius: 999px;
         padding: 4px 20px;
-        margin-bottom: 1.5%;
         text-transform: uppercase;
     }
 
@@ -174,8 +176,7 @@
     }
 
     .mood-icon {
-        font-size: clamp(48px, 10vw, 140px);
-        margin-bottom: 2%;
+        font-size: clamp(36px, 7vw, 100px);
         animation: moodPulse 2s ease-in-out infinite;
     }
 
@@ -190,26 +191,23 @@
     }
 
     .mood-subtitle {
-        font-size: clamp(20px, 3.8vw, 78px);
+        font-size: clamp(16px, 3vw, 64px);
         color: var(--text-secondary);
-        margin-top: 1.5%;
         text-align: center;
         letter-spacing: 0.15em;
     }
 
     .mood-prayer {
-        font-size: clamp(24px, 4.5vw, 118px);
+        font-size: clamp(18px, 3.5vw, 90px);
         font-weight: 600;
         color: var(--accent-secondary);
-        margin-top: 2%;
         text-align: center;
     }
 
     .mood-adzan-call {
         font-family: var(--font-arabic), "Scheherazade New", serif;
-        font-size: clamp(20px, 3vw, 52px);
+        font-size: clamp(16px, 2.5vw, 42px);
         color: var(--accent-primary);
-        margin-top: 2%;
         text-align: center;
         direction: rtl;
         opacity: 0.9;
@@ -217,24 +215,21 @@
 
     .mood-ayat {
         font-family: var(--font-arabic), serif;
-        font-size: clamp(16px, 2.2vw, 52px);
+        font-size: clamp(14px, 1.8vw, 40px);
         color: var(--text-secondary);
-        margin-top: 3%;
         text-align: center;
         max-width: 60%;
-        line-height: 1.6;
+        line-height: 1.4;
         font-style: italic;
     }
 
     .mood-ayat-src {
-        font-size: clamp(10px, 1.2vw, 32px);
+        font-size: clamp(10px, 1.2vw, 24px);
         color: var(--accent-muted);
-        margin-top: 1%;
         text-align: center;
     }
 
     .mood-countdown {
-        margin-top: 2%;
         background: var(--card-bg, rgba(255, 255, 255, 0.06));
         border: 1px solid var(--card-border, rgba(255, 255, 255, 0.12));
         border-radius: var(--border-radius, 12px);
@@ -243,7 +238,7 @@
     }
 
     .mood-countdown-label {
-        font-size: clamp(10px, 3vw, 80px);
+        font-size: clamp(10px, 2vw, 48px);
         color: var(--text-muted);
         letter-spacing: 0.15em;
         font-weight: 600;
@@ -251,7 +246,7 @@
     }
 
     .mood-countdown-val {
-        font-size: clamp(36px, 7vw, 160px);
+        font-size: clamp(28px, 5vw, 110px);
         font-weight: 700;
         color: var(--accent-primary);
         font-variant-numeric: tabular-nums;
