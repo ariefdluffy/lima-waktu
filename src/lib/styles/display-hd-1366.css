@@ -1,0 +1,352 @@
+/* Display TV Optimized untuk 1366x768 (HD Ready TV 24-27 inch) */
+/* File ini memberikan penyesuaian font yang lebih agresif untuk resolusi HD */
+
+/* ============================================================
+   BREAKPOINT KHUSUS 1366x768 - PRIORITAS TINGGI
+   ============================================================ */
+
+@media (max-width: 1366px) and (max-height: 768px) {
+  :root {
+    --panel-gap: 0.8%;
+    --panel-padding: 0.8%;
+    --header-height: 11%;
+    --running-bar-height: 9%;
+  }
+
+  /* ============================================================
+     HEADER SECTION - Reduced font sizes
+     ============================================================ */
+
+  .header {
+    padding: 0.6% 1.5%;
+    height: var(--header-height);
+  }
+
+  .masjid-logo-area {
+    gap: 0.8%;
+  }
+
+  .masjid-logo {
+    width: 6.5%;
+    font-size: clamp(14px, 2.8vw, 40px);
+  }
+
+  .masjid-name {
+    font-size: clamp(10px, 1.6vw, 24px);
+    line-height: 1;
+  }
+
+  .masjid-loc {
+    font-size: clamp(7px, 0.85vw, 14px);
+    margin-top: 0px;
+  }
+
+  .header-time {
+    font-size: clamp(22px, 3.8vw, 64px);
+  }
+
+  /* ============================================================
+     MAIN BODY LAYOUT
+     ============================================================ */
+
+  .main-body {
+    gap: var(--panel-gap);
+    padding: var(--panel-padding);
+  }
+
+  /* LEFT PANEL - Aggressive reduction */
+  .left-panel {
+    width: 23%;
+    padding: 0.8% 1.2%;
+    gap: 0.6%;
+    max-height: calc(100vh - var(--header-height) - var(--running-bar-height));
+  }
+
+  .left-date {
+    font-size: clamp(10px, 1.4vw, 36px);
+    margin-bottom: 0px;
+  }
+
+  .next-label {
+    font-size: clamp(8px, 0.95vw, 28px);
+  }
+
+  .next-prayer-name {
+    font-size: clamp(22px, 3.8vw, 72px);
+  }
+
+  .next-prayer-time {
+    font-size: clamp(40px, 4.8vw, 100px);
+  }
+
+  .countdown-box {
+    padding: 1.5% 1.2%;
+  }
+
+  .countdown-label {
+    font-size: clamp(7px, 1.4vw, 28px);
+    margin-bottom: 0px;
+  }
+
+  .countdown-val {
+    font-size: clamp(18px, 3.6vw, 64px);
+  }
+
+  .progress-track {
+    height: 5px;
+    margin-top: 4px;
+  }
+
+  .iqamah-box {
+    padding: 1.2% 1.2%;
+  }
+
+  .iqamah-label {
+    font-size: clamp(7px, 1.8vw, 56px);
+  }
+
+  .iqamah-val {
+    font-size: clamp(11px, 2.8vw, 48px);
+    margin-top: 2px;
+  }
+
+  /* CENTER PANEL */
+  .center-panel {
+    flex: 1;
+    padding: 0.8% 0.6%;
+    gap: 0.8%;
+  }
+
+  .prayer-grid {
+    gap: 0.6%;
+    height: 50%;
+  }
+
+  .prayer-card {
+    gap: 1.2%;
+    padding: 1.2%;
+  }
+
+  .prayer-card-icon {
+    font-size: clamp(12px, 1.6vw, 24px);
+  }
+
+  .prayer-card-name {
+    font-size: clamp(11px, 1.7vw, 36px);
+  }
+
+  .prayer-card-time {
+    font-size: clamp(22px, 3.4vw, 72px);
+  }
+
+  .prayer-iqamah {
+    font-size: clamp(8px, 1.1vw, 36px);
+  }
+
+  .active-badge {
+    font-size: clamp(7px, 0.85vw, 44px);
+    padding: 1px 5px;
+  }
+
+  .slide-area {
+    padding: 0.6%;
+  }
+
+  .slide-content {
+    padding: 1.5%;
+  }
+
+  .slide-arabic {
+    font-size: clamp(26px, 2.6vw, 44px);
+    margin-bottom: 1.5%;
+  }
+
+  .slide-translation {
+    font-size: clamp(11px, 1.3vw, 26px);
+  }
+
+  .slide-source {
+    font-size: clamp(8px, 0.95vw, 18px);
+    margin-top: 0.8%;
+  }
+
+  .slide-dots {
+    bottom: 3px;
+    gap: 2px;
+  }
+
+  .dot {
+    width: 3px;
+    height: 3px;
+  }
+
+  /* RIGHT PANEL */
+  .right-panel {
+    width: 21%;
+    padding: 0.8% 0.8%;
+    gap: 0.8%;
+  }
+
+  .info-card {
+    padding: 1.5% 4%;
+  }
+
+  .info-card-title {
+    font-size: clamp(8px, 1vw, 28px);
+    margin-bottom: 2%;
+  }
+
+  .info-card-value {
+    font-size: clamp(12px, 1.6vw, 28px);
+    margin-top: 2px;
+  }
+
+  .info-card-sub {
+    font-size: clamp(9px, 1.1vw, 28px);
+    margin-top: 1px;
+  }
+
+  .hijriyah-card {
+    text-align: center;
+  }
+
+  .hijriyah-value {
+    font-size: clamp(9px, 1.2vw, 24px);
+    margin-top: 2%;
+  }
+
+  .weather-body {
+    gap: 4%;
+    margin-top: 2%;
+  }
+
+  .weather-icon {
+    font-size: clamp(18px, 2.4vw, 36px);
+  }
+
+  .weather-temp {
+    font-size: clamp(14px, 1.9vw, 28px);
+  }
+
+  .weather-desc {
+    font-size: clamp(8px, 0.95vw, 12px);
+  }
+
+  .weather-city {
+    font-size: clamp(8px, 0.95vw, 48px);
+    margin-top: 1.5%;
+  }
+
+  .weather-loading {
+    font-size: clamp(8px, 0.95vw, 12px);
+    margin-top: 2%;
+  }
+
+  .event-card {
+    text-align: center;
+  }
+
+  .event-days {
+    font-size: clamp(26px, 3.6vw, 52px);
+  }
+
+  .event-label {
+    font-size: clamp(9px, 1vw, 20px);
+    margin-top: 1.5%;
+  }
+
+  .imsakiyah-row {
+    margin-top: 2%;
+  }
+
+  .imsakiyah-time {
+    font-size: clamp(14px, 1.8vw, 36px);
+  }
+
+  .imsakiyah-sep {
+    font-size: clamp(14px, 1.8vw, 36px);
+  }
+
+  .jumat-card {
+    border-color: rgba(200, 168, 75, 0.3);
+    background: rgba(200, 168, 75, 0.06);
+  }
+
+  .jumat-body {
+    margin-top: 2%;
+  }
+
+  .jumbotron-card {
+    border-color: rgba(100, 200, 255, 0.2);
+    background: rgba(100, 200, 255, 0.04);
+  }
+
+  .jumbotron-title {
+    font-size: clamp(9px, 1.1vw, 28px);
+    margin-top: 2%;
+  }
+
+  .jumbotron-content {
+    font-size: clamp(8px, 0.95vw, 24px);
+    margin-top: 1.5%;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  /* ============================================================
+     RUNNING BAR - Reduced font
+     ============================================================ */
+
+  .running-bar {
+    height: var(--running-bar-height);
+  }
+
+  .running-icon {
+    width: 6.5%;
+    font-size: clamp(12px, 1.6vw, 24px);
+  }
+
+  .running-text {
+    font-size: clamp(16px, 1.9vw, 32px);
+  }
+
+  /* ============================================================
+     SCROLLBAR
+     ============================================================ */
+
+  .right-panel::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .right-panel::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 2px;
+  }
+}
+
+/* ============================================================
+   FALLBACK untuk 1366px width (tanpa height constraint)
+   ============================================================ */
+
+@media (max-width: 1366px) and (min-height: 769px) {
+  /* Gunakan nilai yang sedikit lebih besar dari HD 1366x768 */
+  .header-time {
+    font-size: clamp(24px, 4.2vw, 72px);
+  }
+
+  .next-prayer-time {
+    font-size: clamp(44px, 5.2vw, 110px);
+  }
+
+  .countdown-val {
+    font-size: clamp(20px, 3.8vw, 68px);
+  }
+
+  .prayer-card-time {
+    font-size: clamp(24px, 3.6vw, 76px);
+  }
+
+  .running-text {
+    font-size: clamp(18px, 2vw, 36px);
+  }
+}

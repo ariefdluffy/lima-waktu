@@ -7,6 +7,10 @@
     import MoodOverlay from "$lib/components/display/MoodOverlay.svelte";
     import { themeCssVars } from "$lib/display/helpers";
     import { DEFAULT_SLIDES } from "$lib/utils/prayer";
+    import "$lib/styles/display-fullhd.css";
+    import "$lib/styles/display-layout-fix.css";
+    import "$lib/styles/display-responsive-1366.css";
+    import "$lib/styles/display-hd-1366.css";
     import {
         prayer,
         updatePrayerState,
@@ -82,6 +86,10 @@
 
 <svelte:head>
     <title>Preview Display TV - Lima Waktu</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap"
         rel="stylesheet"
