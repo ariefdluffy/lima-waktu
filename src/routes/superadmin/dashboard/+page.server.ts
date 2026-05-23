@@ -134,14 +134,18 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .groupBy(sql`DATE_FORMAT(${invoices.paidAt}, '%Y-%m')`)
       .orderBy(sql`DATE_FORMAT(${invoices.paidAt}, '%Y-%m')`),
 
-    // Device status counts
+    // Device status counts (heartbeat-based: online = seen < 5 min, offline = seen > 5 min, unknown = never seen)
     db
       .select({
-        status: devices.status,
+        status: sql<string>`CASE
+          WHEN ${devices.lastSeenAt} IS NULL THEN 'unknown'
+          WHEN ${devices.lastSeenAt} > NOW() - INTERVAL 5 MINUTE THEN 'online'
+          ELSE 'offline'
+        END`,
         val: count(),
       })
       .from(devices)
-      .groupBy(devices.status),
+      .groupBy(sql`1`),
   ]);
 
   const subMap: Record<string, number> = {

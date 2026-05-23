@@ -1,5 +1,6 @@
 import { desc, eq, sql, count } from "drizzle-orm";
 import { fail, redirect } from "@sveltejs/kit";
+import os from "node:os";
 import { db } from "$lib/server/db";
 import {
   devices,
@@ -73,6 +74,7 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       uptime: process.uptime(),
       memory: process.memoryUsage(),
       dbStatus: "connected" as const,
+      cpuCount: os.cpus().length,
     },
   };
 };

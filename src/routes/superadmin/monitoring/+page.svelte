@@ -98,7 +98,7 @@
                 <div>
                     <p class="text-xs text-slate-500">CPU (Logical)</p>
                     <p class="font-semibold text-slate-700">
-                        {navigator.hardwareConcurrency ?? "-"} core
+                        {serverHealth.cpuCount} core
                     </p>
                 </div>
                 <div>

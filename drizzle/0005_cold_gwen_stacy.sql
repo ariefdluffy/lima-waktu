@@ -46,7 +46,7 @@ ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_primary_
 --> statement-breakpoint
 ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_fallback_provider_id_prayer_providers_id_fk` FOREIGN KEY (`fallback_provider_id`) REFERENCES `prayer_providers`(`id`) ON DELETE set null ON UPDATE no action;
 --> statement-breakpoint
-ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_default_method_id_prayer_calculation_methods_id_fk` FOREIGN KEY (`default_method_id`) REFERENCES `prayer_calculation_methods`(`id`) ON DELETE set null ON UPDATE no action;
+ALTER TABLE `global_prayer_config` ADD CONSTRAINT `gpc_default_method_id_fk` FOREIGN KEY (`default_method_id`) REFERENCES `prayer_calculation_methods`(`id`) ON DELETE set null ON UPDATE no action;
 --> statement-breakpoint
 ALTER TABLE `global_prayer_config` ADD CONSTRAINT `global_prayer_config_updated_by_users_id_fk` FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;
 --> statement-breakpoint

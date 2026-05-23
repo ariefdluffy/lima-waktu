@@ -1,45 +1,15 @@
-import { desc } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { randomUUID } from "node:crypto";
 import { db } from "$lib/server/db";
-import {
-  masjids,
-  masjidUsers,
-  subscriptions,
-  users,
-} from "$lib/server/db/schema";
+import { masjids, masjidUsers, subscriptions } from "$lib/server/db/schema";
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.user) throw redirect(302, "/auth/login");
   if (!locals.user.roles.includes("superadmin")) throw redirect(302, "/admin");
 
-  const [masjidRows, userRows, subscriptionRows] = await Promise.all([
-    db.select().from(masjids).orderBy(desc(masjids.createdAt)).limit(50),
-    db.select().from(users).orderBy(desc(users.createdAt)).limit(50),
-    db
-      .select({
-        id: subscriptions.id,
-        masjidId: subscriptions.masjidId,
-        packageName: subscriptions.packageName,
-        billingCycle: subscriptions.billingCycle,
-        status: subscriptions.status,
-        startDate: subscriptions.startDate,
-        endDate: subscriptions.endDate,
-        price: subscriptions.price,
-        autoRenew: subscriptions.autoRenew,
-        createdAt: subscriptions.createdAt,
-      })
-      .from(subscriptions)
-      .orderBy(desc(subscriptions.createdAt))
-      .limit(50),
-  ]);
-
-  return {
-    masjids: masjidRows,
-    users: userRows,
-    subscriptions: subscriptionRows,
-  };
+  // Redirect to dashboard — heavy data queries are done there
+  throw redirect(302, "/superadmin/dashboard");
 };
 
 export const actions: Actions = {

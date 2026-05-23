@@ -257,6 +257,131 @@
         </div>
     {/if}
 
+    <!-- Edit Admin Modal -->
+    {#if editAdminId && editAdminData}
+        <div
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onclick={() => (editAdminId = null)}
+        >
+            <div
+                class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
+                onclick={(e) => e.stopPropagation()}
+            >
+                <h2 class="text-lg font-semibold text-emerald-900">
+                    Edit Admin
+                </h2>
+                <form
+                    method="POST"
+                    action="?/updateAdmin"
+                    class="mt-4 grid gap-3"
+                >
+                    <input
+                        type="hidden"
+                        name="user_id"
+                        value={editAdminData.id}
+                    />
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
+                            >Nama Lengkap</label
+                        >
+                        <input
+                            name="fullName"
+                            value={editAdminData.fullName}
+                            required
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
+                            >Email</label
+                        >
+                        <input
+                            name="email"
+                            type="email"
+                            value={editAdminData.email}
+                            required
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
+                            >No. HP</label
+                        >
+                        <input
+                            name="phone"
+                            value={editAdminData.phone ?? ""}
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
+                    </div>
+                    <div class="flex items-center justify-end gap-2">
+                        <button
+                            type="button"
+                            class="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                            onclick={() => (editAdminId = null)}>Batal</button
+                        >
+                        <button
+                            class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                            >Simpan</button
+                        >
+                    </div>
+                </form>
+            </div>
+        </div>
+    {/if}
+
+    <!-- Reset Password Modal -->
+    {#if resetPassUserId}
+        <div
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            onclick={() => (resetPassUserId = null)}
+        >
+            <div
+                class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+                onclick={(e) => e.stopPropagation()}
+            >
+                <h2 class="text-lg font-semibold text-emerald-900">
+                    Reset Password Admin
+                </h2>
+                <form
+                    method="POST"
+                    action="?/resetPassword"
+                    class="mt-4 space-y-4"
+                >
+                    <input
+                        type="hidden"
+                        name="user_id"
+                        value={resetPassUserId}
+                    />
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
+                            >Password Baru * (min 6 karakter)</label
+                        >
+                        <input
+                            name="password"
+                            type="password"
+                            required
+                            minlength={6}
+                            placeholder="Masukkan password baru"
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
+                    </div>
+                    <div class="flex items-center justify-end gap-2">
+                        <button
+                            type="button"
+                            class="rounded-xl border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50"
+                            onclick={() => (resetPassUserId = null)}
+                            >Batal</button
+                        >
+                        <button
+                            class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                            >Reset Password</button
+                        >
+                    </div>
+                </form>
+            </div>
+        </div>
+    {/if}
+
     <!-- Audit Log -->
     <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 class="text-sm font-semibold text-slate-800">Aktivitas Terbaru</h2>

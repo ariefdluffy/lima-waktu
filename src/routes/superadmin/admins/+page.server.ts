@@ -53,7 +53,7 @@ export const load = async ({
       .from(users)
       .innerJoin(
         userRoles,
-        sql`${users.id} = ${userRoles.userId} AND ${userRoles.roleId} = (SELECT id FROM roles WHERE code = 'admin')`,
+        sql`${users.id} = ${userRoles.userId} AND ${userRoles.roleId} = (SELECT id FROM roles WHERE code = 'admin_masjid')`,
       )
       .where(where)
       .orderBy(desc(users.createdAt))
@@ -64,7 +64,7 @@ export const load = async ({
       .from(users)
       .innerJoin(
         userRoles,
-        sql`${users.id} = ${userRoles.userId} AND ${userRoles.roleId} = (SELECT id FROM roles WHERE code = 'admin')`,
+        sql`${users.id} = ${userRoles.userId} AND ${userRoles.roleId} = (SELECT id FROM roles WHERE code = 'admin_masjid')`,
       )
       .where(where)
       .then((r) => Number(r[0].val)),
@@ -176,11 +176,11 @@ export const actions = {
       isActive: 1,
     });
 
-    // Assign role "admin"
+    // Assign role "admin_masjid"
     const [adminRole] = await db
       .select({ id: roles.id })
       .from(roles)
-      .where(eq(roles.code, "admin"))
+      .where(eq(roles.code, "admin_masjid"))
       .limit(1);
 
     if (adminRole) {

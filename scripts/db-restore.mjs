@@ -1,6 +1,7 @@
 /**
  * db-restore.mjs
  * Restore data dari fail JSON backup ke database baru.
+ * Auto-run schema migrations (drizzle) sebelum restore.
  *
  * Cara guna:
  *   node --env-file=.env.local scripts/db-restore.mjs --in=./backup/backup-xxx.json
@@ -15,6 +16,10 @@
 import mysql from "mysql2/promise";
 import fs from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = path.resolve(__dirname, "..");
 
 const databaseUrl = process.env.DATABASE_URL;
 
@@ -48,18 +53,119 @@ console.log(
 );
 console.log("");
 
-if (dryRun) {
-  console.log("🔍 DRY RUN — tiada perubahan dibuat ke database.\n");
-  for (const [table, rows] of Object.entries(backup.data)) {
-    console.log(
-      `  📋 ${table.padEnd(40)} ${rows.length} baris akan di-restore`,
-    );
+// ============================================================
+// Langkah 1: Auto-run schema migrations jika table belum wujud
+// ============================================================
+const conn = await mysql.createConnection(databaseUrl);
+
+async function ensureSchema() {
+  // Check if any table from backup exists
+  const tables = Object.keys(backup.data).filter(
+    (t) => backup.data[t]?.length > 0,
+  );
+  if (tables.length === 0) return; // nothing to check
+
+  const [existingTables] = await conn.query("SHOW TABLES");
+  const existingSet = new Set(
+    Object.values(existingTables[0] ?? {}).length
+      ? existingTables.map((r) => Object.values(r)[0])
+      : [],
+  );
+
+  const missing = tables.filter((t) => !existingSet.has(t));
+  if (missing.length === 0) {
+    console.log("   ✅ Schema sudah wujud, skip migration.\n");
+    return;
   }
-  console.log("\n✅ Dry run selesai.");
-  process.exit(0);
+
+  // Read _journal.json untuk order migrations
+  const journalPath = path.join(
+    PROJECT_ROOT,
+    "drizzle",
+    "meta",
+    "_journal.json",
+  );
+  let journal;
+  try {
+    const journalRaw = await fs.readFile(journalPath, "utf-8");
+    journal = JSON.parse(journalRaw);
+  } catch {
+    console.warn(
+      "   ⚠️  Cannot read drizzle journal. Running drizzle-kit push as fallback.\n",
+    );
+    await runDrizzlePush();
+    return;
+  }
+
+  console.log(
+    `   ⚠️  ${missing.length} table tidak wujud. Menjalankan schema migrations...\n`,
+  );
+
+  for (const entry of journal.entries) {
+    const sqlFile = path.join(PROJECT_ROOT, "drizzle", `${entry.tag}.sql`);
+    let sql;
+    try {
+      sql = await fs.readFile(sqlFile, "utf-8");
+    } catch {
+      console.warn(`   ⚠️  Cannot read migration: ${entry.tag}.sql — skip`);
+      continue;
+    }
+
+    // Split by "--> statement-breakpoint" for multi-statement files
+    const statements = sql
+      .split("--> statement-breakpoint")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    for (const stmt of statements) {
+      try {
+        await conn.query(stmt);
+      } catch (err) {
+        // Ignore "already exists" errors — safe for re-runs
+        const msg = err.message.toLowerCase();
+        if (
+          msg.includes("already exists") ||
+          msg.includes("duplicate") ||
+          msg.includes("already in use")
+        ) {
+          continue;
+        }
+        throw err;
+      }
+    }
+    console.log(`   ✅ Migration: ${entry.tag}.sql`);
+  }
+
+  console.log("");
 }
 
-// Urutan restore: parent dulu, child kemudian (sama dengan backup)
+async function runDrizzlePush() {
+  // Fallback: spawn drizzle-kit push
+  const { execSync } = await import("child_process");
+  try {
+    console.log("   🔄 Running: npm run db:push");
+    execSync("npm run db:push", {
+      cwd: PROJECT_ROOT,
+      stdio: "inherit",
+      env: { ...process.env, DATABASE_URL: databaseUrl },
+    });
+    console.log("");
+  } catch (err) {
+    console.error("   ❌ drizzle-kit push failed:", err.message);
+    console.error("   Jalankan manual: npm run db:push");
+    throw err;
+  }
+}
+
+if (!dryRun) {
+  await ensureSchema();
+} else {
+  console.log("🔍 DRY RUN — skip schema check.\n");
+}
+
+// ============================================================
+// Langkah 2: Restore data
+// ============================================================
 const TABLE_ORDER = [
   "roles",
   "permissions",
@@ -95,7 +201,17 @@ const TABLE_ORDER = [
   "audit_logs",
 ];
 
-const conn = await mysql.createConnection(databaseUrl);
+if (dryRun) {
+  console.log("🔍 DRY RUN — tiada perubahan dibuat ke database.\n");
+  for (const [table, rows] of Object.entries(backup.data)) {
+    console.log(
+      `  📋 ${table.padEnd(40)} ${rows.length} baris akan di-restore`,
+    );
+  }
+  console.log("\n✅ Dry run selesai.");
+  await conn.end();
+  process.exit(0);
+}
 
 // Disable FK checks semasa restore supaya urutan insert tidak menyebabkan error
 await conn.query("SET FOREIGN_KEY_CHECKS = 0");
