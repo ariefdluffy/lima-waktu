@@ -347,13 +347,24 @@
 
     .screensaver-sub {
         font-size: clamp(8px, 0.8vw, 16px);
+        margin-top: 6px;
+    }
+
+    .screensaver-body {
+        max-width: 900px;
+        padding: 0 24px;
+    }
+
+    .screensaver-divider {
+        height: 250px;
+        margin: 0 30px;
     }
 
     .screensaver-next-prayer {
-        padding: 14px 28px;
-        margin-top: 10px;
-        min-width: 200px;
-        gap: 4px;
+        padding: 24px 30px;
+        gap: 6px;
+        max-width: 320px;
+        border-radius: var(--border-radius, 16px);
     }
 
     .screensaver-next-label {

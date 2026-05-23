@@ -256,46 +256,56 @@
         >
             <div class="screensaver-bg"></div>
             <div class="screensaver-body">
-                <div class="screensaver-logo">
-                    {#if payload.masjid.logoUrl}
-                        <img
-                            src={payload.masjid.logoUrl}
-                            alt="Logo"
-                            class="screensaver-logo-img"
-                        />
-                    {:else}
-                        🕌
-                    {/if}
-                </div>
-                <div class="screensaver-masjid-name">
-                    {payload.masjid.name}
-                </div>
-                <div class="screensaver-time">{liveClock}</div>
-                <div class="screensaver-date">{liveDate}</div>
-                <div class="screensaver-hijri">
-                    {hijriyahDate || "—"}
-                </div>
-                <!-- Next Prayer Card -->
-                <div class="screensaver-next-prayer">
-                    <div class="screensaver-next-label">SHOLAT BERIKUTNYA</div>
-                    <div class="screensaver-next-name">
-                        {prayer.nextPrayerName}
+                <!-- Kolom Kiri: identitas masjid + waktu -->
+                <div class="screensaver-col-left">
+                    <div class="screensaver-logo">
+                        {#if payload.masjid.logoUrl}
+                            <img
+                                src={payload.masjid.logoUrl}
+                                alt="Logo"
+                                class="screensaver-logo-img"
+                            />
+                        {:else}
+                            🕌
+                        {/if}
                     </div>
-                    <div class="screensaver-next-time">
-                        {prayer.nextPrayerTime}
+                    <div class="screensaver-masjid-name">
+                        {payload.masjid.name}
                     </div>
-                    {#if prayer.iqamahTime}
-                        <div class="screensaver-next-iqamah">
-                            Iqamah {prayer.iqamahTime}
-                        </div>
-                    {/if}
-                    <div class="screensaver-next-countdown">
-                        <span class="screensaver-next-cd-icon">⏳</span>
-                        {prayer.countdown}
+                    <div class="screensaver-time">{liveClock}</div>
+                    <div class="screensaver-date">{liveDate}</div>
+                    <div class="screensaver-hijri">
+                        {hijriyahDate || "—"}
                     </div>
+                    <div class="screensaver-sub">Mode hemat energi aktif</div>
                 </div>
 
-                <div class="screensaver-sub">Mode hemat energi aktif</div>
+                <!-- Divider -->
+                <div class="screensaver-divider"></div>
+
+                <!-- Kolom Kanan: card sholat berikutnya -->
+                <div class="screensaver-col-right">
+                    <div class="screensaver-next-prayer">
+                        <div class="screensaver-next-label">
+                            SHOLAT BERIKUTNYA
+                        </div>
+                        <div class="screensaver-next-name">
+                            {prayer.nextPrayerName}
+                        </div>
+                        <div class="screensaver-next-time">
+                            {prayer.nextPrayerTime}
+                        </div>
+                        {#if prayer.iqamahTime}
+                            <div class="screensaver-next-iqamah">
+                                Iqamah {prayer.iqamahTime}
+                            </div>
+                        {/if}
+                        <div class="screensaver-next-countdown">
+                            <span class="screensaver-next-cd-icon">⏳</span>
+                            {prayer.countdown}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     {:else if prayer.tahajudMode}
@@ -651,12 +661,15 @@
     .screensaver-body {
         position: relative;
         z-index: 1;
-        text-align: center;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        gap: 12px;
+        justify-content: center;
+        gap: 0;
         animation: screensaverFade 2s ease-out;
+        width: 100%;
+        max-width: 1200px;
+        padding: 0 48px;
     }
 
     @keyframes screensaverFade {
@@ -677,7 +690,7 @@
         align-items: center;
         justify-content: center;
         font-size: 64px;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
         background: var(--card-bg);
         border: 1px solid var(--card-border);
         border-radius: 50%;
@@ -706,16 +719,16 @@
         letter-spacing: 0.02em;
         color: var(--text-primary);
         text-shadow: 0 0 20px var(--accent-muted);
-        margin-top: 8px;
+        margin-top: 4px;
     }
 
     .screensaver-date {
-        font-size: clamp(14px, 6vw, 68px);
+        font-size: clamp(14px, 4vw, 48px);
         color: var(--text-muted);
     }
 
     .screensaver-hijri {
-        font-size: clamp(12px, 4vw, 54px);
+        font-size: clamp(12px, 3vw, 54px);
         color: var(--accent-muted);
         margin-top: 4px;
     }
@@ -726,27 +739,59 @@
         text-align: center;
         width: 100%;
         padding: 0 24px;
+        margin-top: 12px;
+    }
+
+    /* Column Layouts */
+    .screensaver-col-left {
+        flex: 1.2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 8px;
+    }
+
+    .screensaver-divider {
+        width: 1px;
+        height: 400px;
+        background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0) 0%,
+            var(--border-accent, rgba(200, 168, 75, 0.25)) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        margin: 0 60px;
+    }
+
+    .screensaver-col-right {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
     }
 
     /* SCREENSAVER — Next Prayer Card */
     .screensaver-next-prayer {
-        margin-top: 16px;
-        padding: 20px 40px;
+        padding: 40px 48px;
         background: linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.06) 0%,
-            rgba(255, 255, 255, 0.02) 100%
+            rgba(255, 255, 255, 0.05) 0%,
+            rgba(255, 255, 255, 0.01) 100%
         );
         border: 1px solid var(--border-accent, rgba(200, 168, 75, 0.25));
-        border-radius: var(--border-radius, 16px);
+        border-radius: var(--border-radius, 24px);
         backdrop-filter: blur(12px);
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
+        gap: 12px;
         animation: screensaverCardPulse 4s ease-in-out infinite;
-        min-width: 280px;
+        width: 100%;
+        max-width: 420px;
     }
 
     @keyframes screensaverCardPulse {
@@ -773,14 +818,14 @@
 
     .screensaver-next-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(18px, 2.5vw, 52px);
+        font-size: clamp(18px, 3.5vw, 52px);
         font-weight: 700;
         color: var(--text-primary);
         letter-spacing: 0.08em;
     }
 
     .screensaver-next-time {
-        font-size: clamp(24px, 3.5vw, 72px);
+        font-size: clamp(24px, 45.5vw, 82px);
         font-weight: 700;
         color: var(--accent-primary, #c8a84b);
         line-height: 1.1;
@@ -797,7 +842,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: clamp(14px, 1.8vw, 38px);
+        font-size: clamp(14px, 2vw, 38px);
         font-weight: 600;
         color: var(--text-secondary);
         font-variant-numeric: tabular-nums;
