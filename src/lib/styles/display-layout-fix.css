@@ -1,0 +1,303 @@
+/* Display TV Layout Fix untuk Full HD (1920x1080) TV 32 inch */
+/* Perbaikan layout yang berantakan dengan proper spacing dan sizing */
+
+:root {
+  --panel-gap: 1.2%;
+  --panel-padding: 1.5%;
+  --header-height: 10%;
+  --running-bar-height: 8%;
+  --main-body-height: calc(100% - var(--header-height) - var(--running-bar-height));
+}
+
+/* ============================================================
+   MAIN LAYOUT STRUCTURE
+   ============================================================ */
+
+.tv-wrap {
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-primary);
+  font-family: var(--font-body, "Exo 2", sans-serif);
+  position: relative;
+  overflow: hidden;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   HEADER SECTION
+   ============================================================ */
+
+.header {
+  position: relative;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1% 2.5%;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-accent);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.masjid-logo-area {
+  display: flex;
+  align-items: center;
+  gap: 1.5%;
+  flex: 1;
+  min-width: 0;
+}
+
+.masjid-logo {
+  width: 6%;
+  aspect-ratio: 1;
+  background: var(--border-accent);
+  border: 1.5px solid var(--prayer-active-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(20px, 3.5vw, 64px);
+  flex-shrink: 0;
+}
+
+.masjid-name {
+  font-family: var(--font-heading, "Cinzel"), serif;
+  font-size: clamp(16px, 2.8vw, 48px);
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+
+.masjid-loc {
+  font-size: clamp(10px, 1.2vw, 24px);
+  color: var(--text-secondary);
+  margin-top: 2px;
+  letter-spacing: 0.08em;
+}
+
+.header-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.header-time {
+  font-size: clamp(28px, 5.5vw, 108px);
+  font-weight: 700;
+  color: var(--accent-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+/* ============================================================
+   MAIN BODY - THREE PANEL LAYOUT
+   ============================================================ */
+
+.main-body {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  gap: var(--panel-gap);
+  padding: var(--panel-padding);
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* LEFT PANEL */
+.left-panel {
+  width: 23%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5% 2%;
+  border-right: 1px solid var(--border-accent);
+  background: var(--bg-secondary);
+  justify-content: center;
+  align-items: center;
+  gap: 1.5%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* CENTER PANEL */
+.center-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5% 1%;
+  gap: 1.5%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.prayer-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1%;
+  height: 50%;
+  min-height: 0;
+}
+
+.prayer-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2%;
+  padding: 2%;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.slide-area {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1%;
+  transition: opacity 0.5s ease;
+  min-height: 0;
+}
+
+/* RIGHT PANEL */
+.right-panel {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5% 1.5%;
+  border-left: 1px solid var(--border-accent);
+  background: var(--bg-secondary);
+  gap: 1.5%;
+  justify-content: flex-start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-shrink: 0;
+}
+
+.info-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 3% 7%;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   RUNNING BAR
+   ============================================================ */
+
+.running-bar {
+  position: relative;
+  height: var(--running-bar-height);
+  background: var(--running-bar-bg);
+  border-top: 1px solid var(--running-bar-border);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+.running-icon {
+  flex-shrink: 0;
+  width: 6%;
+  height: 100%;
+  background: var(--prayer-active-glow);
+  border-right: 1px solid var(--running-bar-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(16px, 2vw, 32px);
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.08em;
+}
+
+.running-track {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.running-text {
+  display: inline-block;
+  font-size: clamp(22px, 2.4vw, 48px);
+  color: var(--text-secondary);
+  animation: marquee 70s linear infinite;
+  padding-left: 100%;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* ============================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+
+@media (max-width: 1920px) {
+  .left-panel {
+    width: 24%;
+  }
+
+  .center-panel {
+    flex: 1;
+  }
+
+  .right-panel {
+    width: 21%;
+  }
+}
+
+@media (max-width: 1600px) {
+  .right-panel {
+    display: none;
+  }
+
+  .left-panel {
+    width: 25%;
+  }
+
+  .center-panel {
+    flex: 1;
+  }
+}
+
+/* ============================================================
+   SCROLLBAR STYLING
+   ============================================================ */
+
+.right-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.right-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.right-panel::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.right-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--border-accent);
+}

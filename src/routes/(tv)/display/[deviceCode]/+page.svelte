@@ -9,6 +9,7 @@
     import YoutubeLayout from "$lib/components/display/YoutubeLayout.svelte";
     import MoodOverlay from "$lib/components/display/MoodOverlay.svelte";
     import "$lib/styles/display-fullhd.css";
+    import "$lib/styles/display-layout-fix.css";
     import { DEFAULT_SLIDES } from "$lib/utils/prayer";
 
     // Extracted modules
