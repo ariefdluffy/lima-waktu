@@ -683,7 +683,7 @@
     }
 
     .screensaver-time {
-        font-size: clamp(48px, 16vw, 200px);
+        font-size: clamp(48px, 10vw, 180px);
         font-weight: 700;
         line-height: 1;
         letter-spacing: 0.02em;
