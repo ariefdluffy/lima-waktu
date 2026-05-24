@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Lima Waktu TV</string>
     <!-- Ganti URL ini dengan URL domain web display TV publik Anda -->
-    <string name="default_url">https://lima-waktu.pages.dev/display/TV001</string>
+    <string name="default_url">https://limawaktu.my.id/display/LW-F1E94ADD</string>
 </resources>
