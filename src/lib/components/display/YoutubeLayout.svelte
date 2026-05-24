@@ -224,7 +224,7 @@
     /* ─── INFO OVERLAY ─── */
     .yt-info-overlay {
         position: absolute;
-        top: 10%;
+        top: 8%;
         left: 2.5%;
         width: 24%;
         max-height: 95%;
@@ -296,7 +296,7 @@
     }
 
     .ov-countdown-val {
-        font-size: clamp(18px, 3.8vw, 46px);
+        font-size: clamp(18px, 2.8vw, 46px);
         font-weight: 700;
         color: #34d399;
         font-variant-numeric: tabular-nums;
