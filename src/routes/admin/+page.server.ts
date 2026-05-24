@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, count, lt } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
-import { depends } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import {
@@ -26,7 +25,7 @@ import { invalidateCache } from "$lib/server/prayer/cache";
 
 const PAGE_SIZE = 10;
 
-export const load: PageServerLoad = async ({ locals, url }) => {
+export const load: PageServerLoad = async ({ locals, url, depends }) => {
   depends("app:admin");
   const pageRunningText = Math.max(
     1,
