@@ -94,7 +94,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap"
         rel="stylesheet"
     />
-    <link rel="icon" href="/favicon.svg" />
+    <link rel="icon" href="/icon/favicon-32.svg" type="image/svg+xml" />
     <style>
         body {
             margin: 0;

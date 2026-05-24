@@ -178,27 +178,13 @@
 >
     <!-- Logo Area -->
     <div class="flex items-center gap-3 border-b border-slate-100 px-6 py-5">
-        <div
-            class="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500 to-emerald-700 text-white shadow-md shadow-emerald-200"
-        >
-            <svg
-                class="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.95l-.71.71M21 12h-1M4 12H3m16.66 7.66l-.71-.71M4.05 4.05l-.71-.71M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                />
-            </svg>
-        </div>
-        <div>
-            <p class="text-base font-bold text-slate-800">Lima Waktu</p>
-            <p class="text-[11px] font-medium text-slate-400">Admin Panel</p>
-        </div>
+        <a href="/" class="flex items-center gap-2">
+            <img
+                src="/icon/logo-horizontal.svg"
+                alt="Lima Waktu"
+                class="h-10 w-auto"
+            />
+        </a>
     </div>
 
     <!-- Nav Items -->

@@ -1,6 +1,5 @@
 <script lang="ts">
     import "./layout.css";
-    import favicon from "$lib/assets/favicon.svg";
     import { page } from "$app/stores";
 
     let { children, data } = $props();
@@ -17,7 +16,7 @@
 </script>
 
 <svelte:head>
-    <link rel="icon" href={favicon} />
+    <link rel="icon" href="/icon/favicon-32.svg" type="image/svg+xml" />
     <title>Lima Waktu Admin</title>
 </svelte:head>
 
@@ -28,12 +27,19 @@
                 class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
             >
                 <div class="flex items-center gap-4">
-                    <a href="/" class="text-sm font-bold text-emerald-800"
-                        >Lima Waktu</a
+                    <a
+                        href="/"
+                        class="flex items-center gap-2 text-sm font-bold text-emerald-800"
                     >
+                        <img
+                            src="/icon/logo-horizontal.svg"
+                            alt="Lima Waktu"
+                            class="h-8 w-auto"
+                        />
+                    </a>
                     <a
                         href="/admin"
-                        class="text-sm text-slate-700 hover:text-emerald-700"
+                        class="text-sm font-medium text-slate-700 hover:text-emerald-700 transition"
                         >Admin</a
                     >
                     {#if data.user}

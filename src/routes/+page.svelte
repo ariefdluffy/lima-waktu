@@ -80,7 +80,13 @@
         style="background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px); background-size: 60px 60px;"
     ></div>
     <div class="relative mx-auto max-w-4xl text-center">
-        <div class="mb-6 text-7xl">🕌</div>
+        <div class="mb-6 flex justify-center">
+            <img
+                src="/icon/icon-transparent.svg"
+                alt="Lima Waktu"
+                class="h-24 w-auto drop-shadow-md"
+            />
+        </div>
         <h1
             class="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
         >
