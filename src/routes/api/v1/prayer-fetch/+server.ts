@@ -1,5 +1,9 @@
 import { json, type RequestHandler } from "@sveltejs/kit";
 import { authenticateEvent } from "$lib/server/auth/basic";
+import { db } from "$lib/server/db";
+import { globalPrayerConfig, prayerProviders } from "$lib/server/db/schema";
+import { fetchFromProvider } from "$lib/server/prayer/provider";
+import { eq } from "drizzle-orm";
 
 // MyQuran API docs:
 // Search kota : GET https://api.myquran.com/v2/sholat/kota/cari/{keyword}
@@ -18,6 +22,58 @@ type MyQuranJadwal = {
   isya: string;
 };
 
+type PrayerSchedule = {
+  date: string;
+  imsakTime: string;
+  subuhTime: string;
+  sunriseTime: string;
+  dhuhaTime: string;
+  dzuhurTime: string;
+  asharTime: string;
+  maghribTime: string;
+  isyaTime: string;
+};
+
+/**
+ * Get provider configuration from database
+ */
+async function getProviderConfig(providerKey: string) {
+  const [provider] = await db
+    .select()
+    .from(prayerProviders)
+    .where(eq(prayerProviders.providerKey, providerKey))
+    .limit(1);
+
+  return provider;
+}
+
+/**
+ * Get default provider and global config
+ */
+async function getGlobalConfig() {
+  const [config] = await db.select().from(globalPrayerConfig).limit(1);
+  return config;
+}
+
+/**
+ * Get default provider from global config
+ */
+async function getDefaultProvider() {
+  const config = await getGlobalConfig();
+
+  if (!config?.primaryProviderId) {
+    return "myquran"; // Fallback to MyQuran
+  }
+
+  const [provider] = await db
+    .select()
+    .from(prayerProviders)
+    .where(eq(prayerProviders.id, config.primaryProviderId))
+    .limit(1);
+
+  return provider?.providerKey ?? "myquran";
+}
+
 export const GET: RequestHandler = async (event) => {
   const user = await authenticateEvent(event);
   if (!user)
@@ -25,11 +81,25 @@ export const GET: RequestHandler = async (event) => {
 
   const { url } = event;
   const action = url.searchParams.get("action");
+  const providerParam = url.searchParams.get("provider")?.trim();
+
+  // Use default provider if not specified
+  const provider: string = providerParam || (await getDefaultProvider());
 
   // ----------------------------------------------------------------
-  // action=search  →  cari kota berdasarkan keyword
+  // action=search  →  cari kota berdasarkan keyword (MyQuran only)
   // ----------------------------------------------------------------
   if (action === "search") {
+    if (provider !== "myquran") {
+      return json(
+        {
+          ok: false,
+          message: `Provider '${provider}' tidak mendukung pencarian kota. Gunakan provider 'myquran'.`,
+        },
+        { status: 400 },
+      );
+    }
+
     const keyword = url.searchParams.get("keyword")?.trim();
     if (!keyword || keyword.length < 2) {
       return json(
@@ -38,32 +108,33 @@ export const GET: RequestHandler = async (event) => {
       );
     }
 
-    const res = await fetch(
-      `https://api.myquran.com/v2/sholat/kota/cari/${encodeURIComponent(keyword)}`,
-    );
-    if (!res.ok) {
+    try {
+      const res = await fetch(
+        `https://api.myquran.com/v2/sholat/kota/cari/${encodeURIComponent(keyword)}`,
+      );
+      if (!res.ok) {
+        return json(
+          { ok: false, message: "Gagal mengambil data kota dari MyQuran" },
+          { status: 502 },
+        );
+      }
+      const data = await res.json();
+      return json({ ok: true, data: data.data ?? [] });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       return json(
-        { ok: false, message: "Gagal mengambil data kota dari MyQuran" },
-        { status: 502 },
+        { ok: false, message: `Gagal mencari kota: ${msg}` },
+        { status: 500 },
       );
     }
-    const data = await res.json();
-    return json({ ok: true, data: data.data ?? [] });
   }
 
   // ----------------------------------------------------------------
   // action=schedule  →  jadwal satu hari
   // ----------------------------------------------------------------
   if (action === "schedule") {
-    const kotaId = url.searchParams.get("kota_id")?.trim();
     const dateRaw = url.searchParams.get("date")?.trim(); // YYYY-MM-DD
 
-    if (!kotaId) {
-      return json(
-        { ok: false, message: "Parameter kota_id wajib diisi" },
-        { status: 400 },
-      );
-    }
     if (!dateRaw || !/^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
       return json(
         { ok: false, message: "Parameter date harus format YYYY-MM-DD" },
@@ -71,53 +142,139 @@ export const GET: RequestHandler = async (event) => {
       );
     }
 
-    const [year, month, day] = dateRaw.split("-");
-    const res = await fetch(
-      `https://api.myquran.com/v2/sholat/jadwal/${encodeURIComponent(kotaId)}/${year}/${month}/${day}`,
-    );
-    if (!res.ok) {
-      return json(
-        { ok: false, message: "Gagal mengambil jadwal dari MyQuran" },
-        { status: 502 },
-      );
+    // MyQuran: gunakan kota_id
+    if (provider === "myquran") {
+      const kotaId = url.searchParams.get("kota_id")?.trim();
+      if (!kotaId) {
+        return json(
+          {
+            ok: false,
+            message: "Parameter kota_id wajib diisi untuk provider myquran",
+          },
+          { status: 400 },
+        );
+      }
+
+      try {
+        const [year, month, day] = dateRaw.split("-");
+        const res = await fetch(
+          `https://api.myquran.com/v2/sholat/jadwal/${encodeURIComponent(kotaId)}/${year}/${month}/${day}`,
+        );
+        if (!res.ok) {
+          return json(
+            { ok: false, message: "Gagal mengambil jadwal dari MyQuran" },
+            { status: 502 },
+          );
+        }
+        const data = await res.json();
+        const jadwal: MyQuranJadwal | undefined = data?.data?.jadwal;
+        if (!jadwal) {
+          return json(
+            { ok: false, message: "Data jadwal tidak ditemukan" },
+            { status: 404 },
+          );
+        }
+
+        return json({
+          ok: true,
+          data: {
+            imsakTime: jadwal.imsak,
+            subuhTime: jadwal.subuh,
+            sunriseTime: jadwal.terbit,
+            dhuhaTime: jadwal.dhuha,
+            dzuhurTime: jadwal.dzuhur,
+            asharTime: jadwal.ashar,
+            maghribTime: jadwal.maghrib,
+            isyaTime: jadwal.isya,
+          },
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return json(
+          { ok: false, message: `Gagal mengambil jadwal: ${msg}` },
+          { status: 500 },
+        );
+      }
     }
-    const data = await res.json();
-    const jadwal: MyQuranJadwal | undefined = data?.data?.jadwal;
-    if (!jadwal) {
+
+    // Aladhan & Generic: gunakan latitude, longitude, timezone
+    // Aladhan & Generic: gunakan latitude, longitude, timezone
+    const latitudeRaw = url.searchParams.get("latitude")?.trim();
+    const longitudeRaw = url.searchParams.get("longitude")?.trim();
+    const timezoneRaw = url.searchParams.get("timezone")?.trim();
+
+    if (!latitudeRaw || !longitudeRaw || !timezoneRaw) {
       return json(
-        { ok: false, message: "Data jadwal tidak ditemukan" },
-        { status: 404 },
+        {
+          ok: false,
+          message: `Provider '${provider}' memerlukan parameter: latitude, longitude, timezone`,
+        },
+        { status: 400 },
       );
     }
 
-    return json({
-      ok: true,
-      data: {
-        imsakTime: jadwal.imsak,
-        subuhTime: jadwal.subuh,
-        sunriseTime: jadwal.terbit,
-        dhuhaTime: jadwal.dhuha,
-        dzuhurTime: jadwal.dzuhur,
-        asharTime: jadwal.ashar,
-        maghribTime: jadwal.maghrib,
-        isyaTime: jadwal.isya,
-      },
-    });
+    const latitude = latitudeRaw;
+    const longitude = longitudeRaw;
+    const timezone = timezoneRaw;
+
+    try {
+      const providerConfig = await getProviderConfig(provider);
+      if (!providerConfig) {
+        return json(
+          { ok: false, message: `Provider '${provider}' tidak ditemukan` },
+          { status: 404 },
+        );
+      }
+
+      const globalConfig = await getGlobalConfig();
+      const baseUrl = providerConfig.baseUrl || "https://api.aladhan.com/v1";
+      const result = await fetchFromProvider(provider, {
+        dateYmd: dateRaw,
+        latitude,
+        longitude,
+        timezone,
+        baseUrl,
+        apiKey: globalConfig?.apiKey || null,
+      });
+
+      if (!result.success) {
+        return json({ ok: false, message: result.error }, { status: 502 });
+      }
+
+      return json({
+        ok: true,
+        data: {
+          imsakTime: result.data.imsak,
+          subuhTime: result.data.subuh,
+          sunriseTime: result.data.sunrise,
+          dhuhaTime: result.data.dhuha,
+          dzuhurTime: result.data.dzuhur,
+          asharTime: result.data.ashar,
+          maghribTime: result.data.maghrib,
+          isyaTime: result.data.isya,
+        },
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return json(
+        { ok: false, message: `Gagal mengambil jadwal: ${msg}` },
+        { status: 500 },
+      );
+    }
   }
 
   // ----------------------------------------------------------------
   // action=bulk  →  jadwal satu bulan penuh
   // ----------------------------------------------------------------
   if (action === "bulk") {
-    const kotaId = url.searchParams.get("kota_id")?.trim();
     const year = url.searchParams.get("year")?.trim();
     const month = url.searchParams.get("month")?.trim(); // 1-12
 
-    if (!kotaId || !year || !month) {
+    if (!year || !month) {
       return json(
         {
           ok: false,
-          message: "Parameter kota_id, year, dan month wajib diisi",
+          message: "Parameter year dan month wajib diisi",
         },
         { status: 400 },
       );
@@ -125,54 +282,197 @@ export const GET: RequestHandler = async (event) => {
 
     const paddedMonth = month.padStart(2, "0");
 
-    const res = await fetch(
-      `https://api.myquran.com/v2/sholat/jadwal/${encodeURIComponent(kotaId)}/${year}/${paddedMonth}`,
-    );
-    if (!res.ok) {
-      return json(
-        { ok: false, message: "Gagal mengambil jadwal bulanan dari MyQuran" },
-        { status: 502 },
-      );
-    }
-    const data = await res.json();
-    const jadwalList: MyQuranJadwal[] = data?.data?.jadwal ?? [];
+    // MyQuran: gunakan kota_id
+    if (provider === "myquran") {
+      const kotaId = url.searchParams.get("kota_id")?.trim();
+      if (!kotaId) {
+        return json(
+          {
+            ok: false,
+            message: "Parameter kota_id wajib diisi untuk provider myquran",
+          },
+          { status: 400 },
+        );
+      }
 
-    if (!jadwalList.length) {
-      return json(
-        { ok: false, message: "Data jadwal bulanan tidak ditemukan" },
-        { status: 404 },
-      );
-    }
-
-    // Normalise ke format yang dipakai form
-    const schedules = jadwalList
-      .map((j) => {
-        // j.tanggal bisa berupa number (1) atau string ("Jumat, 01/05/2026")
-        // Ekstrak angka hari saja
-        let dayNum: number;
-        if (typeof j.tanggal === "number") {
-          dayNum = j.tanggal;
-        } else {
-          // Format: "Jumat, 01/05/2026" — ambil bagian DD dari DD/MM/YYYY
-          const match = String(j.tanggal).match(/(\d{1,2})\/\d{2}\/\d{4}/);
-          dayNum = match ? parseInt(match[1], 10) : NaN;
+      try {
+        const res = await fetch(
+          `https://api.myquran.com/v2/sholat/jadwal/${encodeURIComponent(kotaId)}/${year}/${paddedMonth}`,
+        );
+        if (!res.ok) {
+          return json(
+            {
+              ok: false,
+              message: "Gagal mengambil jadwal bulanan dari MyQuran",
+            },
+            { status: 502 },
+          );
         }
-        const dayStr = String(dayNum).padStart(2, "0");
-        return {
-          date: `${year}-${paddedMonth}-${dayStr}`,
-          imsakTime: j.imsak,
-          subuhTime: j.subuh,
-          sunriseTime: j.terbit,
-          dhuhaTime: j.dhuha,
-          dzuhurTime: j.dzuhur,
-          asharTime: j.ashar,
-          maghribTime: j.maghrib,
-          isyaTime: j.isya,
-        };
-      })
-      .filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s.date));
+        const data = await res.json();
+        const jadwalList: MyQuranJadwal[] = data?.data?.jadwal ?? [];
 
-    return json({ ok: true, data: schedules });
+        if (!jadwalList.length) {
+          return json(
+            { ok: false, message: "Data jadwal bulanan tidak ditemukan" },
+            { status: 404 },
+          );
+        }
+
+        // Normalise ke format yang dipakai form
+        const schedules = jadwalList
+          .map((j) => {
+            // j.tanggal bisa berupa number (1) atau string ("Jumat, 01/05/2026")
+            // Ekstrak angka hari saja
+            let dayNum: number;
+            if (typeof j.tanggal === "number") {
+              dayNum = j.tanggal;
+            } else {
+              // Format: "Jumat, 01/05/2026" — ambil bagian DD dari DD/MM/YYYY
+              const match = String(j.tanggal).match(/(\d{1,2})\/\d{2}\/\d{4}/);
+              dayNum = match ? parseInt(match[1], 10) : NaN;
+            }
+            const dayStr = String(dayNum).padStart(2, "0");
+            return {
+              date: `${year}-${paddedMonth}-${dayStr}`,
+              imsakTime: j.imsak,
+              subuhTime: j.subuh,
+              sunriseTime: j.terbit,
+              dhuhaTime: j.dhuha,
+              dzuhurTime: j.dzuhur,
+              asharTime: j.ashar,
+              maghribTime: j.maghrib,
+              isyaTime: j.isya,
+            };
+          })
+          .filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s.date));
+
+        return json({ ok: true, data: schedules });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return json(
+          { ok: false, message: `Gagal mengambil jadwal bulanan: ${msg}` },
+          { status: 500 },
+        );
+      }
+    }
+
+    // Aladhan & Generic: gunakan latitude, longitude, timezone
+    // Aladhan & Generic: gunakan latitude, longitude, timezone
+    const latitudeRawBulk = url.searchParams.get("latitude")?.trim();
+    const longitudeRawBulk = url.searchParams.get("longitude")?.trim();
+    const timezoneRawBulk = url.searchParams.get("timezone")?.trim();
+
+    if (!latitudeRawBulk || !longitudeRawBulk || !timezoneRawBulk) {
+      return json(
+        {
+          ok: false,
+          message: `Provider '${provider}' memerlukan parameter: latitude, longitude, timezone`,
+        },
+        { status: 400 },
+      );
+    }
+
+    const latitude = latitudeRawBulk;
+    const longitude = longitudeRawBulk;
+    const timezone = timezoneRawBulk;
+
+    try {
+      const providerConfig = await getProviderConfig(provider);
+      if (!providerConfig) {
+        return json(
+          { ok: false, message: `Provider '${provider}' tidak ditemukan` },
+          { status: 404 },
+        );
+      }
+
+      const globalConfig = await getGlobalConfig();
+      const baseUrl = providerConfig.baseUrl || "https://api.aladhan.com/v1";
+
+      // Fetch jadwal untuk setiap hari dalam bulan
+      const daysInMonth = new Date(
+        parseInt(year),
+        parseInt(month),
+        0,
+      ).getDate();
+      const schedules: PrayerSchedule[] = [];
+      const failedDates: Array<{ date: string; error: string }> = [];
+
+      // Helper: retry fetch dengan max 2 attempt
+      async function fetchWithRetry(dateYmd: string, attempts = 2) {
+        let lastError = "Unknown error";
+        for (let i = 0; i < attempts; i++) {
+          const r = await fetchFromProvider(provider, {
+            dateYmd,
+            latitude,
+            longitude,
+            timezone,
+            baseUrl,
+            apiKey: globalConfig?.apiKey || null,
+          });
+          if (r.success) return r;
+          lastError = r.error;
+          // Jeda kecil sebelum retry
+          if (i < attempts - 1) {
+            await new Promise((res) => setTimeout(res, 500));
+          }
+        }
+        return { success: false as const, error: lastError };
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayStr = String(day).padStart(2, "0");
+        const dateYmd = `${year}-${paddedMonth}-${dayStr}`;
+
+        const result = await fetchWithRetry(dateYmd);
+
+        if (result.success) {
+          schedules.push({
+            date: dateYmd,
+            imsakTime: result.data.imsak,
+            subuhTime: result.data.subuh,
+            sunriseTime: result.data.sunrise,
+            dhuhaTime: result.data.dhuha,
+            dzuhurTime: result.data.dzuhur,
+            asharTime: result.data.ashar,
+            maghribTime: result.data.maghrib,
+            isyaTime: result.data.isya,
+          });
+        } else {
+          failedDates.push({ date: dateYmd, error: result.error });
+        }
+
+        // Jeda kecil antar request supaya tidak kena rate limit
+        if (day < daysInMonth) {
+          await new Promise((res) => setTimeout(res, 100));
+        }
+      }
+
+      if (!schedules.length) {
+        return json(
+          {
+            ok: false,
+            message: "Gagal mengambil data jadwal untuk bulan ini",
+            failedDates,
+          },
+          { status: 502 },
+        );
+      }
+
+      return json({
+        ok: true,
+        data: schedules,
+        totalRequested: daysInMonth,
+        totalSucceeded: schedules.length,
+        totalFailed: failedDates.length,
+        failedDates: failedDates.length > 0 ? failedDates : undefined,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return json(
+        { ok: false, message: `Gagal mengambil jadwal bulanan: ${msg}` },
+        { status: 500 },
+      );
+    }
   }
 
   return json(

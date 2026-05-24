@@ -11,9 +11,9 @@
             id: number;
             prayerName: string;
             offsetMinutes: number;
-            reason: string;
-            activeFrom: string;
-            activeUntil: string;
+            reason: string | null;
+            activeFrom: Date | string | null;
+            activeUntil: Date | string | null;
             isActive: number;
         }>;
         onSave?: () => void;
@@ -71,7 +71,8 @@
         return PRAYER_NAMES.find((p) => p.key === key)?.label || key;
     }
 
-    function formatDate(dateStr: string): string {
+    function formatDate(dateStr: Date | string | null): string {
+        if (!dateStr) return "-";
         return new Date(dateStr).toLocaleDateString("id-ID", {
             day: "2-digit",
             month: "short",

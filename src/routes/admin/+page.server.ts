@@ -18,6 +18,9 @@ import {
   subscriptions,
   themes,
   youtubeItems,
+  globalPrayerConfig,
+  prayerProviders,
+  prayerCalculationMethods,
 } from "$lib/server/db/schema";
 import { fail } from "@sveltejs/kit";
 import {
@@ -25,8 +28,31 @@ import {
   todayYmdInTimezone,
 } from "$lib/server/prayer/resolver";
 import { invalidateCache } from "$lib/server/prayer/cache";
+import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
+
+// Helper: get provider info dari DB
+async function getProviderInfo(providerId: number | null) {
+  if (!providerId) return null;
+  const [provider] = await db
+    .select()
+    .from(prayerProviders)
+    .where(eq(prayerProviders.id, providerId))
+    .limit(1);
+  return provider ?? null;
+}
+
+// Helper: get method info dari DB
+async function getMethodInfo(methodId: number | null) {
+  if (!methodId) return null;
+  const [method] = await db
+    .select()
+    .from(prayerCalculationMethods)
+    .where(eq(prayerCalculationMethods.id, methodId))
+    .limit(1);
+  return method ?? null;
+}
 
 export const load: PageServerLoad = async ({ locals, url, depends }) => {
   depends("app:admin");
@@ -109,6 +135,11 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
       eventTotal: 0,
       eventPage: 1,
       eventTotalPages: 1,
+      prayerProviderInfo: {
+        providerKey: "myquran",
+        providerName: "MyQuran API",
+        supportsSearch: true,
+      },
     };
   }
 
@@ -275,6 +306,30 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     .orderBy(desc(subscriptions.createdAt))
     .limit(1);
 
+  // Load prayer provider config
+  const [configRow] = await db
+    .select()
+    .from(globalPrayerConfig)
+    .where(eq(globalPrayerConfig.id, 1))
+    .limit(1);
+
+  let prayerProviderInfo = {
+    providerKey: "myquran",
+    providerName: "MyQuran API",
+    supportsSearch: true,
+  };
+
+  if (configRow?.primaryProviderId) {
+    const provider = await getProviderInfo(configRow.primaryProviderId);
+    if (provider) {
+      prayerProviderInfo = {
+        providerKey: provider.providerKey,
+        providerName: provider.name,
+        supportsSearch: provider.providerKey === "myquran",
+      };
+    }
+  }
+
   return {
     masjid,
     runningTexts: runningTextRows,
@@ -327,6 +382,7 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
       isGlobal: t.isGlobal === 1,
     })),
     subscription: subscriptionRow ?? null,
+    prayerProviderInfo,
   };
 };
 
@@ -577,6 +633,30 @@ export const actions: Actions = {
         ),
       );
 
+    // Baca global config untuk tahu provider dan method yang dipakai
+    const [config] = await db
+      .select()
+      .from(globalPrayerConfig)
+      .where(eq(globalPrayerConfig.id, 1))
+      .limit(1);
+
+    let sourceProvider = "myquran"; // default fallback
+    let calculationMethod = "myquran-api"; // default fallback
+
+    if (config?.primaryProviderId) {
+      const provider = await getProviderInfo(config.primaryProviderId);
+      if (provider) {
+        sourceProvider = provider.providerKey;
+      }
+    }
+
+    if (config?.defaultMethodId) {
+      const method = await getMethodInfo(config.defaultMethodId);
+      if (method) {
+        calculationMethod = method.methodName;
+      }
+    }
+
     for (const s of schedules) {
       // Validasi format tanggal YYYY-MM-DD
       if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date)) continue;
@@ -605,8 +685,8 @@ export const actions: Actions = {
             asharTime: s.asharTime,
             maghribTime: s.maghribTime,
             isyaTime: s.isyaTime,
-            sourceProvider: "myquran",
-            calculationMethod: "myquran-api",
+            sourceProvider,
+            calculationMethod,
             isManualOverride: 0,
           })
           .where(eq(prayerSchedules.id, existing.id));
@@ -622,8 +702,8 @@ export const actions: Actions = {
           asharTime: s.asharTime,
           maghribTime: s.maghribTime,
           isyaTime: s.isyaTime,
-          sourceProvider: "myquran",
-          calculationMethod: "myquran-api",
+          sourceProvider,
+          calculationMethod,
           isManualOverride: 0,
         });
       }

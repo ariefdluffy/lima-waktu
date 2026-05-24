@@ -858,10 +858,22 @@
     );
 
     async function fetchBulk() {
-        if (!selectedKota) {
-            bulkError = "Pilih kota terlebih dahulu";
-            return;
+        const provider = data.prayerProviderInfo?.providerKey ?? "myquran";
+
+        // Validasi berdasarkan provider
+        if (provider === "myquran") {
+            if (!selectedKota) {
+                bulkError = "Pilih kota terlebih dahulu";
+                return;
+            }
+        } else {
+            if (!data.masjid?.latitude || !data.masjid?.longitude) {
+                bulkError =
+                    "Koordinat masjid belum diisi. Lengkapi di menu Profil.";
+                return;
+            }
         }
+
         bulkLoading = true;
         bulkError = "";
         bulkSuccess = "";
@@ -869,13 +881,34 @@
         bulkSaveSuccess = "";
         bulkSaveError = "";
         try {
-            const res = await fetch(
-                `/api/v1/prayer-fetch?action=bulk&kota_id=${encodeURIComponent(selectedKota.id)}&year=${bulkYear}&month=${bulkMonth}`,
-            );
+            let url = `/api/v1/prayer-fetch?action=bulk&provider=${provider}&year=${bulkYear}&month=${bulkMonth}`;
+
+            if (provider === "myquran") {
+                url += `&kota_id=${encodeURIComponent(selectedKota!.id)}`;
+            } else {
+                url += `&latitude=${encodeURIComponent(data.masjid!.latitude!)}`;
+                url += `&longitude=${encodeURIComponent(data.masjid!.longitude!)}`;
+                url += `&timezone=${encodeURIComponent(data.masjid!.timezone || "Asia/Jakarta")}`;
+            }
+
+            const res = await fetch(url);
             const json = await res.json();
             if (json.ok && json.data?.length) {
                 bulkPreview = json.data;
-                bulkSuccess = `${json.data.length} hari jadwal berhasil diambil untuk ${selectedKota.lokasi} — ${MONTH_NAMES[Number(bulkMonth) - 1]} ${bulkYear}`;
+                const locationLabel =
+                    provider === "myquran"
+                        ? selectedKota!.lokasi
+                        : `${data.masjid!.latitude}, ${data.masjid!.longitude}`;
+                const monthLabel = `${MONTH_NAMES[Number(bulkMonth) - 1]} ${bulkYear}`;
+
+                if (json.totalFailed && json.totalFailed > 0) {
+                    const failedList = (json.failedDates ?? [])
+                        .map((f: { date: string }) => f.date.slice(-2))
+                        .join(", ");
+                    bulkSuccess = `${json.totalSucceeded} dari ${json.totalRequested} hari berhasil diambil untuk ${locationLabel} — ${monthLabel}. ⚠️ Gagal di tanggal: ${failedList}. Coba ulangi untuk melengkapi.`;
+                } else {
+                    bulkSuccess = `${json.data.length} hari jadwal berhasil diambil untuk ${locationLabel} — ${monthLabel}`;
+                }
             } else {
                 bulkError = json.message ?? "Gagal mengambil jadwal bulanan";
             }
@@ -939,10 +972,21 @@
     let manualFetchSuccess = $state("");
 
     async function fetchManual() {
-        if (!selectedKota) {
-            manualFetchError = "Pilih kota terlebih dahulu";
-            return;
+        const provider = data.prayerProviderInfo?.providerKey ?? "myquran";
+
+        if (provider === "myquran") {
+            if (!selectedKota) {
+                manualFetchError = "Pilih kota terlebih dahulu";
+                return;
+            }
+        } else {
+            if (!data.masjid?.latitude || !data.masjid?.longitude) {
+                manualFetchError =
+                    "Koordinat masjid belum diisi. Lengkapi di menu Profil.";
+                return;
+            }
         }
+
         if (!scheduleDate) {
             manualFetchError = "Isi tanggal terlebih dahulu";
             return;
@@ -951,9 +995,17 @@
         manualFetchError = "";
         manualFetchSuccess = "";
         try {
-            const res = await fetch(
-                `/api/v1/prayer-fetch?action=schedule&kota_id=${encodeURIComponent(selectedKota.id)}&date=${encodeURIComponent(scheduleDate)}`,
-            );
+            let url = `/api/v1/prayer-fetch?action=schedule&provider=${provider}&date=${encodeURIComponent(scheduleDate)}`;
+
+            if (provider === "myquran") {
+                url += `&kota_id=${encodeURIComponent(selectedKota!.id)}`;
+            } else {
+                url += `&latitude=${encodeURIComponent(data.masjid!.latitude!)}`;
+                url += `&longitude=${encodeURIComponent(data.masjid!.longitude!)}`;
+                url += `&timezone=${encodeURIComponent(data.masjid!.timezone || "Asia/Jakarta")}`;
+            }
+
+            const res = await fetch(url);
             const json = await res.json();
             if (json.ok && json.data) {
                 const d = json.data;
@@ -3466,130 +3518,169 @@
                                 <p
                                     class="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500"
                                 >
-                                    Sumber Data — MyQuran API
+                                    Sumber Data — {data.prayerProviderInfo
+                                        ?.providerName ?? "MyQuran API"}
                                 </p>
-                                <div class="relative">
-                                    <label
-                                        class="mb-1 block text-xs font-medium text-slate-600"
-                                        for="kotaKeyword">Cari Kota</label
-                                    >
+                                {#if data.prayerProviderInfo?.supportsSearch}
                                     <div class="relative">
-                                        <span
-                                            class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400"
+                                        <label
+                                            class="mb-1 block text-xs font-medium text-slate-600"
+                                            for="kotaKeyword">Cari Kota</label
                                         >
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                class="h-4 w-4"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                ><path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width="2"
-                                                    d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
-                                                /></svg
+                                        <div class="relative">
+                                            <span
+                                                class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400"
                                             >
-                                        </span>
-                                        <input
-                                            id="kotaKeyword"
-                                            type="text"
-                                            placeholder="Ketik nama kota, contoh: Jakarta, Surabaya..."
-                                            bind:value={kotaKeyword}
-                                            oninput={onKotaInput}
-                                            autocomplete="off"
-                                            class="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
-                                        />
-                                    </div>
-                                    {#if searchLoading}
-                                        <p
-                                            class="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400"
-                                        >
-                                            <svg
-                                                class="h-3 w-3 animate-spin"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                ><circle
-                                                    class="opacity-25"
-                                                    cx="12"
-                                                    cy="12"
-                                                    r="10"
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-4 w-4"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
                                                     stroke="currentColor"
-                                                    stroke-width="4"
-                                                /><path
-                                                    class="opacity-75"
-                                                    fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8v8z"
-                                                /></svg
+                                                    ><path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"
+                                                    /></svg
+                                                >
+                                            </span>
+                                            <input
+                                                id="kotaKeyword"
+                                                type="text"
+                                                placeholder="Ketik nama kota, contoh: Jakarta, Surabaya..."
+                                                bind:value={kotaKeyword}
+                                                oninput={onKotaInput}
+                                                autocomplete="off"
+                                                class="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                                            />
+                                        </div>
+                                        {#if searchLoading}
+                                            <p
+                                                class="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400"
                                             >
-                                            Mencari kota...
-                                        </p>
-                                    {/if}
-                                    {#if searchError}
-                                        <p class="mt-1.5 text-xs text-red-500">
-                                            {searchError}
-                                        </p>
-                                    {/if}
-                                    {#if kotaResults.length > 0}
-                                        <ul
-                                            class="absolute z-20 mt-1 max-h-52 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
-                                        >
-                                            {#each kotaResults as kota}
-                                                <li>
-                                                    <button
-                                                        type="button"
-                                                        class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-emerald-50"
-                                                        onclick={() =>
-                                                            selectKota(kota)}
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            class="h-3.5 w-3.5 shrink-0 text-emerald-500"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            stroke="currentColor"
-                                                            ><path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"
-                                                            /><path
-                                                                stroke-linecap="round"
-                                                                stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                                            /></svg
+                                                <svg
+                                                    class="h-3 w-3 animate-spin"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    ><circle
+                                                        class="opacity-25"
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                        stroke="currentColor"
+                                                        stroke-width="4"
+                                                    /><path
+                                                        class="opacity-75"
+                                                        fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8v8z"
+                                                    /></svg
+                                                >
+                                                Mencari kota...
+                                            </p>
+                                        {/if}
+                                        {#if searchError}
+                                            <p
+                                                class="mt-1.5 text-xs text-red-500"
+                                            >
+                                                {searchError}
+                                            </p>
+                                        {/if}
+                                        {#if kotaResults.length > 0}
+                                            <ul
+                                                class="absolute z-20 mt-1 max-h-52 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
+                                            >
+                                                {#each kotaResults as kota}
+                                                    <li>
+                                                        <button
+                                                            type="button"
+                                                            class="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-emerald-50"
+                                                            onclick={() =>
+                                                                selectKota(
+                                                                    kota,
+                                                                )}
                                                         >
-                                                        {kota.lokasi}
-                                                    </button>
-                                                </li>
-                                            {/each}
-                                        </ul>
-                                    {/if}
-                                </div>
-                                {#if selectedKota}
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                class="h-3.5 w-3.5 shrink-0 text-emerald-500"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                stroke="currentColor"
+                                                                ><path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"
+                                                                /><path
+                                                                    stroke-linecap="round"
+                                                                    stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                /></svg
+                                                            >
+                                                            {kota.lokasi}
+                                                        </button>
+                                                    </li>
+                                                {/each}
+                                            </ul>
+                                        {/if}
+                                        {#if selectedKota}
+                                            <div
+                                                class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-2"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    class="h-4 w-4 text-emerald-600"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    ><path
+                                                        stroke-linecap="round"
+                                                        stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M5 13l4 4L19 7"
+                                                    /></svg
+                                                >
+                                                <span
+                                                    class="text-xs font-medium text-emerald-800"
+                                                    >Kota dipilih: <strong
+                                                        >{selectedKota.lokasi}</strong
+                                                    ></span
+                                                >
+                                            </div>
+                                        {/if}
+                                    </div>
+                                {:else}
                                     <div
-                                        class="mt-3 flex items-center gap-2 rounded-lg bg-emerald-100 px-3 py-2"
+                                        class="rounded-lg bg-blue-50 border border-blue-200 p-3"
                                     >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            class="h-4 w-4 text-emerald-600"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                            ><path
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                                stroke-width="2"
-                                                d="M5 13l4 4L19 7"
-                                            /></svg
-                                        >
-                                        <span
-                                            class="text-xs font-medium text-emerald-800"
-                                            >Kota dipilih: <strong
-                                                >{selectedKota.lokasi}</strong
-                                            ></span
-                                        >
+                                        <p class="text-xs text-blue-700">
+                                            <strong
+                                                >{data.prayerProviderInfo
+                                                    ?.providerName}</strong
+                                            >
+                                            menggunakan koordinat lokasi masjid.
+                                            {#if data.masjid?.latitude && data.masjid?.longitude}
+                                                <span class="block mt-1">
+                                                    Lokasi: <strong
+                                                        >{data.masjid.latitude}, {data
+                                                            .masjid
+                                                            .longitude}</strong
+                                                    >
+                                                    (Timezone: {data.masjid
+                                                        .timezone ||
+                                                        "Asia/Jakarta"})
+                                                </span>
+                                            {:else}
+                                                <span
+                                                    class="block mt-1 text-red-600 font-semibold"
+                                                >
+                                                    ⚠️ Koordinat masjid belum
+                                                    diisi. Silakan lengkapi di
+                                                    menu Profil.
+                                                </span>
+                                            {/if}
+                                        </p>
                                     </div>
                                 {/if}
                             </div>
@@ -3643,7 +3734,13 @@
                                                 type="button"
                                                 onclick={fetchBulk}
                                                 disabled={bulkLoading ||
-                                                    !selectedKota}
+                                                    (data.prayerProviderInfo
+                                                        ?.supportsSearch
+                                                        ? !selectedKota
+                                                        : !data.masjid
+                                                              ?.latitude ||
+                                                          !data.masjid
+                                                              ?.longitude)}
                                                 class="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
                                             >
                                                 {#if bulkLoading}
@@ -3950,8 +4047,12 @@
                                             type="button"
                                             onclick={fetchManual}
                                             disabled={manualFetchLoading ||
-                                                !selectedKota ||
-                                                !scheduleDate}
+                                                !scheduleDate ||
+                                                (data.prayerProviderInfo
+                                                    ?.supportsSearch
+                                                    ? !selectedKota
+                                                    : !data.masjid?.latitude ||
+                                                      !data.masjid?.longitude)}
                                             class="flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
                                             {#if manualFetchLoading}

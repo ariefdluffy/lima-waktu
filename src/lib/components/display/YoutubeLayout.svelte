@@ -194,6 +194,8 @@
         display: flex;
         flex-direction: column;
         background: #000;
+        border-right: 4px solid rgba(251, 191, 36, 0.6);
+        box-shadow: -8px 0 20px rgba(251, 191, 36, 0.15);
     }
 
     .yt-iframe {
