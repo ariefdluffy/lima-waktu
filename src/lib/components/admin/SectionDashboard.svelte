@@ -6,6 +6,45 @@
         data: any;
         navigateTo: (section: string) => void;
     } = $props();
+
+    const quickActions = [
+        {
+            id: "profile",
+            label: "Profil",
+            icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
+            color: "bg-emerald-50 text-emerald-600",
+        },
+        {
+            id: "schedule",
+            label: "Jadwal",
+            icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 4h.01M9 13h.01M13 9h.01M13 13h.01",
+            color: "bg-blue-50 text-blue-600",
+        },
+        {
+            id: "devices",
+            label: "Perangkat",
+            icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+            color: "bg-purple-50 text-purple-600",
+        },
+        {
+            id: "events",
+            label: "Events",
+            icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+            color: "bg-orange-50 text-orange-600",
+        },
+        {
+            id: "runningtext",
+            label: "Running Text",
+            icon: "M4 6h16M4 12h16M4 18h7",
+            color: "bg-amber-50 text-amber-600",
+        },
+        {
+            id: "slides",
+            label: "Slide",
+            icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z",
+            color: "bg-rose-50 text-rose-600",
+        },
+    ];
 </script>
 
 <!-- Stats Cards -->
@@ -260,44 +299,6 @@
 {/if}
 
 <!-- Quick Action Buttons -->
-{@const quickActions = [
-    {
-        id: "profile",
-        label: "Profil",
-        icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4",
-        color: "bg-emerald-50 text-emerald-600",
-    },
-    {
-        id: "schedule",
-        label: "Jadwal",
-        icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 4h.01M9 13h.01M13 9h.01M13 13h.01",
-        color: "bg-blue-50 text-blue-600",
-    },
-    {
-        id: "devices",
-        label: "Perangkat",
-        icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
-        color: "bg-purple-50 text-purple-600",
-    },
-    {
-        id: "events",
-        label: "Events",
-        icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
-        color: "bg-orange-50 text-orange-600",
-    },
-    {
-        id: "runningtext",
-        label: "Running Text",
-        icon: "M4 6h16M4 12h16M4 18h7",
-        color: "bg-amber-50 text-amber-600",
-    },
-    {
-        id: "slides",
-        label: "Slide",
-        icon: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z",
-        color: "bg-rose-50 text-rose-600",
-    },
-]}
 <section class="rounded-2xl bg-white p-5 shadow-sm">
     <h3 class="text-sm font-semibold text-slate-700 mb-3">⚡ Aksi Cepat</h3>
     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
