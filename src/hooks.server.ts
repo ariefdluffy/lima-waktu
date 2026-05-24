@@ -1,15 +1,15 @@
 import { sequence } from "@sveltejs/kit/hooks";
 import type { Handle } from "@sveltejs/kit";
 import { getAuthenticatedUserFromSession } from "$lib/server/auth/session";
-import { startPrayerScheduler } from "$lib/server/prayer/scheduler";
+// import { startPrayerScheduler } from "$lib/server/prayer/scheduler";
 
-// Jalankan cron job prayer scheduler saat server start
-try {
-  startPrayerScheduler();
-} catch (err) {
-  const msg = err instanceof Error ? err.message : String(err);
-  console.error("[Hooks] Failed to start prayer scheduler:", msg);
-}
+// PrayerScheduler dimatikan sementara — aktifkan kembali jika diperlukan
+// try {
+//   startPrayerScheduler();
+// } catch (err) {
+//   const msg = err instanceof Error ? err.message : String(err);
+//   console.error("[Hooks] Failed to start prayer scheduler:", msg);
+// }
 
 const authHandle: Handle = async ({ event, resolve }) => {
   event.locals.user = await getAuthenticatedUserFromSession(event);

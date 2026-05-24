@@ -455,9 +455,12 @@ export const GET: RequestHandler = async (event) => {
         }
         function normalizeTime(v: string | undefined): string {
           if (!v) return "00:00";
-          const parts = v.trim().split(":");
-          if (parts.length < 2) return "00:00";
-          return `${pad2(Number(parts[0]))}:${pad2(Number(parts[1]))}`;
+          const match = v.trim().match(/^(\d{1,2})\s*:\s*(\d{1,2})/);
+          if (!match) return "00:00";
+          const h = Number(match[1]);
+          const m = Number(match[2]);
+          if (isNaN(h) || isNaN(m)) return "00:00";
+          return `${pad2(h)}:${pad2(m)}`;
         }
 
         const schedules: PrayerSchedule[] = data.data.map((entry, idx) => {

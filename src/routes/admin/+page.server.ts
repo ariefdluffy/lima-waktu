@@ -684,6 +684,24 @@ export const actions: Actions = {
     for (const s of schedules) {
       // Validasi format tanggal YYYY-MM-DD
       if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date)) continue;
+
+      // Validasi format jam HH:MM untuk semua field waktu
+      const timeFields = [
+        "imsakTime",
+        "subuhTime",
+        "sunriseTime",
+        "dhuhaTime",
+        "dzuhurTime",
+        "asharTime",
+        "maghribTime",
+        "isyaTime",
+      ];
+      for (const field of timeFields) {
+        if (typeof s[field] !== "string" || !/^\d{2}:\d{2}$/.test(s[field])) {
+          return fail(400, { error: "Format waktu tidak valid: " + field });
+        }
+      }
+
       const dateStr = s.date;
 
       const [existing] = await db
