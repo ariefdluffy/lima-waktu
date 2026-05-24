@@ -18,17 +18,17 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
-          cache: 'gradle'
+          distribution: "zulu"
+          java-version: "17"
+          cache: "gradle"
 
       - name: Grant execute permission for gradlew
         run: |
           cd android-app
-          # Kita buat file gradlew sederhana jika tidak ada di repositori
+          # Kita buat file gradlew dengan versi 8.2 agar kompatibel dengan AGP 8.2.2
           if [ ! -f gradlew ]; then
-            echo "Gradle wrapper not found, generating one..."
-            gradle wrapper
+            echo "Gradle wrapper not found, generating version 8.2..."
+            gradle wrapper --gradle-version 8.2
           fi
           chmod +x gradlew
 
