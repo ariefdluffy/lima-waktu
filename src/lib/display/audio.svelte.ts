@@ -100,10 +100,18 @@ export function playBeep() {
 
 export function playAdzanBeep() {
   playBeep();
+  // Play beep 2x dengan delay 500ms
+  setTimeout(() => {
+    playBeep();
+  }, 500);
 }
 
 export function playIqamahBeep() {
   playBeep();
+  // Play beep 2x dengan delay 500ms
+  setTimeout(() => {
+    playBeep();
+  }, 500);
 }
 
 export function handleUnlockAudio() {

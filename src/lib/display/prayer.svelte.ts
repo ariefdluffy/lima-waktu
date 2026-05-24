@@ -22,7 +22,7 @@ export const prayer = $state({
 
 // Internal: trigger only once per prayer/iqamah
 let lastTriggeredPrayer = $state("");
-let lastTriggeredIqamah = $state("");
+let lastTriggeredIqamahEnd = $state("");
 
 // ── Helpers ───────────────────────────────────────────────────────
 function getCurrentTimeMinutes(now: Date, timezone: string): number {
@@ -179,12 +179,13 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
         const iqamahMin = timeToMinutes(iqData.time);
         if (currentMinutes >= iqamahMin) {
           newMood = "khusuk";
-        } else {
-          newMood = "iqamah";
-          if (currentMinutes >= iqamahMin && lastTriggeredIqamah !== cp) {
-            lastTriggeredIqamah = cp;
+          // Trigger alarm when iqamah ends (transitioning to khusuk)
+          if (lastTriggeredIqamahEnd !== cp) {
+            lastTriggeredIqamahEnd = cp;
             playIqamahBeep();
           }
+        } else {
+          newMood = "iqamah";
         }
       } else {
         newMood = "khusuk";
@@ -193,8 +194,8 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
     }
   }
 
-  if (newMood !== "iqamah" && lastTriggeredIqamah) {
-    lastTriggeredIqamah = "";
+  if (newMood !== "khusuk" && lastTriggeredIqamahEnd) {
+    lastTriggeredIqamahEnd = "";
   }
 
   prayer.mood = newMood;
@@ -267,5 +268,5 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
 // Reset beep tracker (call when payload changes)
 export function resetBeepTriggers() {
   lastTriggeredPrayer = "";
-  lastTriggeredIqamah = "";
+  lastTriggeredIqamahEnd = "";
 }
