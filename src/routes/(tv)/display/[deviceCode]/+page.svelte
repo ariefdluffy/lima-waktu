@@ -48,7 +48,9 @@
     let errorCountdown = $state(15);
 
     // Time state
-    let now = $state(new Date());
+    // liveClock & liveDate tetap $state agar template update (dipakai langsung di HTML)
+    // now pakai let biasa karena hanya dipakai sebagai argumen fungsi, bukan di template
+    let now = new Date();
     let liveClock = $state("");
     let liveDate = $state("");
 
@@ -162,7 +164,33 @@
         initAudio();
         fetchData();
 
-        const clockInterval = setInterval(updateClock, 1000);
+        // ── Heartbeat watchdog ─────────────────────────────────
+        // Deteksi otomatis jika halaman "membeku" (clock tidak update / paint
+        // tidak terjadi). Akar penyebab bisa apa saja: GPU saturasi, browser
+        // bug, OS swap, dll. Watchdog ini reload halaman begitu deteksi
+        // anomali, jadi TV self-recover tanpa intervensi manual.
+        //
+        // Dua heartbeat dipantau:
+        //   - tickHeartbeat: di-update tiap clockInterval (1s).
+        //     Kalau setInterval tidak fire >30s = main thread / event loop stuck.
+        //   - frameHeartbeat: di-update tiap requestAnimationFrame (~16ms).
+        //     Kalau rAF tidak fire >60s = rendering pipeline stuck (compositor).
+        //
+        // Saat document hidden, browser sengaja throttle interval & rAF, jadi
+        // watchdog skip pengecekan. Setelah balik visible, baseline di-reset.
+        let lastTickAt = Date.now();
+        let lastFrameAt = Date.now();
+        let rafId = 0;
+        const rafBeat = () => {
+            lastFrameAt = Date.now();
+            rafId = requestAnimationFrame(rafBeat);
+        };
+        rafId = requestAnimationFrame(rafBeat);
+
+        const clockInterval = setInterval(() => {
+            updateClock();
+            lastTickAt = Date.now();
+        }, 1000);
         updateClock();
 
         updateHijriyah();
@@ -172,14 +200,82 @@
             if (payload) updatePrayerState(payload, now);
         }, 1000);
 
-        const slideInterval = setInterval(rotateSlide, 7000);
+        // Slide & jumbotron tidak dirender saat screensaver → skip kerjanya
+        // supaya tidak ada DOM update sia-sia.
+        const slideInterval = setInterval(() => {
+            if (prayer.screensaver) return;
+            rotateSlide();
+        }, 7000);
 
-        const jumbotronInterval = setInterval(rotateJumbotron, 10000);
+        const jumbotronInterval = setInterval(() => {
+            if (prayer.screensaver) return;
+            rotateJumbotron();
+        }, 10000);
 
-        const dataInterval = setInterval(fetchData, 15000);
+        // Saat screensaver aktif (bisa berjam-jam tanpa perubahan), turunkan
+        // frekuensi fetch dari 15s ke 60s. Counter dipakai supaya tidak perlu
+        // teardown/setup interval saat state berubah.
+        let dataTickCounter = 0;
+        const dataInterval = setInterval(() => {
+            dataTickCounter += 1;
+            if (prayer.screensaver && dataTickCounter % 4 !== 0) return;
+            fetchData();
+        }, 15000);
+
+        // Safety net reload tiap 6 jam.
+        // Memori JS sudah ditangani, tapi GPU/compositor memory di TV/Smart
+        // browser bisa tetap leak (di luar kontrol kita). Reload ini reset
+        // semua context grafis dengan biaya ≤1 detik downtime.
+        const reloadInterval = setInterval(
+            () => {
+                window.location.reload();
+            },
+            6 * 60 * 60 * 1000,
+        );
+
+        // Watchdog: cek heartbeat tiap 10 detik.
+        const TICK_DEAD_MS = 30_000;
+        const FRAME_DEAD_MS = 60_000;
+        const TICK_WARN_MS = 10_000;
+        const watchdogInterval = setInterval(() => {
+            // Browser throttle saat tab background — tidak valid untuk dicek.
+            if (
+                typeof document !== "undefined" &&
+                document.visibilityState !== "visible"
+            ) {
+                return;
+            }
+            const tickGap = Date.now() - lastTickAt;
+            const frameGap = Date.now() - lastFrameAt;
+
+            if (tickGap > TICK_WARN_MS && tickGap <= TICK_DEAD_MS) {
+                console.warn("[watchdog] clock lag", tickGap, "ms");
+            }
+            if (tickGap > TICK_DEAD_MS) {
+                console.error(
+                    "[watchdog] clock stale",
+                    tickGap,
+                    "ms — reloading",
+                );
+                window.location.reload();
+                return;
+            }
+            if (frameGap > FRAME_DEAD_MS) {
+                console.error(
+                    "[watchdog] rAF stale",
+                    frameGap,
+                    "ms — reloading",
+                );
+                window.location.reload();
+            }
+        }, 10_000);
 
         const onVisible = () => {
             if (document.visibilityState === "visible") {
+                // Reset baseline supaya tidak false-positive setelah tab
+                // sempat di-background lama.
+                lastTickAt = Date.now();
+                lastFrameAt = Date.now();
                 fetchData();
             }
         };
@@ -192,6 +288,9 @@
             clearInterval(slideInterval);
             clearInterval(jumbotronInterval);
             clearInterval(dataInterval);
+            clearInterval(reloadInterval);
+            clearInterval(watchdogInterval);
+            if (rafId) cancelAnimationFrame(rafId);
             document.removeEventListener("visibilitychange", onVisible);
             // Pastikan fetch in-flight ikut dibatalkan saat halaman diunmount.
             inflight?.abort();
@@ -754,8 +853,13 @@
         line-height: 1;
         letter-spacing: 0.02em;
         color: var(--text-primary);
-        text-shadow: 0 0 20px var(--accent-muted);
+        /* text-shadow disederhanakan: blur kecil agar repaint tiap detik
+           (karena seconds berubah) tidak terlalu mahal di GPU. */
+        text-shadow: 0 0 8px var(--accent-muted);
         margin-top: 4px;
+        /* Batasi area repaint hanya elemen ini, bukan parent. */
+        contain: layout paint style;
+        font-variant-numeric: tabular-nums;
     }
 
     .screensaver-date {
@@ -814,33 +918,38 @@
         padding: 40px 48px;
         background: linear-gradient(
             135deg,
-            rgba(255, 255, 255, 0.05) 0%,
-            rgba(255, 255, 255, 0.01) 100%
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0.02) 100%
         );
         border: 1px solid var(--border-accent, rgba(200, 168, 75, 0.25));
         border-radius: var(--border-radius, 24px);
-        backdrop-filter: blur(12px);
+        /* backdrop-filter dihapus: di TV/long-running, blur di belakang elemen
+           yang sering repaint (kartu animation + countdown tiap detik) menyebabkan
+           GPU memory tumbuh terus dan main thread starve. */
         text-align: center;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 12px;
+        /* Animasi pulse memakai opacity (compositor-only) supaya tidak
+           memicu repaint penuh kartu. */
         animation: screensaverCardPulse 4s ease-in-out infinite;
         width: 100%;
         max-width: 420px;
+        /* Tambahkan satu box-shadow statis sebagai pengganti animasi shadow. */
+        box-shadow:
+            0 0 24px rgba(200, 168, 75, 0.1),
+            inset 0 0 24px rgba(200, 168, 75, 0.04);
+        contain: layout paint style;
     }
 
     @keyframes screensaverCardPulse {
         0%,
         100% {
-            box-shadow:
-                0 0 20px rgba(200, 168, 75, 0.08),
-                inset 0 0 20px rgba(200, 168, 75, 0.03);
+            opacity: 0.92;
         }
         50% {
-            box-shadow:
-                0 0 30px rgba(200, 168, 75, 0.15),
-                inset 0 0 30px rgba(200, 168, 75, 0.06);
+            opacity: 1;
         }
     }
 
@@ -865,7 +974,11 @@
         font-weight: 700;
         color: var(--accent-primary, #c8a84b);
         line-height: 1.1;
-        text-shadow: 0 0 12px var(--accent-muted, rgba(200, 168, 75, 0.3));
+        /* text-shadow lebih ringan: nilai aslinya 12px blur radius pada teks 82px
+           memicu paint mahal saat parent kartu di-animate. */
+        text-shadow: 0 0 6px var(--accent-muted, rgba(200, 168, 75, 0.3));
+        font-variant-numeric: tabular-nums;
+        contain: layout paint style;
     }
 
     .screensaver-next-iqamah {
@@ -883,6 +996,8 @@
         color: var(--text-secondary);
         font-variant-numeric: tabular-nums;
         margin-top: 4px;
+        /* Countdown berubah tiap detik — isolasi paint scope-nya. */
+        contain: layout paint style;
     }
 
     .screensaver-next-cd-icon {
