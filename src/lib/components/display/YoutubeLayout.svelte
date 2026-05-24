@@ -224,7 +224,7 @@
     /* ─── INFO OVERLAY ─── */
     .yt-info-overlay {
         position: absolute;
-        top: 15.5%;
+        top: 10%;
         left: 2.5%;
         width: 24%;
         max-height: 95%;
