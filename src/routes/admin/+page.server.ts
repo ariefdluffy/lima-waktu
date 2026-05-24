@@ -12,6 +12,7 @@ import {
   masjids,
   mediaAssets,
   prayerSchedules,
+  prayerCorrections,
   runningTexts,
   slides,
   subscriptions,
@@ -141,6 +142,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     iqamahRows,
     eventRows,
     eventCountRows,
+    prayerCorrectionsRows,
   ] = await Promise.all([
     db
       .select()
@@ -236,6 +238,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
       .select({ total: count() })
       .from(events)
       .where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1))),
+    db
+      .select()
+      .from(prayerCorrections)
+      .where(eq(prayerCorrections.masjidId, masjidId))
+      .orderBy(desc(prayerCorrections.createdAt)),
   ]);
 
   const runningTextTotal = runningTextCountRows[0]?.total ?? 0;
@@ -303,6 +310,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
     prayerTotal,
     prayerPage: pagePrayer,
     prayerTotalPages: Math.max(1, Math.ceil(prayerTotal / PAGE_SIZE)),
+    prayerCorrections: prayerCorrectionsRows,
     todaySchedule,
     iqamahSettings: iqamahRows,
     themes: themeRows.map((t) => ({
@@ -874,5 +882,59 @@ export const actions: Actions = {
     invalidateCache(masjidId, "*");
 
     throw redirect(302, "/admin");
+  },
+
+
+  savePrayerCorrection: async ({ locals, request }) => {
+    if (!locals.user) {
+      throw redirect(302, "/auth/login");
+    }
+
+    const form = await request.formData();
+    const masjidId = String(form.get("masjid_id") ?? "");
+    const prayerName = String(form.get("prayerName") ?? "").trim();
+    const offsetMinutes = Number(form.get("offsetMinutes") ?? 0);
+    const reason = String(form.get("reason") ?? "").trim();
+    const activeFromStr = String(form.get("activeFrom") ?? "").trim();
+    const activeUntilStr = String(form.get("activeUntil") ?? "").trim();
+    const isActive = form.get("isActive") ? 1 : 0;
+
+    if (!masjidId || !prayerName || !activeFromStr || !activeUntilStr) {
+      return fail(400, { error: "Data tidak lengkap" });
+    }
+
+    const [membership] = await db
+      .select({ id: masjidUsers.id })
+      .from(masjidUsers)
+      .where(
+        and(
+          eq(masjidUsers.masjidId, masjidId),
+          eq(masjidUsers.userId, locals.user.id),
+          eq(masjidUsers.isActive, 1),
+        ),
+      )
+      .limit(1);
+
+    if (!membership) {
+      return fail(403, { error: "Anda tidak memiliki akses ke masjid ini" });
+    }
+
+    try {
+      await db.insert(prayerCorrections).values({
+        masjidId,
+        prayerName: prayerName as any,
+        offsetMinutes,
+        reason,
+        activeFrom: new Date(activeFromStr),
+        activeUntil: new Date(activeUntilStr),
+        isActive,
+      });
+
+      invalidateCache(masjidId, "*");
+      return { success: true };
+    } catch (error) {
+      console.error("Error saving prayer correction:", error);
+      return fail(500, { error: "Gagal menyimpan koreksi" });
+    }
   },
 };

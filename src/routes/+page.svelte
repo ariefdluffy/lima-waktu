@@ -73,49 +73,196 @@
 
 <!-- HERO -->
 <section
-    class="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 px-4 py-20 text-white sm:px-6 lg:px-8"
+    class="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-700 px-4 py-16 text-white sm:px-6 lg:px-8"
 >
-    <div
-        class="absolute inset-0 opacity-10"
-        style="background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px); background-size: 60px 60px;"
-    ></div>
-    <div class="relative mx-auto max-w-4xl text-center">
-        <div class="mb-6 flex justify-center">
-            <img
-                src="/icon/icon-transparent.svg"
-                alt="Lima Waktu"
-                class="h-24 w-auto drop-shadow-md"
-            />
-        </div>
-        <h1
-            class="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
-        >
-            Display TV Masjid yang<br />
-            <span class="text-emerald-300">Elegan & Mudah Dikelola</span>
-        </h1>
-        <p class="mx-auto mt-6 max-w-2xl text-lg text-emerald-100 sm:text-xl">
-            Tampilkan jadwal sholat, running text, dan informasi masjid di layar
-            TV dengan tampilan premium. Dikelola dari mana saja, kapan saja.
-        </p>
+    <!-- Animated Background Pattern -->
+    <div class="absolute inset-0 opacity-5">
         <div
-            class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-        >
-            <a
-                href="/auth/register"
-                class="rounded-2xl bg-white px-8 py-3.5 text-base font-bold text-emerald-800 shadow-lg transition hover:bg-emerald-50 hover:shadow-xl"
-            >
-                Mulai Gratis
-            </a>
-            <a
-                href="#demo"
-                class="rounded-2xl border-2 border-white/60 px-8 py-3.5 text-base font-semibold text-white transition hover:border-white hover:bg-white/10"
-            >
-                Lihat Demo ↓
-            </a>
+            class="absolute inset-0"
+            style="background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px); background-size: 60px 60px;"
+        ></div>
+    </div>
+
+    <!-- Decorative Blobs -->
+    <div
+        class="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-emerald-500/10 blur-3xl"
+    ></div>
+    <div
+        class="absolute -left-32 bottom-0 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl"
+    ></div>
+
+    <div class="relative mx-auto max-w-7xl">
+        <div class="grid items-center gap-8 md:gap-12 lg:grid-cols-2">
+            <!-- Left: Logo & Visual -->
+            <div class="flex justify-center order-2 lg:order-1">
+                <div class="relative w-full max-w-sm">
+                    <!-- Glow Effect - Lebih Besar -->
+                    <div
+                        class="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-400/30 to-emerald-600/30 blur-3xl"
+                    ></div>
+                    <!-- Logo Container - Lebih Besar & Kontras -->
+                    <div
+                        class="relative rounded-3xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/20 p-6 sm:p-8 md:p-10 shadow-2xl"
+                    >
+                        <img
+                            src="/icon/icon-transparent.svg"
+                            alt="Lima Waktu"
+                            class="h-56 sm:h-64 md:h-72 w-auto drop-shadow-2xl mx-auto"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Content -->
+            <div class="space-y-6 text-center lg:text-left order-1 lg:order-2">
+                <!-- Badge -->
+                <div
+                    class="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-4 py-2 text-xs sm:text-sm font-semibold text-emerald-200 border border-emerald-400/30 justify-center lg:justify-start w-full lg:w-auto"
+                >
+                    <span class="relative flex h-2 w-2">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+                        ></span>
+                        <span
+                            class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"
+                        ></span>
+                    </span>
+                    Solusi Display TV Terpercaya
+                </div>
+
+                <!-- Main Heading -->
+                <div>
+                    <h1
+                        class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight"
+                    >
+                        Tampilkan Jadwal Sholat dengan
+                        <span
+                            class="block bg-gradient-to-r from-emerald-300 via-emerald-200 to-emerald-300 bg-clip-text text-transparent mt-2"
+                        >
+                            Desain Premium
+                        </span>
+                    </h1>
+                </div>
+
+                <!-- Subheading -->
+                <p
+                    class="text-base sm:text-lg text-emerald-100 leading-relaxed"
+                >
+                    Platform Display TV modern untuk masjid Indonesia. Kelola
+                    jadwal sholat, running text, dan informasi masjid dari satu
+                    dashboard intuitif. Tanpa ribet, tanpa teknis.
+                </p>
+
+                <!-- Features List -->
+                <div class="space-y-3 pt-4">
+                    <div
+                        class="flex items-start gap-3 justify-center lg:justify-start"
+                    >
+                        <svg
+                            class="h-5 w-5 sm:h-6 sm:w-6 text-emerald-300 flex-shrink-0 mt-0.5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                        <span class="text-sm sm:text-base text-emerald-50"
+                            >Jadwal sholat real-time dengan countdown otomatis</span
+                        >
+                    </div>
+                    <div
+                        class="flex items-start gap-3 justify-center lg:justify-start"
+                    >
+                        <svg
+                            class="h-5 w-5 sm:h-6 sm:w-6 text-emerald-300 flex-shrink-0 mt-0.5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                        <span class="text-sm sm:text-base text-emerald-50"
+                            >Template TV elegan dengan kontras tinggi & font
+                            besar</span
+                        >
+                    </div>
+                    <div
+                        class="flex items-start gap-3 justify-center lg:justify-start"
+                    >
+                        <svg
+                            class="h-5 w-5 sm:h-6 sm:w-6 text-emerald-300 flex-shrink-0 mt-0.5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                        <span class="text-sm sm:text-base text-emerald-50"
+                            >Kelola dari mana saja — panel admin berbasis web</span
+                        >
+                    </div>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div
+                    class="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6 justify-center lg:justify-start"
+                >
+                    <a
+                        href="/auth/register"
+                        class="inline-flex items-center justify-center rounded-xl bg-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-bold text-emerald-800 shadow-lg transition hover:bg-emerald-50 hover:shadow-xl active:scale-95"
+                    >
+                        Mulai Gratis Sekarang
+                        <svg
+                            class="ml-2 h-4 w-4 sm:h-5 sm:w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                        </svg>
+                    </a>
+                    <a
+                        href="#demo"
+                        class="inline-flex items-center justify-center rounded-xl border-2 border-white/40 px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base font-semibold text-white transition hover:border-white hover:bg-white/10 backdrop-blur-sm"
+                    >
+                        Lihat Demo
+                        <svg
+                            class="ml-2 h-4 w-4 sm:h-5 sm:w-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                            />
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Trust Badge -->
+                <p class="text-xs sm:text-sm text-emerald-300 pt-4">
+                    ✓ Tidak perlu kartu kredit • Gratis untuk 1 device • Setup
+                    dalam 5 menit
+                </p>
+            </div>
         </div>
-        <p class="mt-6 text-sm text-emerald-300">
-            Tidak perlu kartu kredit. Gratis untuk 1 device.
-        </p>
     </div>
 </section>
 

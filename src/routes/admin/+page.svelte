@@ -5,6 +5,7 @@
     import Pagination from "$lib/components/Pagination.svelte";
     import AdminSidebar from "$lib/components/admin/AdminSidebar.svelte";
     import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
+    import PrayerCorrection from "$lib/components/admin/PrayerCorrection.svelte";
 
     // Generate unique device code
     function generateDeviceCode(): string {
@@ -3412,6 +3413,11 @@
                                 totalItems={data.prayerTotal}
                                 paramName="pagePR"
                             />
+                        </section>
+
+                        <!-- Prayer Correction Section -->
+                        <section class="rounded-2xl bg-white p-6 shadow-sm">
+                            <PrayerCorrection corrections={data.prayerCorrections || []} />
                         </section>
 
                         <section class="rounded-2xl bg-white p-6 shadow-sm">
