@@ -145,6 +145,14 @@
 
         const dataInterval = setInterval(fetchData, 15000);
 
+        // Auto-reload halaman setiap 4 jam untuk membersihkan memory
+        const reloadInterval = setInterval(
+            () => {
+                window.location.reload();
+            },
+            4 * 60 * 60 * 1000,
+        ); // 4 jam
+
         const onVisible = () => {
             if (document.visibilityState === "visible") {
                 fetchData();
@@ -159,6 +167,7 @@
             clearInterval(slideInterval);
             clearInterval(jumbotronInterval);
             clearInterval(dataInterval);
+            clearInterval(reloadInterval);
             document.removeEventListener("visibilitychange", onVisible);
         };
     });

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import type { DisplayPayload } from "$lib/types/display";
     import {
         PRAYER_ORDER,
@@ -26,6 +27,10 @@
         activePrayerIndex,
     }: Props = $props();
 
+    let currentYoutubeIndex = $state(0);
+    let youtubePlayer: any = $state(null);
+    let iframeRef: HTMLIFrameElement | null = $state(null);
+
     function getYoutubeEmbedUrl(url: string): string {
         let videoId = "";
         try {
@@ -41,22 +46,68 @@
         } catch {
             videoId = url;
         }
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&loop=1&playlist=${videoId}&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
+        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&loop=0&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
     }
+
+    function playNextVideo() {
+        if (!payload.youtubeItems || payload.youtubeItems.length === 0) return;
+        currentYoutubeIndex =
+            (currentYoutubeIndex + 1) % payload.youtubeItems.length;
+    }
+
+    function setYoutubeVolume() {
+        if (!youtubePlayer) return;
+        youtubePlayer.setVolume(30); // Set volume ke 30%
+    }
+
+    onMount(() => {
+        // Setup YouTube IFrame API listener
+        const handleYoutubeStateChange = (event: any) => {
+            // Simpan player reference
+            youtubePlayer = event.target;
+
+            // Set volume ke 30% ketika player ready
+            if (event.data === 1) {
+                // 1 = PLAYING
+                setYoutubeVolume();
+            }
+
+            // State 0 = ENDED
+            if (event.data === 0) {
+                playNextVideo();
+            }
+        };
+
+        // Expose handler globally untuk YouTube API
+        (window as any).onYoutubeStateChange = handleYoutubeStateChange;
+    });
 </script>
 
 <main class="main-body--youtube">
     <!-- VIDEO FULL AREA -->
     <div class="yt-video-backdrop">
-        <iframe
-            src={getYoutubeEmbedUrl(payload.youtubeItems[0].youtubeUrl)}
-            title={payload.youtubeItems[0].title ?? "Live Streaming"}
-            class="yt-iframe"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowfullscreen
-        ></iframe>
-        {#if payload.youtubeItems[0].title}
-            <div class="yt-video-label">{payload.youtubeItems[0].title}</div>
+        {#key currentYoutubeIndex}
+            <iframe
+                src={getYoutubeEmbedUrl(
+                    payload.youtubeItems[currentYoutubeIndex].youtubeUrl,
+                ) + "&onStateChange=onYoutubeStateChange"}
+                title={payload.youtubeItems[currentYoutubeIndex].title ??
+                    "Live Streaming"}
+                class="yt-iframe"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowfullscreen
+            ></iframe>
+        {/key}
+        {#if payload.youtubeItems[currentYoutubeIndex].title}
+            <div class="yt-video-label">
+                {payload.youtubeItems[currentYoutubeIndex].title}
+                {#if payload.youtubeItems.length > 1}
+                    <span class="yt-video-counter">
+                        ({currentYoutubeIndex + 1}/{payload.youtubeItems
+                            .length})
+                    </span>
+                {/if}
+            </div>
         {/if}
     </div>
 
@@ -105,7 +156,7 @@
         </div>
 
         <!-- IMSAKIYAH -->
-        <div class="ov-imsak-card">
+        <!-- <div class="ov-imsak-card">
             <div class="ov-imsak-title">IMSAKIYAH</div>
             <div class="ov-imsak-row">
                 <div>
@@ -122,7 +173,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </aside>
 </main>
 
@@ -164,10 +215,16 @@
         pointer-events: none;
     }
 
+    .yt-video-counter {
+        font-size: clamp(10px, 0.8vw, 16px);
+        color: rgba(255, 255, 255, 0.6);
+        margin-left: 0.5em;
+    }
+
     /* ─── INFO OVERLAY ─── */
     .yt-info-overlay {
         position: absolute;
-        top: 2.5%;
+        top: 15.5%;
         left: 2.5%;
         width: 24%;
         max-height: 95%;
@@ -192,7 +249,7 @@
     }
 
     .ov-next-label {
-        font-size: clamp(12px, 1vw, 20px);
+        font-size: clamp(12px, 1.2vw, 30px);
         color: rgba(255, 255, 255, 0.55);
         letter-spacing: 0.18em;
         text-transform: uppercase;
@@ -201,7 +258,7 @@
 
     .ov-next-name {
         font-family: var(--font-heading), serif;
-        font-size: clamp(22px, 2.2vw, 44px);
+        font-size: clamp(22px, 3.4vw, 48px);
         font-weight: 700;
         color: #fbbf24;
         text-align: center;
@@ -210,7 +267,7 @@
     }
 
     .ov-next-time {
-        font-size: clamp(36px, 4vw, 80px);
+        font-size: clamp(36px, 5vw, 84px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;
@@ -239,7 +296,7 @@
     }
 
     .ov-countdown-val {
-        font-size: clamp(18px, 1.8vw, 36px);
+        font-size: clamp(18px, 3.8vw, 46px);
         font-weight: 700;
         color: #34d399;
         font-variant-numeric: tabular-nums;
@@ -275,6 +332,7 @@
         width: 100%;
         flex-shrink: 0;
         box-sizing: border-box;
+        margin-top: 2%;
     }
 
     .ov-iqamah-label {
@@ -285,7 +343,7 @@
     }
 
     .ov-iqamah-val {
-        font-size: clamp(16px, 1.6vw, 42px);
+        font-size: clamp(16px, 2.8vw, 42px);
         color: #fbbf24;
         font-weight: 600;
         line-height: 1.2;
@@ -300,6 +358,7 @@
         flex: 1;
         min-height: 0;
         justify-content: center;
+        margin-top: 2%;
     }
 
     .ov-prayer-row {
@@ -307,6 +366,7 @@
         align-items: center;
         gap: 3%;
         padding: 0.4% 3%;
+        margin-top: 1%;
         border-radius: 10px;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.06);
