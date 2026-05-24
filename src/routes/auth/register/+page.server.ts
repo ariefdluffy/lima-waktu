@@ -96,6 +96,6 @@ export const actions: Actions = {
       roleId: adminMasjidRole.id,
     });
 
-    throw redirect(302, "/auth/login");
+    throw redirect(302, "/auth/login?toast=register_success");
   },
 };

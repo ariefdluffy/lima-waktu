@@ -85,8 +85,8 @@ export const actions: Actions = {
     });
 
     if (user.roles.includes("superadmin")) {
-      throw redirect(302, "/superadmin");
+      throw redirect(302, "/superadmin?toast=login_success");
     }
-    throw redirect(302, "/admin");
+    throw redirect(302, "/admin?toast=login_success");
   },
 };

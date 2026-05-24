@@ -4,7 +4,6 @@
     import type { ToastMessage } from "$lib/stores/toast";
 
     let toasts: ToastMessage[] = $state([]);
-
     let unsub: (() => void) | null = null;
 
     onMount(() => {
@@ -17,16 +16,11 @@
         unsub?.();
     });
 
-    const TYPE_STYLES: Record<string, string> = {
-        success: "border-emerald-200 bg-emerald-50 text-emerald-800",
-        error: "border-red-200 bg-red-50 text-red-800",
-        info: "border-blue-200 bg-blue-50 text-blue-800",
-    };
-
-    const TYPE_ICONS: Record<string, string> = {
-        success: "✅",
-        error: "❌",
-        info: "ℹ️",
+    const ICONS: Record<string, string> = {
+        success: "\u2714",
+        error: "\u2716",
+        info: "\u2139",
+        neutral: "\u25C6",
     };
 </script>
 
@@ -34,15 +28,21 @@
     <div class="toast-container">
         {#each toasts as toast (toast.id)}
             <div
-                class="toast-item {TYPE_STYLES[toast.type] ?? TYPE_STYLES['info']}"
+                class="toast-item {toast.type === 'success'
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
+                    : toast.type === 'error'
+                      ? 'border-red-200 bg-red-50 text-red-900'
+                      : toast.type === 'info'
+                        ? 'border-blue-200 bg-blue-50 text-blue-900'
+                        : 'border-slate-200 bg-slate-50 text-slate-800'}"
                 role="alert"
             >
-                <span class="toast-icon">{TYPE_ICONS[toast.type] ?? "ℹ️"}</span>
+                <span class="toast-icon">{ICONS[toast.type]}</span>
                 <span class="toast-message">{toast.message}</span>
                 <button
                     class="toast-close"
                     onclick={() => dismissToast(toast.id)}
-                    aria-label="Tutup">✕</button
+                    aria-label="Tutup">&times;</button
                 >
             </div>
         {/each}
@@ -61,7 +61,6 @@
         max-width: 420px;
         pointer-events: none;
     }
-
     .toast-item {
         display: flex;
         align-items: center;
@@ -76,34 +75,29 @@
         font-size: 14px;
         font-weight: 500;
         pointer-events: auto;
-        animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-
     .toast-icon {
         font-size: 18px;
         flex-shrink: 0;
     }
-
     .toast-message {
         flex: 1;
         line-height: 1.4;
     }
-
     .toast-close {
         flex-shrink: 0;
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 16px;
         opacity: 0.5;
         padding: 2px;
         transition: opacity 0.15s;
     }
-
     .toast-close:hover {
         opacity: 1;
     }
-
     @keyframes toastIn {
         from {
             opacity: 0;

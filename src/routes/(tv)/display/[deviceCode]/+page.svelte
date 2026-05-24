@@ -48,9 +48,10 @@
     let errorCountdown = $state(15);
 
     // Time state
-    // liveClock & liveDate tetap $state agar template update (dipakai langsung di HTML)
-    // now pakai let biasa karena hanya dipakai sebagai argumen fungsi, bukan di template
-    let now = new Date();
+    // `now` di-update tiap detik oleh updateClock() dan dibaca dari
+    // prayerInterval. Pakai $state supaya konsisten dengan model reaktif Svelte
+    // dan bebas warning lint.
+    let now = $state(new Date());
     let liveClock = $state("");
     let liveDate = $state("");
 

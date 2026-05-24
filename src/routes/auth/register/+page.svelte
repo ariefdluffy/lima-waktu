@@ -1,5 +1,14 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { showToast } from "$lib/stores/toast";
+    import Toast from "$lib/components/admin/Toast.svelte";
     let { data, form } = $props();
+
+    onMount(() => {
+        if (form?.error) {
+            showToast(form.error, "error");
+        }
+    });
 </script>
 
 <div
@@ -105,3 +114,5 @@
         </div>
     </div>
 </div>
+
+<Toast />

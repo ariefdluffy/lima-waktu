@@ -19,5 +19,5 @@ export const POST: RequestHandler = async (event) => {
   }
 
   await destroySession(event.cookies);
-  throw redirect(302, "/auth/login");
+  throw redirect(302, "/auth/login?toast=logged_out");
 };

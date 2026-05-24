@@ -1,5 +1,23 @@
 <script lang="ts">
+    import { page } from "$app/stores";
+    import { onMount } from "svelte";
+    import { showToast } from "$lib/stores/toast";
+    import Toast from "$lib/components/admin/Toast.svelte";
     let { form } = $props();
+
+    onMount(() => {
+        const toastParam = $page.url.searchParams.get("toast");
+        if (toastParam === "register_success") {
+            showToast("Akun berhasil dibuat! Silakan masuk.", "success");
+        } else if (toastParam === "logged_out") {
+            showToast("Anda berhasil keluar.", "neutral");
+        }
+
+        // Login gagal - tampilkan toast error bersamaan dengan inline error
+        if (form?.message) {
+            showToast(form.message, "error");
+        }
+    });
 </script>
 
 <div
@@ -63,3 +81,5 @@
         </div>
     </div>
 </div>
+
+<Toast />

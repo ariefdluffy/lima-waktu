@@ -1,4 +1,4 @@
-export type ToastType = "success" | "error" | "info";
+export type ToastType = "success" | "error" | "info" | "neutral";
 
 export type ToastMessage = {
   id: number;
@@ -19,7 +19,6 @@ export function showToast(message: string, type: ToastType = "success") {
   toasts = [...toasts, { id, message, type }];
   notify();
 
-  // Auto-dismiss after 4 detik
   setTimeout(() => {
     toasts = toasts.filter((t) => t.id !== id);
     notify();
@@ -33,7 +32,7 @@ export function dismissToast(id: number) {
 
 export function subscribe(fn: (toasts: ToastMessage[]) => void) {
   listeners.push(fn);
-  fn([...toasts]); // kirim state awal
+  fn([...toasts]);
   return () => {
     listeners = listeners.filter((l) => l !== fn);
   };

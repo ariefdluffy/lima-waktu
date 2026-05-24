@@ -2,6 +2,8 @@
     import { enhance, deserialize } from "$app/forms";
     import { goto, invalidate } from "$app/navigation";
     import { page } from "$app/stores";
+    import { onMount } from "svelte";
+    import { showToast as showToastGlobal } from "$lib/stores/toast";
     import AdminSidebar from "$lib/components/admin/AdminSidebar.svelte";
     import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
     import SectionDashboard from "$lib/components/admin/SectionDashboard.svelte";
@@ -349,6 +351,17 @@
             activeSection = s as Section;
         }
     });
+
+    onMount(() => {
+        const toastParam = $page.url.searchParams.get("toast");
+        if (toastParam === "login_success") {
+            showToastGlobal(
+                "Berhasil masuk! Selamat datang kembali.",
+                "success",
+            );
+        }
+    });
+
     let toastMessage = $state("");
     let toastVisible = $state(false);
 
