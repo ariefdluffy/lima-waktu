@@ -95,19 +95,20 @@
         <div class="grid items-center gap-8 md:gap-12 lg:grid-cols-2">
             <!-- Left: Logo & Visual -->
             <div class="flex justify-center order-2 lg:order-1">
-                <div class="relative w-full max-w-sm">
+                <div class="relative w-full max-w-4xl">
                     <!-- Glow Effect - Lebih Besar -->
                     <div
                         class="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-400/30 to-emerald-600/30 blur-3xl"
                     ></div>
                     <!-- Logo Container - Lebih Besar & Kontras -->
                     <div
-                        class="relative rounded-3xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/20 p-6 sm:p-8 md:p-10 shadow-2xl"
+                        class="relative rounded-3xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border border-white/20 p-8 sm:p-12 md:p-16 shadow-2xl"
                     >
+                        <!-- Horizontal Logo -->
                         <img
-                            src="/icon/icon-transparent.svg"
+                            src="/icon/logo-horizontal.svg"
                             alt="Lima Waktu"
-                            class="h-56 sm:h-64 md:h-72 w-auto drop-shadow-2xl mx-auto"
+                            class="w-full h-auto drop-shadow-2xl mx-auto max-w-2xl"
                         />
                     </div>
                 </div>
