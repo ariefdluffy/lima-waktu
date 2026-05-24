@@ -86,7 +86,7 @@ export function playBeep() {
     const src = ctx.createBufferSource();
     src.buffer = beepBuffer;
     const gain = ctx.createGain();
-    gain.gain.value = 0.6;
+    gain.gain.value = 1;
     src.connect(gain);
     gain.connect(ctx.destination);
     src.start();
