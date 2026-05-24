@@ -13,6 +13,7 @@ type CreateSubscriptionBody = {
   endDate?: string;
   price?: number;
   autoRenew?: boolean;
+  maxDevices?: number;
 };
 
 function parseDateOnly(value: string | undefined): Date | null {
@@ -23,7 +24,8 @@ function parseDateOnly(value: string | undefined): Date | null {
 
 export const GET: RequestHandler = async (event) => {
   const user = await authenticateEvent(event);
-  if (!user) return json({ ok: false, message: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return json({ ok: false, message: "Unauthorized" }, { status: 401 });
   if (!hasAnyRole(user, ["superadmin"])) {
     return json({ ok: false, message: "Forbidden" }, { status: 403 });
   }
@@ -33,7 +35,13 @@ export const GET: RequestHandler = async (event) => {
 
   const conditions = [];
   if (masjidId) conditions.push(eq(subscriptions.masjidId, masjidId));
-  if (status) conditions.push(eq(subscriptions.status, status as "trial" | "active" | "grace" | "expired" | "cancelled"));
+  if (status)
+    conditions.push(
+      eq(
+        subscriptions.status,
+        status as "trial" | "active" | "grace" | "expired" | "cancelled",
+      ),
+    );
 
   const rows = await db
     .select({
@@ -59,20 +67,37 @@ export const GET: RequestHandler = async (event) => {
 
 export const POST: RequestHandler = async (event) => {
   const user = await authenticateEvent(event);
-  if (!user) return json({ ok: false, message: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return json({ ok: false, message: "Unauthorized" }, { status: 401 });
   if (!hasAnyRole(user, ["superadmin"])) {
     return json({ ok: false, message: "Forbidden" }, { status: 403 });
   }
 
-  const body = (await event.request.json().catch(() => null)) as CreateSubscriptionBody | null;
-  if (!body?.masjidId || !body?.packageName || !body?.startDate || !body?.endDate) {
-    return json({ ok: false, message: "masjidId, packageName, startDate, endDate wajib diisi" }, { status: 400 });
+  const body = (await event.request
+    .json()
+    .catch(() => null)) as CreateSubscriptionBody | null;
+  if (
+    !body?.masjidId ||
+    !body?.packageName ||
+    !body?.startDate ||
+    !body?.endDate
+  ) {
+    return json(
+      {
+        ok: false,
+        message: "masjidId, packageName, startDate, endDate wajib diisi",
+      },
+      { status: 400 },
+    );
   }
 
   const startDate = parseDateOnly(body.startDate);
   const endDate = parseDateOnly(body.endDate);
   if (!startDate || !endDate) {
-    return json({ ok: false, message: "startDate/endDate harus format YYYY-MM-DD" }, { status: 400 });
+    return json(
+      { ok: false, message: "startDate/endDate harus format YYYY-MM-DD" },
+      { status: 400 },
+    );
   }
 
   await db.insert(subscriptions).values({
@@ -84,6 +109,7 @@ export const POST: RequestHandler = async (event) => {
     endDate,
     price: String(body.price ?? 0),
     autoRenew: body.autoRenew ? 1 : 0,
+    maxDevices: body.maxDevices ?? (body.status === "trial" ? 1 : 99),
   });
 
   const [created] = await db
@@ -98,16 +124,21 @@ export const POST: RequestHandler = async (event) => {
 
 export const PUT: RequestHandler = async (event) => {
   const user = await authenticateEvent(event);
-  if (!user) return json({ ok: false, message: "Unauthorized" }, { status: 401 });
+  if (!user)
+    return json({ ok: false, message: "Unauthorized" }, { status: 401 });
   if (!hasAnyRole(user, ["superadmin"])) {
     return json({ ok: false, message: "Forbidden" }, { status: 403 });
   }
 
   const id = Number(event.url.searchParams.get("id"));
-  if (!id) return json({ ok: false, message: "id wajib diisi" }, { status: 400 });
+  if (!id)
+    return json({ ok: false, message: "id wajib diisi" }, { status: 400 });
 
-  const body = (await event.request.json().catch(() => null)) as CreateSubscriptionBody | null;
-  if (!body) return json({ ok: false, message: "Body tidak valid" }, { status: 400 });
+  const body = (await event.request
+    .json()
+    .catch(() => null)) as CreateSubscriptionBody | null;
+  if (!body)
+    return json({ ok: false, message: "Body tidak valid" }, { status: 400 });
 
   const startDate = parseDateOnly(body.startDate);
   const endDate = parseDateOnly(body.endDate);
@@ -121,7 +152,12 @@ export const PUT: RequestHandler = async (event) => {
       startDate: startDate ?? undefined,
       endDate: endDate ?? undefined,
       price: body.price !== undefined ? String(body.price) : undefined,
-      autoRenew: body.autoRenew !== undefined ? (body.autoRenew ? 1 : 0) : undefined,
+      autoRenew:
+        body.autoRenew !== undefined ? (body.autoRenew ? 1 : 0) : undefined,
+      maxDevices:
+        body.maxDevices !== undefined
+          ? Math.max(1, body.maxDevices)
+          : undefined,
     })
     .where(eq(subscriptions.id, id));
 

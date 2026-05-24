@@ -65,6 +65,13 @@
                             >{formatRupiah(plan.priceYearly)}</span
                         ><span class="text-xs text-slate-400">/thn</span>
                     </p>
+                    <p class="text-xs text-slate-500">
+                        📺 Maks. Device: <strong
+                            >{plan.maxDevices === 99
+                                ? "Unlimited"
+                                : plan.maxDevices}</strong
+                        >
+                    </p>
                 </div>
                 {#if plan.priceNote}
                     <p class="mt-1 text-xs text-slate-400">{plan.priceNote}</p>
@@ -184,6 +191,20 @@
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                         >[]</textarea
                     >
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500"
+                        >Maks. Device <span class="text-slate-400"
+                            >(99 = Unlimited)</span
+                        ></label
+                    >
+                    <input
+                        name="maxDevices"
+                        type="number"
+                        min="1"
+                        value="1"
+                        class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                    />
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
@@ -322,6 +343,20 @@
                             class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                             >{plan.featuresJson ?? "[]"}</textarea
                         >
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
+                            >Maks. Device <span class="text-slate-400"
+                                >(99 = Unlimited)</span
+                            ></label
+                        >
+                        <input
+                            name="maxDevices"
+                            type="number"
+                            min="1"
+                            value={plan.maxDevices ?? 1}
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
                     </div>
                     <label class="flex items-center gap-2 text-sm">
                         <input

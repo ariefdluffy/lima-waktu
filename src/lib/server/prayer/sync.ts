@@ -184,6 +184,9 @@ export async function syncAllMasjids(): Promise<SyncResult> {
 
         if (!fetchResult.success) {
           overallSuccess = false;
+          console.warn(
+            `[PrayerScheduler] Fetch failed [${masjid.name}] ${dateYmd}: ${fetchResult.error}`,
+          );
           await db
             .update(prayerSyncJobs)
             .set({
@@ -279,14 +282,36 @@ export async function syncAllMasjids(): Promise<SyncResult> {
           });
         }
 
-        // Simpan raw source
-        await db.insert(prayerScheduleRawSources).values({
-          masjidId: masjid.id,
-          scheduleDate: dateYmd as unknown as Date,
-          providerKey: currentProviderKey,
-          payload: fetchResult.data,
-          fetchedAt: sql`NOW()`,
-        });
+        // Simpan raw source — skip jika sudah ada untuk tanggal + provider yang sama
+        const [existingRaw] = await db
+          .select({ id: prayerScheduleRawSources.id })
+          .from(prayerScheduleRawSources)
+          .where(
+            and(
+              eq(prayerScheduleRawSources.masjidId, masjid.id),
+              eq(
+                prayerScheduleRawSources.scheduleDate,
+                dateYmd as unknown as Date,
+              ),
+              eq(prayerScheduleRawSources.providerKey, currentProviderKey),
+            ),
+          )
+          .limit(1);
+
+        if (existingRaw) {
+          await db
+            .update(prayerScheduleRawSources)
+            .set({ payload: fetchResult.data, fetchedAt: sql`NOW()` })
+            .where(eq(prayerScheduleRawSources.id, existingRaw.id));
+        } else {
+          await db.insert(prayerScheduleRawSources).values({
+            masjidId: masjid.id,
+            scheduleDate: dateYmd as unknown as Date,
+            providerKey: currentProviderKey,
+            payload: fetchResult.data,
+            fetchedAt: sql`NOW()`,
+          });
+        }
 
         // Update sync job sukses
         await db
@@ -308,6 +333,10 @@ export async function syncAllMasjids(): Promise<SyncResult> {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         overallSuccess = false;
+        console.error(
+          `[PrayerScheduler] Exception [${masjid.name}] ${dateYmd}: ${msg}`,
+          err,
+        );
         await db
           .update(prayerSyncJobs)
           .set({ status: "failed", finishedAt: sql`NOW()`, errorMessage: msg })

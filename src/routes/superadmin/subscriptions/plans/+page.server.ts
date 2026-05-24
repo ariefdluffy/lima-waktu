@@ -28,6 +28,7 @@ export const actions = {
     const ctaHref = String(form.get("ctaHref") ?? "/auth/login");
     const isHighlight = form.get("isHighlight") === "1" ? 1 : 0;
     const sortOrder = Number(form.get("sortOrder") ?? 0);
+    const maxDevices = Math.max(1, Number(form.get("maxDevices") ?? 1));
 
     if (!name) return { error: "Nama paket wajib diisi" };
 
@@ -42,6 +43,7 @@ export const actions = {
       ctaHref,
       isHighlight,
       sortOrder,
+      maxDevices,
       isActive: 1,
     });
 
@@ -62,6 +64,7 @@ export const actions = {
     const isHighlight = form.get("isHighlight") === "1" ? 1 : 0;
     const sortOrder = Number(form.get("sortOrder") ?? 0);
     const isActive = form.get("isActive") === "1" ? 1 : 0;
+    const maxDevices = Math.max(1, Number(form.get("maxDevices") ?? 1));
 
     if (!id || !name) return { error: "Data tidak lengkap" };
 
@@ -79,6 +82,7 @@ export const actions = {
         isHighlight,
         sortOrder,
         isActive,
+        maxDevices,
       })
       .where(eq(pricingPlans.id, id));
 

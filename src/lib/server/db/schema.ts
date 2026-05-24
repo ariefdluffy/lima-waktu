@@ -585,6 +585,7 @@ export const subscriptions = mysqlTable("subscriptions", {
     .default("0.00")
     .notNull(),
   autoRenew: int("auto_renew").default(0).notNull(),
+  maxDevices: int("max_devices").default(1).notNull(),
   ...timestamps,
 });
 
@@ -648,6 +649,7 @@ export const pricingPlans = mysqlTable(
     isHighlight: int("is_highlight").default(0).notNull(),
     isActive: int("is_active").default(1).notNull(),
     sortOrder: int("sort_order").default(0).notNull(),
+    maxDevices: int("max_devices").default(1).notNull(),
     ...timestamps,
   },
   (table) => [uniqueIndex("pricing_plans_name_uq").on(table.name)],

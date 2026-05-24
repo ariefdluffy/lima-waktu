@@ -177,6 +177,43 @@
     }
 
     // ----------------------------------------------------------------
+    // Confirm dialog (hapus device)
+    // ----------------------------------------------------------------
+    let confirmDeleteDeviceOpen = $state(false);
+    let pendingDeleteDeviceId = $state<string | null>(null);
+    let pendingDeleteDeviceName = $state("");
+
+    function askDeleteDevice(id: string, name: string) {
+        pendingDeleteDeviceId = id;
+        pendingDeleteDeviceName = name;
+        confirmDeleteDeviceOpen = true;
+    }
+
+    function cancelDeleteDevice() {
+        confirmDeleteDeviceOpen = false;
+        pendingDeleteDeviceId = null;
+        pendingDeleteDeviceName = "";
+    }
+
+    async function confirmDeleteDevice() {
+        if (!pendingDeleteDeviceId) return;
+        confirmDeleteDeviceOpen = false;
+        const formData = new FormData();
+        formData.set("device_id", pendingDeleteDeviceId);
+        const res = await fetch("?/deleteDevice", {
+            method: "POST",
+            body: formData,
+        });
+        const result = deserialize(await res.text());
+        if (result.type === "success" || result.type === "redirect") {
+            showToast("🗑️ Device berhasil dihapus!");
+            await invalidate("app:admin");
+        }
+        pendingDeleteDeviceId = null;
+        pendingDeleteDeviceName = "";
+    }
+
+    // ----------------------------------------------------------------
     // Hapus semua data masjid
     // ----------------------------------------------------------------
     let confirmDeleteMasjidOpen = $state(false);
@@ -1989,6 +2026,36 @@
                             <h2 class="text-lg font-semibold text-emerald-900">
                                 Tambah Device
                             </h2>
+
+                            <!-- Info limit device -->
+                            <div
+                                class="mt-3 flex items-center gap-2 rounded-xl border px-4 py-2.5 text-xs
+                                {data.deviceTotal >= data.maxDevices
+                                    ? 'border-amber-200 bg-amber-50 text-amber-700'
+                                    : 'border-emerald-100 bg-emerald-50 text-emerald-700'}"
+                            >
+                                <span class="text-base"
+                                    >{data.deviceTotal >= data.maxDevices
+                                        ? "⚠️"
+                                        : "📺"}</span
+                                >
+                                <span>
+                                    Device terdaftar: <strong
+                                        >{data.deviceTotal}</strong
+                                    >
+                                    /
+                                    <strong
+                                        >{data.maxDevices === 99
+                                            ? "Unlimited"
+                                            : data.maxDevices}</strong
+                                    >
+                                    {#if data.deviceTotal >= data.maxDevices}
+                                        — Batas tercapai. Hapus device yang ada
+                                        atau upgrade langganan.
+                                    {/if}
+                                </span>
+                            </div>
+
                             <form
                                 method="POST"
                                 action="?/addDevice"
@@ -2028,10 +2095,14 @@
                                     name="name"
                                     placeholder="Nama device"
                                     class="rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                                    disabled={data.deviceTotal >=
+                                        data.maxDevices}
                                 />
                                 <select
                                     name="orientation"
                                     class="rounded-xl border border-emerald-200 px-3 py-2 text-sm"
+                                    disabled={data.deviceTotal >=
+                                        data.maxDevices}
                                 >
                                     <option value="horizontal"
                                         >Horizontal</option
@@ -2039,10 +2110,20 @@
                                     <option value="vertical">Vertical</option>
                                 </select>
                                 <div class="sm:col-span-2">
-                                    <button
-                                        class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-                                        >Tambah Device</button
-                                    >
+                                    {#if data.deviceTotal >= data.maxDevices}
+                                        <div
+                                            class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-600 font-medium"
+                                        >
+                                            🔒 Batas maksimal device tercapai.
+                                            Hapus device yang ada atau upgrade
+                                            langganan.
+                                        </div>
+                                    {:else}
+                                        <button
+                                            class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                                            >Tambah Device</button
+                                        >
+                                    {/if}
                                 </div>
                             </form>
                             <div class="mt-4 space-y-3">
@@ -2187,29 +2268,16 @@
                                                     >
                                                 </form>
                                                 <!-- Hapus -->
-                                                <form
-                                                    method="POST"
-                                                    action="?/deleteDevice"
-                                                    onsubmit={(e) => {
-                                                        if (
-                                                            !confirm(
-                                                                "Hapus device ini?",
-                                                            )
-                                                        )
-                                                            e.preventDefault();
-                                                    }}
+                                                <button
+                                                    type="button"
+                                                    onclick={() =>
+                                                        askDeleteDevice(
+                                                            item.id,
+                                                            item.name,
+                                                        )}
+                                                    class="text-xs font-medium text-red-500 hover:text-red-700"
+                                                    >Hapus Device</button
                                                 >
-                                                    <input
-                                                        type="hidden"
-                                                        name="device_id"
-                                                        value={item.id}
-                                                    />
-                                                    <button
-                                                        type="submit"
-                                                        class="text-xs font-medium text-red-500 hover:text-red-700"
-                                                        >Hapus Device</button
-                                                    >
-                                                </form>
                                             </div>
                                         </details>
                                     </div>
@@ -4907,6 +4975,16 @@
         cancelLabel="Batal"
         onconfirm={confirmDeleteEvent}
         oncancel={cancelDeleteEvent}
+    />
+
+    <ConfirmDialog
+        open={confirmDeleteDeviceOpen}
+        title="Hapus Device"
+        message={`Yakin ingin menghapus device "${pendingDeleteDeviceName}"? Tindakan ini tidak bisa dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        onconfirm={confirmDeleteDevice}
+        oncancel={cancelDeleteDevice}
     />
 
     <ConfirmDialog

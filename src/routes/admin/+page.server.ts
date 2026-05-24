@@ -382,6 +382,7 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
       isGlobal: t.isGlobal === 1,
     })),
     subscription: subscriptionRow ?? null,
+    maxDevices: subscriptionRow?.maxDevices ?? 1,
     prayerProviderInfo,
   };
 };
@@ -419,6 +420,29 @@ export const actions: Actions = {
         : "horizontal";
 
     if (masjidId && deviceCode && name) {
+      // Enforce max_devices limit based on subscription
+      const [sub] = await db
+        .select({
+          status: subscriptions.status,
+          maxDevices: subscriptions.maxDevices,
+        })
+        .from(subscriptions)
+        .where(eq(subscriptions.masjidId, masjidId))
+        .orderBy(desc(subscriptions.createdAt))
+        .limit(1);
+
+      const maxDevices = sub?.maxDevices ?? 1;
+      const [{ total }] = await db
+        .select({ total: count() })
+        .from(devices)
+        .where(eq(devices.masjidId, masjidId));
+
+      if (total >= maxDevices) {
+        return fail(403, {
+          error: `Batas maksimal device (${maxDevices}) telah tercapai. Upgrade langganan untuk menambah lebih banyak device.`,
+        });
+      }
+
       const id = randomUUID();
       await db.insert(devices).values({
         id,
