@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, count, lt } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
-import { depends } from "$app/navigation";
+import { depends } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import {
