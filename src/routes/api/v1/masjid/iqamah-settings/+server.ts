@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { iqamahSettings } from "$lib/server/db/schema";
+import { invalidateDisplayPrayerForMasjid } from "$lib/server/display/invalidate";
 
 type IqamahSettingItem = {
   prayerName?: "subuh" | "dzuhur" | "ashar" | "maghrib" | "isya" | "jumat";
@@ -39,9 +40,9 @@ export const PUT: RequestHandler = async (event) => {
     return json({ ok: false, message: "Forbidden" }, { status: 403 });
   }
 
-  const body = (await request
-    .json()
-    .catch(() => null)) as IqamahSettingItem[] | null;
+  const body = (await request.json().catch(() => null)) as
+    | IqamahSettingItem[]
+    | null;
 
   if (!Array.isArray(body)) {
     return json(
@@ -59,7 +60,10 @@ export const PUT: RequestHandler = async (event) => {
     }
     if (typeof item.delayMinutes !== "number") {
       return json(
-        { ok: false, message: "delayMinutes wajib berupa number pada setiap item" },
+        {
+          ok: false,
+          message: "delayMinutes wajib berupa number pada setiap item",
+        },
         { status: 400 },
       );
     }

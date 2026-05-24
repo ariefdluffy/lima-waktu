@@ -18,8 +18,12 @@ import {
   todayYmdInTimezone,
 } from "$lib/server/prayer/resolver";
 import { getCachedSchedule, setCachedSchedule } from "$lib/server/prayer/cache";
+import {
+  getCachedDisplayPayload,
+  setCachedDisplayPayload,
+} from "$lib/server/display/cache";
 
-export const GET: RequestHandler = async ({ params, request }) => {
+export const GET: RequestHandler = async ({ params }) => {
   const deviceCode = params.deviceCode?.trim();
   if (!deviceCode) {
     return json(
@@ -28,6 +32,24 @@ export const GET: RequestHandler = async ({ params, request }) => {
     );
   }
 
+  // ── Fast path: cache hit ──────────────────────────────────────
+  // Heartbeat dilakukan secara fire-and-forget supaya client tidak perlu
+  // menunggu UPDATE selesai. Cache TTL 15 detik selaras dengan interval
+  // polling, jadi data yang ditampilkan tetap segar.
+  const cached = getCachedDisplayPayload(deviceCode);
+  if (cached) {
+    void heartbeatByDeviceCode(deviceCode);
+    return json(
+      { ok: true, watermark: cached.watermark, data: cached.data },
+      {
+        headers: {
+          "Cache-Control": "private, max-age=5, stale-while-revalidate=10",
+        },
+      },
+    );
+  }
+
+  // ── Slow path: bangun ulang payload dan simpan ke cache ───────
   const [device] = await db
     .select()
     .from(devices)
@@ -74,14 +96,9 @@ export const GET: RequestHandler = async ({ params, request }) => {
     }
   }
 
-  // Heartbeat update — pakai NOW() biar konsisten dengan MySQL server time
-  await db
-    .update(devices)
-    .set({
-      lastSeenAt: sql`NOW()`,
-      status: "online",
-    })
-    .where(eq(devices.id, device.id));
+  // Heartbeat update — fire-and-forget supaya tidak menahan respons.
+  // Pakai NOW() biar konsisten dengan MySQL server time.
+  void heartbeatById(device.id);
 
   const today = todayYmdInTimezone(masjid.timezone ?? "Asia/Makassar");
   const todayDate = new Date(`${today}T00:00:00.000Z`);
@@ -93,6 +110,7 @@ export const GET: RequestHandler = async ({ params, request }) => {
     setCachedSchedule(masjid.id, today, schedule);
   }
 
+  const now = new Date();
   const [runningTextRows, slideRows, jumbotronRows, youtubeRows, eventRows] =
     await Promise.all([
       db
@@ -102,11 +120,8 @@ export const GET: RequestHandler = async ({ params, request }) => {
           and(
             eq(runningTexts.masjidId, masjid.id),
             eq(runningTexts.isActive, 1),
-            or(
-              isNull(runningTexts.startAt),
-              lte(runningTexts.startAt, new Date()),
-            ),
-            or(isNull(runningTexts.endAt), gte(runningTexts.endAt, new Date())),
+            or(isNull(runningTexts.startAt), lte(runningTexts.startAt, now)),
+            or(isNull(runningTexts.endAt), gte(runningTexts.endAt, now)),
           ),
         )
         .orderBy(desc(runningTexts.createdAt)),
@@ -127,8 +142,8 @@ export const GET: RequestHandler = async ({ params, request }) => {
           and(
             eq(slides.masjidId, masjid.id),
             eq(slides.isActive, 1),
-            or(isNull(slides.startAt), lte(slides.startAt, new Date())),
-            or(isNull(slides.endAt), gte(slides.endAt, new Date())),
+            or(isNull(slides.startAt), lte(slides.startAt, now)),
+            or(isNull(slides.endAt), gte(slides.endAt, now)),
           ),
         )
         .orderBy(asc(slides.orderIndex)),
@@ -139,8 +154,8 @@ export const GET: RequestHandler = async ({ params, request }) => {
           and(
             eq(jumbotrons.masjidId, masjid.id),
             eq(jumbotrons.isActive, 1),
-            or(isNull(jumbotrons.startAt), lte(jumbotrons.startAt, new Date())),
-            or(isNull(jumbotrons.endAt), gte(jumbotrons.endAt, new Date())),
+            or(isNull(jumbotrons.startAt), lte(jumbotrons.startAt, now)),
+            or(isNull(jumbotrons.endAt), gte(jumbotrons.endAt, now)),
           ),
         )
         .orderBy(desc(jumbotrons.createdAt)),
@@ -151,11 +166,8 @@ export const GET: RequestHandler = async ({ params, request }) => {
           and(
             eq(youtubeItems.masjidId, masjid.id),
             eq(youtubeItems.isActive, 1),
-            or(
-              isNull(youtubeItems.startAt),
-              lte(youtubeItems.startAt, new Date()),
-            ),
-            or(isNull(youtubeItems.endAt), gte(youtubeItems.endAt, new Date())),
+            or(isNull(youtubeItems.startAt), lte(youtubeItems.startAt, now)),
+            or(isNull(youtubeItems.endAt), gte(youtubeItems.endAt, now)),
           ),
         )
         .orderBy(asc(youtubeItems.orderIndex)),
@@ -212,73 +224,104 @@ export const GET: RequestHandler = async ({ params, request }) => {
     }
   }
 
-  return json({
-    ok: true,
-    watermark,
-    data: {
-      generatedAt: new Date().toISOString(),
-      device: {
-        id: device.id,
-        deviceCode: device.deviceCode,
-        name: device.name,
-        orientation: device.orientation,
-        layoutMode: device.layoutMode,
-      },
-      theme: themeData,
-      masjid: {
-        id: masjid.id,
-        name: masjid.name,
-        address: masjid.address,
-        city: masjid.city,
-        district: masjid.district,
-        province: masjid.province,
-        timezone: masjid.timezone,
-        latitude: masjid.latitude,
-        longitude: masjid.longitude,
-        hijriOffset: masjid.hijriOffset ?? 0,
-        adzanScreenDuration: masjid.adzanScreenDuration ?? 4,
-        khusukScreenDuration: masjid.khusukScreenDuration ?? 10,
-        screensaverDelayMinutes: masjid.screensaverDelayMinutes ?? 120,
-        screensaverWakeMinutes: masjid.screensaverWakeMinutes ?? 60,
-        screensaverMorningDelayMinutes:
-          masjid.screensaverMorningDelayMinutes ?? 60,
-        screensaverMorningWakeMinutes:
-          masjid.screensaverMorningWakeMinutes ?? 120,
-        logoUrl: masjid.logoUrl ?? null,
-      },
-      schedule,
-      runningTexts: runningTextRows.map((row) => ({
-        id: row.id,
-        content: row.content,
-        speed: row.speed,
-      })),
-      slides: slideRows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        orderIndex: row.orderIndex,
-        fileUrl: row.fileUrl,
-        fileType: row.fileType,
-      })),
-      jumbotrons: jumbotronRows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        backgroundUrl: row.backgroundUrl,
-      })),
-      youtubeItems: youtubeRows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        youtubeUrl: row.youtubeUrl,
-        orderIndex: row.orderIndex,
-      })),
-      events: eventRows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        eventDate: row.eventDate,
-        eventTime: row.eventTime,
-        countdownEnabled: row.countdownEnabled === 1,
-      })),
+  const payload = {
+    generatedAt: new Date().toISOString(),
+    device: {
+      id: device.id,
+      deviceCode: device.deviceCode,
+      name: device.name,
+      orientation: device.orientation,
+      layoutMode: device.layoutMode,
     },
-  });
+    theme: themeData,
+    masjid: {
+      id: masjid.id,
+      name: masjid.name,
+      address: masjid.address,
+      city: masjid.city,
+      district: masjid.district,
+      province: masjid.province,
+      timezone: masjid.timezone,
+      latitude: masjid.latitude,
+      longitude: masjid.longitude,
+      hijriOffset: masjid.hijriOffset ?? 0,
+      adzanScreenDuration: masjid.adzanScreenDuration ?? 4,
+      khusukScreenDuration: masjid.khusukScreenDuration ?? 10,
+      screensaverDelayMinutes: masjid.screensaverDelayMinutes ?? 120,
+      screensaverWakeMinutes: masjid.screensaverWakeMinutes ?? 60,
+      screensaverMorningDelayMinutes:
+        masjid.screensaverMorningDelayMinutes ?? 60,
+      screensaverMorningWakeMinutes:
+        masjid.screensaverMorningWakeMinutes ?? 120,
+      logoUrl: masjid.logoUrl ?? null,
+    },
+    schedule,
+    runningTexts: runningTextRows.map((row) => ({
+      id: row.id,
+      content: row.content,
+      speed: row.speed,
+    })),
+    slides: slideRows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      orderIndex: row.orderIndex,
+      fileUrl: row.fileUrl,
+      fileType: row.fileType,
+    })),
+    jumbotrons: jumbotronRows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      content: row.content,
+      backgroundUrl: row.backgroundUrl,
+    })),
+    youtubeItems: youtubeRows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      youtubeUrl: row.youtubeUrl,
+      orderIndex: row.orderIndex,
+    })),
+    events: eventRows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      eventDate: row.eventDate,
+      eventTime: row.eventTime,
+      countdownEnabled: row.countdownEnabled === 1,
+    })),
+  };
+
+  setCachedDisplayPayload(deviceCode, payload, watermark);
+
+  return json(
+    { ok: true, watermark, data: payload },
+    {
+      headers: {
+        "Cache-Control": "private, max-age=5, stale-while-revalidate=10",
+      },
+    },
+  );
 };
+
+// ── Helpers ────────────────────────────────────────────────────────
+async function heartbeatByDeviceCode(deviceCode: string): Promise<void> {
+  try {
+    await db
+      .update(devices)
+      .set({ lastSeenAt: sql`NOW()`, status: "online" })
+      .where(eq(devices.deviceCode, deviceCode));
+  } catch (err) {
+    // Heartbeat tidak boleh menjatuhkan request utama. Log ringan saja.
+    console.warn("[display] heartbeat (deviceCode) gagal:", err);
+  }
+}
+
+async function heartbeatById(deviceId: string): Promise<void> {
+  try {
+    await db
+      .update(devices)
+      .set({ lastSeenAt: sql`NOW()`, status: "online" })
+      .where(eq(devices.id, deviceId));
+  } catch (err) {
+    console.warn("[display] heartbeat (id) gagal:", err);
+  }
+}

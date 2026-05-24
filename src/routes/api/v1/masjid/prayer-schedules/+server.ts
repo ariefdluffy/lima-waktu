@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { prayerSchedules } from "$lib/server/db/schema";
+import { invalidateDisplayPrayerForMasjid } from "$lib/server/display/invalidate";
 
 type UpsertPrayerScheduleBody = {
   scheduleDate?: string;
@@ -168,5 +169,6 @@ export const POST: RequestHandler = async (event) => {
     .orderBy(desc(prayerSchedules.id))
     .limit(1);
 
+  invalidateDisplayPrayerForMasjid(masjidId);
   return json({ ok: true, data: saved });
 };

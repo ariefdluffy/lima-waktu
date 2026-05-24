@@ -1,10 +1,14 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "$lib/server/db";
 import { devices } from "$lib/server/db/schema";
 
-// Halaman ini publik — tidak perlu login
+// Halaman ini publik — tidak perlu login.
+//
+// Heartbeat dilakukan di endpoint /api/v1/display/[deviceCode] tiap 15 detik
+// (lihat +page.svelte → fetchData). Kita TIDAK update lastSeenAt di sini lagi
+// supaya tidak terjadi double-write yang bersaingan dengan UPDATE dari API.
 export const load: PageServerLoad = async ({ params }) => {
   const deviceCode = params.deviceCode?.trim();
   if (!deviceCode) {
@@ -26,12 +30,6 @@ export const load: PageServerLoad = async ({ params }) => {
   if (!device || device.isActive !== 1) {
     throw error(404, "Device tidak ditemukan atau non-aktif");
   }
-
-  // Update lastSeenAt pakai NOW() biar cocok sama perbandingan di dashboard
-  await db
-    .update(devices)
-    .set({ lastSeenAt: sql`NOW()`, status: "online" })
-    .where(eq(devices.id, device.id));
 
   return { device };
 };

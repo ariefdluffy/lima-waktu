@@ -697,7 +697,10 @@ export const actions: Actions = {
         "isyaTime",
       ];
       for (const field of timeFields) {
-        if (typeof s[field] !== "string" || !/^\d{2}:\d{2}$/.test(s[field])) {
+        if (
+          typeof (s as Record<string, string>)[field] !== "string" ||
+          !/^\d{2}:\d{2}$/.test((s as Record<string, string>)[field])
+        ) {
           return fail(400, { error: "Format waktu tidak valid: " + field });
         }
       }

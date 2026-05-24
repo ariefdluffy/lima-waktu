@@ -8,13 +8,30 @@ export const audio = $state({
 });
 
 // ── Auto-retry AudioContext resume ──────────────────────────────
+//
+// Browser modern (Chrome/Safari) menahan AudioContext sampai ada user gesture.
+// Kalau TV public tidak pernah disentuh, retry tiap detik akan jalan selamanya.
+// Untuk itu kita batasi maksimal 30 percobaan (~30 detik) lalu berhenti.
+// Retry akan dimulai ulang saat user menekan tombol unlock (handleUnlockAudio).
+const MAX_RESUME_ATTEMPTS = 30;
 let resumeTimer: ReturnType<typeof setInterval> | null = null;
+let resumeAttempts = 0;
 
 function startAutoResume() {
   if (resumeTimer) return;
+  resumeAttempts = 0;
   resumeTimer = setInterval(() => {
-    if (!beepCtx) return;
+    if (!beepCtx) {
+      stopAutoResume();
+      return;
+    }
+    if (beepCtx.state === "running") {
+      audio.blocked = false;
+      stopAutoResume();
+      return;
+    }
     if (beepCtx.state === "suspended") {
+      resumeAttempts += 1;
       beepCtx
         .resume()
         .then(() => {
@@ -24,9 +41,11 @@ function startAutoResume() {
         .catch(() => {
           audio.blocked = true;
         });
-    } else if (beepCtx.state === "running") {
-      audio.blocked = false;
-      stopAutoResume();
+      if (resumeAttempts >= MAX_RESUME_ATTEMPTS) {
+        // Sudah dicoba 30x dan masih disuspend — tunggu user gesture.
+        audio.blocked = true;
+        stopAutoResume();
+      }
     }
   }, 1000);
 }
@@ -40,11 +59,17 @@ function stopAutoResume() {
 
 // ── Internal ─────────────────────────────────────────────────────
 function ensureCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
   if (!beepCtx) {
-    beepCtx = new AudioContext();
+    try {
+      beepCtx = new AudioContext();
+    } catch {
+      return null;
+    }
     startAutoResume();
   }
   if (beepCtx.state === "suspended") {
+    // Trigger resume sekali; loop berkala dihandle startAutoResume.
     beepCtx
       .resume()
       .then(() => {
@@ -56,6 +81,32 @@ function ensureCtx(): AudioContext | null {
       });
   }
   return beepCtx;
+}
+
+// Guard supaya fetch buffer tidak dipanggil bertubi-tubi saat gagal.
+let beepFetchInflight = false;
+let beepFetchFailedAt = 0;
+const BEEP_FETCH_RETRY_MS = 60_000; // tunggu 1 menit setelah gagal
+
+function loadBeepBuffer(ctx: AudioContext, replayAfter: boolean) {
+  if (beepBuffer || beepFetchInflight) return;
+  if (Date.now() - beepFetchFailedAt < BEEP_FETCH_RETRY_MS) return;
+  beepFetchInflight = true;
+  fetch("/beep-alarm.mp3")
+    .then((r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.arrayBuffer();
+    })
+    .then((buf) => ctx.decodeAudioData(buf))
+    .then((decoded) => {
+      beepBuffer = decoded;
+      beepFetchInflight = false;
+      if (replayAfter && !audio.blocked) playBeep();
+    })
+    .catch(() => {
+      beepFetchInflight = false;
+      beepFetchFailedAt = Date.now();
+    });
 }
 
 // ── Public ───────────────────────────────────────────────────────
@@ -70,15 +121,7 @@ export function playBeep() {
     if (!ctx) return;
 
     if (!beepBuffer) {
-      fetch("/beep-alarm.mp3")
-        .then((r) => r.arrayBuffer())
-        .then((buf) => ctx.decodeAudioData(buf))
-        .then((decoded) => {
-          beepBuffer = decoded;
-          // Replay setelah buffer siap (selama tidak terblokir)
-          if (!audio.blocked) playBeep();
-        })
-        .catch(() => {});
+      loadBeepBuffer(ctx, true);
       return;
     }
     if (audio.blocked) return;
@@ -115,17 +158,11 @@ export function playIqamahBeep() {
 }
 
 export function handleUnlockAudio() {
-  ensureCtx();
+  const ctx = ensureCtx();
+  if (!ctx) return;
 
-  if (!beepBuffer) {
-    fetch("/beep-alarm.mp3")
-      .then((r) => r.arrayBuffer())
-      .then((buf) => {
-        if (beepCtx) return beepCtx.decodeAudioData(buf);
-      })
-      .then((decoded) => {
-        if (decoded) beepBuffer = decoded;
-      })
-      .catch(() => {});
-  }
+  // User gesture → mulai ulang siklus resume sekalipun sebelumnya sudah menyerah.
+  if (!resumeTimer) startAutoResume();
+
+  if (!beepBuffer) loadBeepBuffer(ctx, false);
 }

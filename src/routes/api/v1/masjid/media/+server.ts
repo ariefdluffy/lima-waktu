@@ -6,6 +6,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { mediaAssets } from "$lib/server/db/schema";
+import { invalidateDisplayForMasjid } from "$lib/server/display/invalidate";
 
 const ALLOWED_MIME = ["image/jpeg", "image/png"];
 const MAX_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
@@ -93,5 +94,8 @@ export const POST: RequestHandler = async (event) => {
     .orderBy(desc(mediaAssets.createdAt))
     .limit(1);
 
+  // Slide referensi mediaAssets.fileUrl, jadi update gambar harus invalidate
+  // payload Display supaya URL baru langsung tampil di TV.
+  invalidateDisplayForMasjid(masjidId);
   return json({ ok: true, data: created }, { status: 201 });
 };

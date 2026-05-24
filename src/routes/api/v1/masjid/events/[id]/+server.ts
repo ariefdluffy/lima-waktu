@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { events } from "$lib/server/db/schema";
+import { invalidateDisplayForMasjid } from "$lib/server/display/invalidate";
 
 type UpdateEventBody = {
   title?: string;
@@ -49,9 +50,7 @@ export const PUT: RequestHandler = async (event) => {
   const [existing] = await db
     .select({ id: events.id })
     .from(events)
-    .where(
-      and(eq(events.id, id), eq(events.masjidId, masjidId)),
-    )
+    .where(and(eq(events.id, id), eq(events.masjidId, masjidId)))
     .limit(1);
 
   if (!existing) {
@@ -64,7 +63,8 @@ export const PUT: RequestHandler = async (event) => {
   const updateData: Record<string, unknown> = {};
   if (body.title !== undefined) updateData.title = body.title.trim();
   if (body.description !== undefined) updateData.description = body.description;
-  if (body.eventDate !== undefined) updateData.eventDate = body.eventDate.trim();
+  if (body.eventDate !== undefined)
+    updateData.eventDate = body.eventDate.trim();
   if (body.eventTime !== undefined) updateData.eventTime = body.eventTime;
   if (body.countdownEnabled !== undefined) {
     updateData.countdownEnabled =
@@ -89,6 +89,7 @@ export const PUT: RequestHandler = async (event) => {
     .where(eq(events.id, id))
     .limit(1);
 
+  invalidateDisplayForMasjid(masjidId);
   return json({ ok: true, data: updated });
 };
 
@@ -117,9 +118,7 @@ export const DELETE: RequestHandler = async (event) => {
   const [existing] = await db
     .select({ id: events.id })
     .from(events)
-    .where(
-      and(eq(events.id, id), eq(events.masjidId, masjidId)),
-    )
+    .where(and(eq(events.id, id), eq(events.masjidId, masjidId)))
     .limit(1);
 
   if (!existing) {
@@ -134,5 +133,6 @@ export const DELETE: RequestHandler = async (event) => {
     .set({ isActive: 0 })
     .where(and(eq(events.id, id), eq(events.masjidId, masjidId)));
 
+  invalidateDisplayForMasjid(masjidId);
   return json({ ok: true, message: "Event berhasil dihapus" });
 };

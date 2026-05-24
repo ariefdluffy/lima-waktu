@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { prayerCorrections } from "$lib/server/db/schema";
+import { invalidateDisplayPrayerForMasjid } from "$lib/server/display/invalidate";
 
 type CreateCorrectionBody = {
   prayerName?:
@@ -103,5 +104,6 @@ export const POST: RequestHandler = async (event) => {
     .orderBy(desc(prayerCorrections.id))
     .limit(1);
 
+  invalidateDisplayPrayerForMasjid(masjidId);
   return json({ ok: true, data: saved }, { status: 201 });
 };

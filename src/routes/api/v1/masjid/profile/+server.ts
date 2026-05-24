@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { masjids } from "$lib/server/db/schema";
+import { invalidateDisplayForMasjid } from "$lib/server/display/invalidate";
 
 type UpdateProfileBody = {
   name?: string;
@@ -123,5 +124,6 @@ export const PUT: RequestHandler = async (event) => {
     .from(masjids)
     .where(eq(masjids.id, masjidId))
     .limit(1);
+  invalidateDisplayForMasjid(masjidId);
   return json({ ok: true, data: profile });
 };

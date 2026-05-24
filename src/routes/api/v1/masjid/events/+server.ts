@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { events } from "$lib/server/db/schema";
+import { invalidateDisplayForMasjid } from "$lib/server/display/invalidate";
 
 type CreateEventBody = {
   title?: string;
@@ -58,17 +59,15 @@ export const POST: RequestHandler = async (event) => {
     url.searchParams.get("masjid_id"),
   );
 
-  const [inserted] = await db
-    .insert(events)
-    .values({
-      masjidId,
-      title: body.title.trim(),
-      description: body.description ?? null,
-      eventDate: body.eventDate.trim(),
-      eventTime: body.eventTime ?? null,
-      countdownEnabled:
-        body.countdownEnabled === false || body.countdownEnabled === 0 ? 0 : 1,
-    });
+  const [inserted] = await db.insert(events).values({
+    masjidId,
+    title: body.title.trim(),
+    description: body.description ?? null,
+    eventDate: new Date(body.eventDate.trim()),
+    eventTime: body.eventTime ?? null,
+    countdownEnabled:
+      body.countdownEnabled === false || body.countdownEnabled === 0 ? 0 : 1,
+  });
 
   const [created] = await db
     .select()
@@ -76,5 +75,6 @@ export const POST: RequestHandler = async (event) => {
     .where(eq(events.id, inserted.insertId))
     .limit(1);
 
+  invalidateDisplayForMasjid(masjidId);
   return json({ ok: true, data: created }, { status: 201 });
 };

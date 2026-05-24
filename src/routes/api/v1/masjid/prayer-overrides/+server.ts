@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { prayerOverrides } from "$lib/server/db/schema";
+import { invalidateDisplayPrayerForMasjid } from "$lib/server/display/invalidate";
 
 type CreateOverrideBody = {
   scheduleDate?: string;
@@ -164,6 +165,7 @@ export const POST: RequestHandler = async (event) => {
     )
     .limit(1);
 
+  invalidateDisplayPrayerForMasjid(masjidId);
   return json({ ok: true, data: saved }, { status: 201 });
 };
 
@@ -211,5 +213,6 @@ export const DELETE: RequestHandler = async (event) => {
       and(eq(prayerOverrides.id, id), eq(prayerOverrides.masjidId, masjidId)),
     );
 
+  invalidateDisplayPrayerForMasjid(masjidId);
   return json({ ok: true, message: "Override berhasil dihapus" });
 };

@@ -107,20 +107,53 @@
     }
 
     // ── Data Fetch ────────────────────────────────────────────────
+    //
+    // Anti-stuck strategy:
+    // 1. AbortController dengan timeout 12 detik supaya request tidak
+    //    menggantung tak terbatas saat server lambat / koneksi mati.
+    // 2. Guard `inflight` mencegah tumpukan fetch saat polling lebih cepat
+    //    dari respons (interval 15s, timeout 12s → maks 1 request berjalan).
+    // 3. Setelah berhasil, `error` di-reset ke null supaya layar error
+    //    countdown tidak terus reload halaman.
+    // 4. Jika sudah pernah ada payload sebelumnya, kegagalan transient
+    //    tidak memunculkan error screen — cukup log dan biarkan UI tetap
+    //    menampilkan data lama. Error screen hanya muncul saat initial load.
+    let inflight: AbortController | null = null;
+
     async function fetchData() {
+        if (inflight) return; // ada request berjalan, lewati siklus ini
+        const ac = new AbortController();
+        inflight = ac;
+        const timeoutId = setTimeout(() => ac.abort(), 12_000);
         try {
             const res = await fetch(
                 `/api/v1/display/${data.device.deviceCode}`,
+                { signal: ac.signal, cache: "no-store" },
             );
             const json = await res.json();
             if (json.ok) {
                 payload = json.data;
+                error = null; // sukses → bersihkan flag error
+            } else if (!payload) {
+                error = json.message ?? "Gagal mengambil data";
             } else {
-                error = json.message;
+                console.warn(
+                    "[display] fetch !ok, keep stale payload:",
+                    json.message,
+                );
             }
-        } catch (e) {
-            error = "Gagal mengambil data";
+        } catch (e: any) {
+            const aborted = e?.name === "AbortError";
+            if (aborted) {
+                console.warn("[display] fetch dibatalkan (timeout)");
+            } else if (!payload) {
+                error = "Gagal mengambil data";
+            } else {
+                console.warn("[display] fetch gagal, keep stale payload:", e);
+            }
         } finally {
+            clearTimeout(timeoutId);
+            inflight = null;
             loading = false;
         }
     }
@@ -145,14 +178,6 @@
 
         const dataInterval = setInterval(fetchData, 15000);
 
-        // Auto-reload halaman setiap 4 jam untuk membersihkan memory
-        const reloadInterval = setInterval(
-            () => {
-                window.location.reload();
-            },
-            4 * 60 * 60 * 1000,
-        ); // 4 jam
-
         const onVisible = () => {
             if (document.visibilityState === "visible") {
                 fetchData();
@@ -167,8 +192,10 @@
             clearInterval(slideInterval);
             clearInterval(jumbotronInterval);
             clearInterval(dataInterval);
-            clearInterval(reloadInterval);
             document.removeEventListener("visibilitychange", onVisible);
+            // Pastikan fetch in-flight ikut dibatalkan saat halaman diunmount.
+            inflight?.abort();
+            inflight = null;
         };
     });
 

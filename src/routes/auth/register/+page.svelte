@@ -87,17 +87,6 @@
                 </p>
             {/if}
 
-            {#if form?.success}
-                <p
-                    class="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
-                >
-                    Registrasi berhasil! Silakan <a
-                        href="/auth/login"
-                        class="font-medium underline">login</a
-                    >.
-                </p>
-            {/if}
-
             <button
                 class="w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
             >

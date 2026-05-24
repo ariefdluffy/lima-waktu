@@ -4,6 +4,7 @@ import { authenticateEvent, hasAnyRole } from "$lib/server/auth/basic";
 import { resolveMasjidIdForUser } from "$lib/server/api/tenant";
 import { db } from "$lib/server/db";
 import { runningTexts } from "$lib/server/db/schema";
+import { invalidateDisplayForMasjid } from "$lib/server/display/invalidate";
 
 type CreateRunningTextBody = {
   content?: string;
@@ -70,5 +71,6 @@ export const POST: RequestHandler = async (event) => {
     .orderBy(desc(runningTexts.id))
     .limit(1);
 
+  invalidateDisplayForMasjid(masjidId);
   return json({ ok: true, data: created }, { status: 201 });
 };
