@@ -95,7 +95,7 @@
             class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
             <a
-                href="/auth/login"
+                href="/auth/register"
                 class="rounded-2xl bg-white px-8 py-3.5 text-base font-bold text-emerald-800 shadow-lg transition hover:bg-emerald-50 hover:shadow-xl"
             >
                 Mulai Gratis
@@ -295,7 +295,7 @@
             Daftar gratis sekarang. Tidak perlu kartu kredit.
         </p>
         <a
-            href="/auth/login"
+            href="/auth/register"
             class="mt-8 inline-block rounded-2xl bg-white px-10 py-4 text-base font-bold text-emerald-800 shadow-lg transition hover:bg-emerald-50 hover:shadow-xl"
         >
             Daftar Sekarang — Gratis
@@ -321,10 +321,10 @@
                 </p>
             </div>
             <nav class="flex gap-6 text-sm text-slate-600">
-                <a href="/admin" class="hover:text-emerald-700">Admin</a>
+                <!-- <a href="/admin" class="hover:text-emerald-700">Admin</a>
                 <a href="/superadmin" class="hover:text-emerald-700"
                     >Superadmin</a
-                >
+                > -->
                 <a href="/auth/login" class="hover:text-emerald-700">Login</a>
                 <a href="#demo" class="hover:text-emerald-700">Demo</a>
                 <a href="#harga" class="hover:text-emerald-700">Harga</a>
