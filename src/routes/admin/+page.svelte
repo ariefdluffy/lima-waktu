@@ -202,11 +202,7 @@
     }
 
     function navigateTo(section: string) {
-        if (section === "langganan") {
-            goto("/admin?section=langganan");
-            return;
-        }
-        activeSection = section as Section;
+        goto(`/admin?section=${section}`);
     }
 
     // Read section from URL param on mount
