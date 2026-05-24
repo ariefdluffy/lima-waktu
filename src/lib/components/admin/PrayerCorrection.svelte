@@ -111,6 +111,9 @@
             }}
             class="rounded-xl border border-emerald-200 bg-emerald-50 p-6"
         >
+            <!-- Hidden masjid_id input -->
+            <input type="hidden" name="masjid_id" value={$page.data.masjid?.id || ""} />
+
             <div class="grid gap-4 sm:grid-cols-2">
                 <!-- Prayer Name -->
                 <div>
