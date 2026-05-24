@@ -937,5 +937,111 @@ export const actions: Actions = {
       console.error("Error saving prayer correction:", error);
       return fail(500, { error: "Gagal menyimpan koreksi" });
     }
+
+  updatePrayerCorrection: async ({ locals, request }) => {
+    if (!locals.user) {
+      throw redirect(302, "/auth/login");
+    }
+
+    const form = await request.formData();
+    const id = Number(form.get("id") ?? 0);
+    const masjidId = String(form.get("masjid_id") ?? "");
+    const prayerName = String(form.get("prayerName") ?? "").trim();
+    const offsetMinutes = Number(form.get("offsetMinutes") ?? 0);
+    const reason = String(form.get("reason") ?? "").trim();
+    const activeFromStr = String(form.get("activeFrom") ?? "").trim();
+    const activeUntilStr = String(form.get("activeUntil") ?? "").trim();
+    const isActive = form.get("isActive") ? 1 : 0;
+
+    if (!id || !masjidId || !prayerName || !activeFromStr || !activeUntilStr) {
+      return fail(400, { error: "Data tidak lengkap" });
+    }
+
+    const [membership] = await db
+      .select({ id: masjidUsers.id })
+      .from(masjidUsers)
+      .where(
+        and(
+          eq(masjidUsers.masjidId, masjidId),
+          eq(masjidUsers.userId, locals.user.id),
+          eq(masjidUsers.isActive, 1),
+        ),
+      )
+      .limit(1);
+
+    if (!membership) {
+      return fail(403, { error: "Anda tidak memiliki akses ke masjid ini" });
+    }
+
+    try {
+      await db
+        .update(prayerCorrections)
+        .set({
+          prayerName: prayerName as any,
+          offsetMinutes,
+          reason,
+          activeFrom: new Date(activeFromStr),
+          activeUntil: new Date(activeUntilStr),
+          isActive,
+        })
+        .where(eq(prayerCorrections.id, id));
+
+      invalidateCache(masjidId, "*");
+      return { success: true };
+    } catch (error) {
+      console.error("Error updating prayer correction:", error);
+      return fail(500, { error: "Gagal memperbarui koreksi" });
+    }
+  },
+
+  deletePrayerCorrection: async ({ locals, request }) => {
+    if (!locals.user) {
+      throw redirect(302, "/auth/login");
+    }
+
+    const form = await request.formData();
+    const id = Number(form.get("id") ?? 0);
+
+    if (!id) {
+      return fail(400, { error: "ID koreksi tidak ditemukan" });
+    }
+
+    // Get the correction to verify ownership
+    const [correction] = await db
+      .select()
+      .from(prayerCorrections)
+      .where(eq(prayerCorrections.id, id))
+      .limit(1);
+
+    if (!correction) {
+      return fail(404, { error: "Koreksi tidak ditemukan" });
+    }
+
+    // Verify user owns this masjid
+    const [membership] = await db
+      .select({ id: masjidUsers.id })
+      .from(masjidUsers)
+      .where(
+        and(
+          eq(masjidUsers.masjidId, correction.masjidId),
+          eq(masjidUsers.userId, locals.user.id),
+          eq(masjidUsers.isActive, 1),
+        ),
+      )
+      .limit(1);
+
+    if (!membership) {
+      return fail(403, { error: "Anda tidak memiliki akses ke masjid ini" });
+    }
+
+    try {
+      await db.delete(prayerCorrections).where(eq(prayerCorrections.id, id));
+
+      invalidateCache(correction.masjidId, "*");
+      return { success: true };
+    } catch (error) {
+      console.error("Error deleting prayer correction:", error);
+      return fail(500, { error: "Gagal menghapus koreksi" });
+    }
   },
 };

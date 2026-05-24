@@ -1,6 +1,7 @@
 <script lang="ts">
     import { enhance } from "$app/forms";
     import { invalidate } from "$app/navigation";
+    import { page } from "$app/stores";
 
     let {
         corrections = [],
@@ -30,6 +31,8 @@
     ];
 
     let showForm = $state(false);
+    let isEditing = $state(false);
+    let editingId = $state<number | null>(null);
     let formData = $state({
         prayerName: "dzuhur",
         offsetMinutes: 0,
@@ -39,9 +42,16 @@
         isActive: 1,
     });
 
-    let editingId = $state<number | null>(null);
     let loading = $state(false);
     let message = $state("");
+    let messageType = $state<"success" | "error">("success");
+
+    // Delete confirmation state
+    let showDeleteConfirm = $state(false);
+    let deleteConfirmId = $state<number | null>(null);
+    let deleteConfirmTitle = $state("");
+    let deleteLoading = $state(false);
+    let deleteCountdown = $state(0);
 
     function resetForm() {
         formData = {
@@ -53,6 +63,7 @@
             isActive: 1,
         };
         editingId = null;
+        isEditing = false;
         showForm = false;
     }
 
@@ -66,6 +77,74 @@
             month: "short",
             year: "numeric",
         });
+    }
+
+    function startEdit(correction: any) {
+        isEditing = true;
+        editingId = correction.id;
+        formData = {
+            prayerName: correction.prayerName,
+            offsetMinutes: correction.offsetMinutes,
+            reason: correction.reason,
+            activeFrom: correction.activeFrom,
+            activeUntil: correction.activeUntil,
+            isActive: correction.isActive,
+        };
+        showForm = true;
+    }
+
+    function startDelete(id: number, prayerName: string) {
+        deleteConfirmId = id;
+        deleteConfirmTitle = getPrayerLabel(prayerName);
+        showDeleteConfirm = true;
+        deleteCountdown = 3;
+
+        // Countdown timer
+        const interval = setInterval(() => {
+            deleteCountdown--;
+            if (deleteCountdown <= 0) {
+                clearInterval(interval);
+            }
+        }, 1000);
+    }
+
+    function cancelDelete() {
+        showDeleteConfirm = false;
+        deleteConfirmId = null;
+        deleteCountdown = 0;
+    }
+
+    async function confirmDelete() {
+        if (!deleteConfirmId) return;
+        deleteLoading = true;
+
+        const formData = new FormData();
+        formData.set("id", String(deleteConfirmId));
+
+        try {
+            const res = await fetch("?/deletePrayerCorrection", {
+                method: "POST",
+                body: formData,
+            });
+
+            const result = await res.json();
+            if (result.type === "success") {
+                message = "Koreksi berhasil dihapus";
+                messageType = "success";
+                showDeleteConfirm = false;
+                deleteConfirmId = null;
+                await invalidate("app:admin");
+                setTimeout(() => (message = ""), 3000);
+            } else {
+                message = "Gagal menghapus koreksi";
+                messageType = "error";
+            }
+        } catch (error) {
+            message = "Gagal menghapus koreksi";
+            messageType = "error";
+        } finally {
+            deleteLoading = false;
+        }
     }
 </script>
 
@@ -83,7 +162,14 @@
         </div>
         <button
             type="button"
-            onclick={() => (showForm = !showForm)}
+            onclick={() => {
+                if (showForm && !isEditing) {
+                    resetForm();
+                } else if (!showForm) {
+                    resetForm();
+                    showForm = true;
+                }
+            }}
             class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
         >
             {showForm ? "Batal" : "+ Tambah Koreksi"}
@@ -94,25 +180,38 @@
     {#if showForm}
         <form
             method="POST"
-            action="?/savePrayerCorrection"
+            action={isEditing
+                ? "?/updatePrayerCorrection"
+                : "?/savePrayerCorrection"}
             use:enhance={() => {
                 loading = true;
                 return async ({ result }) => {
                     loading = false;
                     if (result.type === "success") {
-                        message = "Koreksi berhasil disimpan";
+                        message = isEditing
+                            ? "Koreksi berhasil diperbarui"
+                            : "Koreksi berhasil disimpan";
+                        messageType = "success";
                         resetForm();
                         await invalidate("app:admin");
                         setTimeout(() => (message = ""), 3000);
                     } else if (result.type === "error") {
                         message = "Gagal menyimpan koreksi";
+                        messageType = "error";
                     }
                 };
             }}
             class="rounded-xl border border-emerald-200 bg-emerald-50 p-6"
         >
-            <!-- Hidden masjid_id input -->
-            <input type="hidden" name="masjid_id" value={$page.data.masjid?.id || ""} />
+            <!-- Hidden inputs -->
+            <input
+                type="hidden"
+                name="masjid_id"
+                value={$page.data.masjid?.id || ""}
+            />
+            {#if isEditing && editingId}
+                <input type="hidden" name="id" value={editingId} />
+            {/if}
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <!-- Prayer Name -->
@@ -216,7 +315,11 @@
                     disabled={loading}
                     class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 transition"
                 >
-                    {loading ? "Menyimpan..." : "Simpan Koreksi"}
+                    {loading
+                        ? "Menyimpan..."
+                        : isEditing
+                          ? "Perbarui Koreksi"
+                          : "Simpan Koreksi"}
                 </button>
                 <button
                     type="button"
@@ -232,7 +335,10 @@
     <!-- Message -->
     {#if message}
         <div
-            class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+            class="rounded-lg border px-4 py-3 text-sm {messageType ===
+            'success'
+                ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                : 'border-red-200 bg-red-50 text-red-800'}"
         >
             {message}
         </div>
@@ -273,6 +379,11 @@
                                 class="px-4 py-3 text-left font-semibold text-slate-700"
                             >
                                 Status
+                            </th>
+                            <th
+                                class="px-4 py-3 text-left font-semibold text-slate-700"
+                            >
+                                Aksi
                             </th>
                         </tr>
                     </thead>
@@ -317,6 +428,29 @@
                                             : "Nonaktif"}
                                     </span>
                                 </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onclick={() =>
+                                                startEdit(correction)}
+                                            class="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onclick={() =>
+                                                startDelete(
+                                                    correction.id,
+                                                    correction.prayerName,
+                                                )}
+                                            class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-200 transition"
+                                        >
+                                            Hapus
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         {/each}
                     </tbody>
@@ -325,3 +459,98 @@
         {/if}
     </div>
 </div>
+
+<!-- Delete Confirmation Dialog dengan Animasi -->
+{#if showDeleteConfirm}
+    <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+    >
+        <div
+            class="rounded-2xl bg-white p-6 shadow-2xl max-w-sm w-full mx-4 animate-in zoom-in-95 duration-200"
+        >
+            <!-- Header -->
+            <div class="mb-4">
+                <h3 class="text-lg font-bold text-slate-900">
+                    Hapus Koreksi Waktu Sholat?
+                </h3>
+                <p class="mt-2 text-sm text-slate-600">
+                    Anda akan menghapus koreksi untuk <span
+                        class="font-semibold text-slate-800"
+                        >{deleteConfirmTitle}</span
+                    >
+                </p>
+            </div>
+
+            <!-- Warning -->
+            <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-3">
+                <p class="text-xs text-red-700">
+                    ⚠️ Tindakan ini tidak dapat dibatalkan. Koreksi akan dihapus
+                    secara permanen.
+                </p>
+            </div>
+
+            <!-- Countdown Button -->
+            <div class="mb-4">
+                <button
+                    type="button"
+                    disabled={deleteCountdown > 0 || deleteLoading}
+                    onclick={confirmDelete}
+                    class="w-full rounded-lg bg-red-600 px-4 py-3 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition {deleteCountdown >
+                    0
+                        ? 'animate-pulse'
+                        : ''}"
+                >
+                    {deleteLoading
+                        ? "Menghapus..."
+                        : deleteCountdown > 0
+                          ? `Hapus dalam ${deleteCountdown}s`
+                          : "Ya, Hapus Koreksi"}
+                </button>
+            </div>
+
+            <!-- Cancel Button -->
+            <button
+                type="button"
+                onclick={cancelDelete}
+                disabled={deleteLoading}
+                class="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition"
+            >
+                Batal
+            </button>
+        </div>
+    </div>
+{/if}
+
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes zoomIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    :global(.animate-in) {
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    :global(.zoom-in-95) {
+        animation: zoomIn 0.2s ease-out;
+    }
+
+    :global(.fade-in) {
+        animation: fadeIn 0.2s ease-out;
+    }
+</style>

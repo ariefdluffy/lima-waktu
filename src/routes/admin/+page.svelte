@@ -3417,7 +3417,9 @@
 
                         <!-- Prayer Correction Section -->
                         <section class="rounded-2xl bg-white p-6 shadow-sm">
-                            <PrayerCorrection corrections={data.prayerCorrections || []} />
+                            <PrayerCorrection
+                                corrections={data.prayerCorrections || []}
+                            />
                         </section>
 
                         <section class="rounded-2xl bg-white p-6 shadow-sm">
@@ -4430,7 +4432,7 @@
                                             <p
                                                 class="mt-2 text-sm text-slate-600"
                                             >
-                                                Hubungi superadmin untuk
+                                                Hubungi Contact Person untuk
                                                 memperpanjang langganan. Setelah
                                                 pembayaran dikonfirmasi, status
                                                 akan diperbarui.
@@ -4481,25 +4483,6 @@
                                                     langganan diaktifkan.
                                                 {/if}
                                             </p>
-                                            {#if sub.status === "trial"}
-                                                <div
-                                                    class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800"
-                                                >
-                                                    <strong
-                                                        >💡 Trial Gratis 14 Hari</strong
-                                                    >
-                                                    <p
-                                                        class="mt-1 text-xs text-blue-600"
-                                                    >
-                                                        Nikmati semua fitur
-                                                        tanpa biaya selama 14
-                                                        hari. Hubungi superadmin
-                                                        untuk memperpanjang
-                                                        sebelum masa trial
-                                                        berakhir.
-                                                    </p>
-                                                </div>
-                                            {/if}
                                             <a
                                                 href="https://wa.me/6285250887277"
                                                 target="_blank"
@@ -4537,7 +4520,7 @@
                                             <div
                                                 class="mt-3 rounded-lg border border-dashed border-red-300 bg-red-50/50 p-4 text-center font-mono text-xs tracking-wider text-red-500"
                                             >
-                                                LIMAWAKU.MY.ID — Aktifkan
+                                                LIMAWAKTU.MY.ID — Aktifkan
                                                 langganan di menu Admin
                                             </div>
                                         </div>
