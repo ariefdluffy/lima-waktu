@@ -218,6 +218,81 @@
     // ----------------------------------------------------------------
     let confirmDeleteMasjidOpen = $state(false);
 
+    // Hapus jadwal sholat
+    // ----------------------------------------------------------------
+    let confirmDeleteScheduleOpen = $state(false);
+    let pendingDeleteScheduleId = $state<number | null>(null);
+    let pendingDeleteScheduleDate = $state("");
+    let confirmResetSchedulesOpen = $state(false);
+    let scheduleActionLoading = $state(false);
+    let scheduleActionSuccess = $state("");
+    let scheduleActionError = $state("");
+
+    function askDeleteSchedule(id: number, date: string) {
+        pendingDeleteScheduleId = id;
+        pendingDeleteScheduleDate = date;
+        confirmDeleteScheduleOpen = true;
+    }
+
+    async function confirmDeleteSchedule() {
+        if (!pendingDeleteScheduleId || !data.masjid) return;
+        confirmDeleteScheduleOpen = false;
+        scheduleActionLoading = true;
+        scheduleActionSuccess = "";
+        scheduleActionError = "";
+        try {
+            const formData = new FormData();
+            formData.set("schedule_id", String(pendingDeleteScheduleId));
+            formData.set("masjid_id", data.masjid.id);
+            const res = await fetch("?/deletePrayerSchedule", {
+                method: "POST",
+                body: formData,
+            });
+            const result = deserialize(await res.text());
+            if (result.type === "success" || result.type === "redirect") {
+                scheduleActionSuccess = "Jadwal berhasil dihapus.";
+                setTimeout(() => (scheduleActionSuccess = ""), 3000);
+                await invalidate(() => true);
+            } else {
+                scheduleActionError = "Gagal menghapus jadwal.";
+            }
+        } catch {
+            scheduleActionError = "Gagal terhubung ke server.";
+        } finally {
+            scheduleActionLoading = false;
+            pendingDeleteScheduleId = null;
+            pendingDeleteScheduleDate = "";
+        }
+    }
+
+    async function confirmResetSchedules() {
+        if (!data.masjid) return;
+        confirmResetSchedulesOpen = false;
+        scheduleActionLoading = true;
+        scheduleActionSuccess = "";
+        scheduleActionError = "";
+        try {
+            const formData = new FormData();
+            formData.set("masjid_id", data.masjid.id);
+            const res = await fetch("?/resetPrayerSchedules", {
+                method: "POST",
+                body: formData,
+            });
+            const result = deserialize(await res.text());
+            if (result.type === "success" || result.type === "redirect") {
+                scheduleActionSuccess = "Semua jadwal berhasil direset.";
+                setTimeout(() => (scheduleActionSuccess = ""), 3000);
+                await invalidate(() => true);
+            } else {
+                scheduleActionError = "Gagal mereset jadwal.";
+            }
+        } catch {
+            scheduleActionError = "Gagal terhubung ke server.";
+        } finally {
+            scheduleActionLoading = false;
+        }
+    }
+
     function openDeleteMasjidDialog() {
         confirmDeleteMasjidOpen = true;
     }
@@ -3435,9 +3510,54 @@
                     {#if activeSection === "schedule"}
                         <!-- Daftar Jadwal Tersimpan -->
                         <section class="rounded-2xl bg-white p-5 shadow-sm">
-                            <h2 class="text-lg font-semibold text-emerald-900">
-                                Jadwal Tersimpan
-                            </h2>
+                            <div
+                                class="flex items-center justify-between gap-3"
+                            >
+                                <h2
+                                    class="text-lg font-semibold text-emerald-900"
+                                >
+                                    Jadwal Tersimpan
+                                </h2>
+                                {#if data.prayerScheduleList.length > 0 || data.prayerTotal > 0}
+                                    <button
+                                        type="button"
+                                        onclick={() =>
+                                            (confirmResetSchedulesOpen = true)}
+                                        disabled={scheduleActionLoading}
+                                        class="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-50"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-3.5 w-3.5"
+                                            viewBox="0 0 20 20"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                fill-rule="evenodd"
+                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                clip-rule="evenodd"
+                                            />
+                                        </svg>
+                                        Reset Semua
+                                    </button>
+                                {/if}
+                            </div>
+
+                            {#if scheduleActionSuccess}
+                                <div
+                                    class="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700"
+                                >
+                                    ✓ {scheduleActionSuccess}
+                                </div>
+                            {/if}
+                            {#if scheduleActionError}
+                                <div
+                                    class="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-600"
+                                >
+                                    ✗ {scheduleActionError}
+                                </div>
+                            {/if}
+
                             <div class="mt-4 overflow-x-auto">
                                 <table class="w-full text-xs">
                                     <thead>
@@ -3462,9 +3582,10 @@
                                             <th class="pb-1 pr-2 font-medium"
                                                 >Maghrib</th
                                             >
-                                            <th class="pb-1 font-medium"
+                                            <th class="pb-1 pr-2 font-medium"
                                                 >Isya</th
                                             >
+                                            <th class="pb-1 font-medium"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -3506,15 +3627,44 @@
                                                     class="py-1 pr-2 text-slate-600"
                                                     >{s.maghribTime}</td
                                                 >
-                                                <td class="py-1 text-slate-600"
+                                                <td
+                                                    class="py-1 pr-2 text-slate-600"
                                                     >{s.isyaTime}</td
                                                 >
+                                                <td class="py-1">
+                                                    <button
+                                                        type="button"
+                                                        onclick={() =>
+                                                            askDeleteSchedule(
+                                                                s.id,
+                                                                String(
+                                                                    s.scheduleDate,
+                                                                ),
+                                                            )}
+                                                        disabled={scheduleActionLoading}
+                                                        class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                                                        title="Hapus jadwal ini"
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            class="h-3.5 w-3.5"
+                                                            viewBox="0 0 20 20"
+                                                            fill="currentColor"
+                                                        >
+                                                            <path
+                                                                fill-rule="evenodd"
+                                                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                                clip-rule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </td>
                                             </tr>
                                         {/each}
                                         {#if data.prayerScheduleList.length === 0}
                                             <tr>
                                                 <td
-                                                    colspan="7"
+                                                    colspan="8"
                                                     class="py-3 text-center text-slate-400"
                                                     >Belum ada jadwal tersimpan.</td
                                                 >
@@ -4995,6 +5145,30 @@
         cancelLabel="Batal"
         onconfirm={handleDeleteMasjid}
         oncancel={() => (confirmDeleteMasjidOpen = false)}
+    />
+
+    <ConfirmDialog
+        open={confirmDeleteScheduleOpen}
+        title="Hapus Jadwal"
+        message={`Yakin ingin menghapus jadwal tanggal ${pendingDeleteScheduleDate ? new Date(pendingDeleteScheduleDate).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : ""}? Tindakan ini tidak bisa dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        onconfirm={confirmDeleteSchedule}
+        oncancel={() => {
+            confirmDeleteScheduleOpen = false;
+            pendingDeleteScheduleId = null;
+            pendingDeleteScheduleDate = "";
+        }}
+    />
+
+    <ConfirmDialog
+        open={confirmResetSchedulesOpen}
+        title="Reset Semua Jadwal"
+        message={`Yakin ingin menghapus semua ${data.prayerTotal} jadwal tersimpan untuk masjid ini? Jadwal akan diisi ulang otomatis oleh sistem saat sync berikutnya. Tindakan ini tidak bisa dibatalkan.`}
+        confirmLabel="Ya, Reset Semua"
+        cancelLabel="Batal"
+        onconfirm={confirmResetSchedules}
+        oncancel={() => (confirmResetSchedulesOpen = false)}
     />
 </div>
 

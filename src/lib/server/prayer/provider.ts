@@ -119,23 +119,32 @@ registerProvider("myquran", async ({ dateYmd, baseUrl, methodCode }) => {
     const month = dateParts[1];
     const day = dateParts[2];
 
-    // MyQuran butuh cityId — simpan di methodCode atau params
+    // MyQuran butuh cityId — simpan di methodCode
     // Format: methodCode = "cityId" (misal "1301" untuk Jakarta Pusat)
-    // Atau fallback: jika methodCode bukan angka, coba endpoint date-specific
-    let url: string;
-    if (methodCode && /^\d+$/.test(methodCode)) {
-      // Pakai endpoint jadwal per tanggal: /sholat/jadwal/{cityId}/{year}/{month}/{day}
-      url = `${baseUrl.replace(/\/$/, "")}/sholat/jadwal/${methodCode}/${year}/${month}/${day}`;
-    } else {
-      // Coba endpoint date-specific tanpa city
-      url = `${baseUrl.replace(/\/$/, "")}/sholat/jadwal/1301/${year}/${month}/${day}`;
+    // Jika methodCode bukan angka murni (misal "20" dari Aladhan method), tolak lebih awal
+    // dengan pesan yang jelas agar admin tahu harus isi city ID yang benar.
+    if (!methodCode || !/^\d{3,}$/.test(methodCode)) {
+      return {
+        success: false,
+        error: `MyQuran butuh city ID (3+ digit angka) di field Method Code, bukan "${methodCode ?? "kosong"}". Contoh: 1301 (Jakarta Pusat), 3471 (Yogyakarta). Cek daftar di https://api.myquran.com/v2/sholat/kota/semua`,
+      };
     }
+
+    const url = `${baseUrl.replace(/\/$/, "")}/sholat/jadwal/${methodCode}/${year}/${month}/${day}`;
 
     const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
     if (!res.ok) {
+      // Coba baca body untuk detail error
+      let detail = res.statusText;
+      try {
+        const errBody = await res.text();
+        if (errBody) detail = errBody.slice(0, 200);
+      } catch {
+        /* ignore */
+      }
       return {
         success: false,
-        error: `MyQuran HTTP ${res.status}: ${res.statusText}`,
+        error: `MyQuran HTTP ${res.status} untuk cityId=${methodCode} tanggal=${dateYmd}: ${detail}`,
       };
     }
 

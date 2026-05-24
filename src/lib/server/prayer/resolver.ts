@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, lte, or } from "drizzle-orm";
+import { and, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "$lib/server/db";
 import {
   iqamahSettings,
@@ -151,7 +151,7 @@ export async function resolvePrayerScheduleForMasjid(
     .where(
       and(
         eq(prayerSchedules.masjidId, masjidId),
-        eq(prayerSchedules.scheduleDate, scheduleDateYmd as unknown as Date),
+        sql`${prayerSchedules.scheduleDate} = ${scheduleDateYmd}`,
       ),
     )
     .limit(1);
@@ -184,7 +184,7 @@ export async function resolvePrayerScheduleForMasjid(
     .where(
       and(
         eq(prayerOverrides.masjidId, masjidId),
-        eq(prayerOverrides.scheduleDate, scheduleDateYmd as unknown as Date),
+        sql`${prayerOverrides.scheduleDate} = ${scheduleDateYmd}`,
       ),
     );
 

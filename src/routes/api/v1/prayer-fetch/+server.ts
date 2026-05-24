@@ -372,10 +372,6 @@ export const GET: RequestHandler = async (event) => {
       );
     }
 
-    const latitude = latitudeRawBulk;
-    const longitude = longitudeRawBulk;
-    const timezone = timezoneRawBulk;
-
     try {
       const providerConfig = await getProviderConfig(provider);
       if (!providerConfig) {
@@ -386,9 +382,119 @@ export const GET: RequestHandler = async (event) => {
       }
 
       const globalConfig = await getGlobalConfig();
-      const baseUrl = providerConfig.baseUrl || "https://api.aladhan.com/v1";
+      const baseUrl = (
+        providerConfig.baseUrl || "https://api.aladhan.com/v1"
+      ).replace(/\/$/, "");
+      const apiKey = globalConfig?.apiKey || null;
+      const methodCode = globalConfig?.defaultMethodId ? undefined : undefined; // resolved below
 
-      // Fetch jadwal untuk setiap hari dalam bulan
+      // Ambil methodCode dari globalConfig jika ada
+      let resolvedMethodCode: string | undefined;
+      if (globalConfig?.defaultMethodId) {
+        const { prayerCalculationMethods } =
+          await import("$lib/server/db/schema");
+        const [method] = await db
+          .select({ methodCode: prayerCalculationMethods.methodCode })
+          .from(prayerCalculationMethods)
+          .where(eq(prayerCalculationMethods.id, globalConfig.defaultMethodId))
+          .limit(1);
+        resolvedMethodCode = method?.methodCode ?? undefined;
+      }
+
+      // Untuk Aladhan: gunakan endpoint /calendar untuk satu request per bulan
+      if (provider === "aladhan") {
+        let calUrl = `${baseUrl}/calendar/${year}/${paddedMonth}`;
+        calUrl += `?latitude=${encodeURIComponent(latitudeRawBulk)}`;
+        calUrl += `&longitude=${encodeURIComponent(longitudeRawBulk)}`;
+        calUrl += `&timezonestring=${encodeURIComponent(timezoneRawBulk)}`;
+        if (resolvedMethodCode) {
+          calUrl += `&method=${encodeURIComponent(resolvedMethodCode)}`;
+        }
+
+        const res = await fetch(calUrl, { signal: AbortSignal.timeout(15000) });
+        if (!res.ok) {
+          let detail = res.statusText;
+          try {
+            detail = (await res.text()).slice(0, 200);
+          } catch {
+            /* ignore */
+          }
+          return json(
+            {
+              ok: false,
+              message: `Aladhan calendar HTTP ${res.status}: ${detail}`,
+            },
+            { status: 502 },
+          );
+        }
+
+        const data = (await res.json()) as {
+          code?: number;
+          data?: Array<{
+            timings?: Record<string, string>;
+            date?: { gregorian?: { date?: string } };
+          }>;
+        };
+
+        if (
+          data.code !== 200 ||
+          !Array.isArray(data.data) ||
+          !data.data.length
+        ) {
+          return json(
+            {
+              ok: false,
+              message: "Aladhan calendar: format response tidak valid",
+            },
+            { status: 502 },
+          );
+        }
+
+        function pad2(n: number) {
+          return String(n).padStart(2, "0");
+        }
+        function normalizeTime(v: string | undefined): string {
+          if (!v) return "00:00";
+          const parts = v.trim().split(":");
+          if (parts.length < 2) return "00:00";
+          return `${pad2(Number(parts[0]))}:${pad2(Number(parts[1]))}`;
+        }
+
+        const schedules: PrayerSchedule[] = data.data.map((entry, idx) => {
+          const t = entry.timings ?? {};
+          // date format dari Aladhan: "DD-MM-YYYY"
+          const rawDate = entry.date?.gregorian?.date ?? "";
+          let dateYmd: string;
+          if (/^\d{2}-\d{2}-\d{4}$/.test(rawDate)) {
+            const [dd, mm, yyyy] = rawDate.split("-");
+            dateYmd = `${yyyy}-${mm}-${dd}`;
+          } else {
+            // fallback: hitung dari index
+            dateYmd = `${year}-${paddedMonth}-${pad2(idx + 1)}`;
+          }
+          return {
+            date: dateYmd,
+            imsakTime: normalizeTime(t.Imsak),
+            subuhTime: normalizeTime(t.Fajr),
+            sunriseTime: normalizeTime(t.Sunrise),
+            dhuhaTime: normalizeTime(t.Dhuha),
+            dzuhurTime: normalizeTime(t.Dhuhr),
+            asharTime: normalizeTime(t.Asr),
+            maghribTime: normalizeTime(t.Maghrib),
+            isyaTime: normalizeTime(t.Isha),
+          };
+        });
+
+        return json({
+          ok: true,
+          data: schedules,
+          totalRequested: schedules.length,
+          totalSucceeded: schedules.length,
+          totalFailed: 0,
+        });
+      }
+
+      // Generic provider: fallback ke loop per-hari dengan concurrency terbatas
       const daysInMonth = new Date(
         parseInt(year),
         parseInt(month),
@@ -397,33 +503,32 @@ export const GET: RequestHandler = async (event) => {
       const schedules: PrayerSchedule[] = [];
       const failedDates: Array<{ date: string; error: string }> = [];
 
-      // Helper: retry fetch dengan max 2 attempt
-      async function fetchWithRetry(dateYmd: string, attempts = 2) {
-        let lastError = "Unknown error";
-        for (let i = 0; i < attempts; i++) {
-          const r = await fetchFromProvider(provider, {
-            dateYmd,
-            latitude,
-            longitude,
-            timezone,
-            baseUrl,
-            apiKey: globalConfig?.apiKey || null,
-          });
-          if (r.success) return r;
-          lastError = r.error;
-          // Jeda kecil sebelum retry
-          if (i < attempts - 1) {
-            await new Promise((res) => setTimeout(res, 500));
-          }
-        }
-        return { success: false as const, error: lastError };
-      }
-
       for (let day = 1; day <= daysInMonth; day++) {
         const dayStr = String(day).padStart(2, "0");
         const dateYmd = `${year}-${paddedMonth}-${dayStr}`;
 
-        const result = await fetchWithRetry(dateYmd);
+        // Retry max 2x
+        let result = await fetchFromProvider(provider, {
+          dateYmd,
+          latitude: latitudeRawBulk,
+          longitude: longitudeRawBulk,
+          timezone: timezoneRawBulk,
+          baseUrl,
+          apiKey,
+          methodCode: resolvedMethodCode,
+        });
+        if (!result.success) {
+          await new Promise((r) => setTimeout(r, 500));
+          result = await fetchFromProvider(provider, {
+            dateYmd,
+            latitude: latitudeRawBulk,
+            longitude: longitudeRawBulk,
+            timezone: timezoneRawBulk,
+            baseUrl,
+            apiKey,
+            methodCode: resolvedMethodCode,
+          });
+        }
 
         if (result.success) {
           schedules.push({
@@ -441,10 +546,7 @@ export const GET: RequestHandler = async (event) => {
           failedDates.push({ date: dateYmd, error: result.error });
         }
 
-        // Jeda kecil antar request supaya tidak kena rate limit
-        if (day < daysInMonth) {
-          await new Promise((res) => setTimeout(res, 100));
-        }
+        if (day < daysInMonth) await new Promise((r) => setTimeout(r, 150));
       }
 
       if (!schedules.length) {

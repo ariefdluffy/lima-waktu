@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, count, lt } from "drizzle-orm";
+import { and, desc, eq, count, lt, sql } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
@@ -653,7 +653,7 @@ export const actions: Actions = {
       .where(
         and(
           eq(prayerSchedules.masjidId, masjidId),
-          lt(prayerSchedules.scheduleDate, cutoffStr as unknown as Date),
+          sql`${prayerSchedules.scheduleDate} < ${cutoffStr}`,
         ),
       );
 
@@ -692,7 +692,7 @@ export const actions: Actions = {
         .where(
           and(
             eq(prayerSchedules.masjidId, masjidId),
-            eq(prayerSchedules.scheduleDate, dateStr as unknown as Date),
+            sql`${prayerSchedules.scheduleDate} = ${dateStr}`,
           ),
         )
         .limit(1);
@@ -717,7 +717,7 @@ export const actions: Actions = {
       } else {
         await db.insert(prayerSchedules).values({
           masjidId,
-          scheduleDate: dateStr as unknown as Date,
+          scheduleDate: sql`${dateStr}`,
           imsakTime: s.imsakTime,
           subuhTime: s.subuhTime,
           sunriseTime: s.sunriseTime,
@@ -749,6 +749,40 @@ export const actions: Actions = {
     if (slideId) {
       await db.delete(slides).where(eq(slides.id, slideId));
     }
+  },
+
+  deletePrayerSchedule: async ({ locals, request }) => {
+    if (!locals.user) throw redirect(302, "/auth/login");
+    const form = await request.formData();
+    const scheduleId = Number(form.get("schedule_id") ?? 0);
+    const masjidId = String(form.get("masjid_id") ?? "").trim();
+    if (!scheduleId || !masjidId) {
+      return fail(400, { error: "Data tidak lengkap" });
+    }
+    await db
+      .delete(prayerSchedules)
+      .where(
+        and(
+          eq(prayerSchedules.id, scheduleId),
+          eq(prayerSchedules.masjidId, masjidId),
+        ),
+      );
+    invalidateCache(masjidId, "*");
+    return { deleteSuccess: true };
+  },
+
+  resetPrayerSchedules: async ({ locals, request }) => {
+    if (!locals.user) throw redirect(302, "/auth/login");
+    const form = await request.formData();
+    const masjidId = String(form.get("masjid_id") ?? "").trim();
+    if (!masjidId) {
+      return fail(400, { error: "masjid_id tidak ditemukan" });
+    }
+    await db
+      .delete(prayerSchedules)
+      .where(eq(prayerSchedules.masjidId, masjidId));
+    invalidateCache(masjidId, "*");
+    return { resetSuccess: true };
   },
 
   addPrayerSchedule: async ({ locals, request }) => {
@@ -795,7 +829,7 @@ export const actions: Actions = {
       .where(
         and(
           eq(prayerSchedules.masjidId, masjidId),
-          eq(prayerSchedules.scheduleDate, dateStr as unknown as Date),
+          sql`${prayerSchedules.scheduleDate} = ${dateStr}`,
         ),
       )
       .limit(1);
@@ -820,7 +854,7 @@ export const actions: Actions = {
     } else {
       await db.insert(prayerSchedules).values({
         masjidId,
-        scheduleDate: dateStr as unknown as Date,
+        scheduleDate: sql`${dateStr}`,
         imsakTime,
         subuhTime,
         sunriseTime,
@@ -847,7 +881,7 @@ export const actions: Actions = {
       .where(
         and(
           eq(prayerSchedules.masjidId, masjidId),
-          lt(prayerSchedules.scheduleDate, cutoffStr as unknown as Date),
+          sql`${prayerSchedules.scheduleDate} < ${cutoffStr}`,
         ),
       );
   },

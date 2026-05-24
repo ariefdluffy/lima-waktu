@@ -145,6 +145,9 @@ export async function syncAllMasjids(): Promise<SyncResult> {
     let overallSuccess = true;
 
     for (const dateYmd of dates) {
+      // Delay 200ms antar request untuk menghindari rate limiting
+      await delay(200);
+
       // Buat sync job record
       const [job] = await db.insert(prayerSyncJobs).values({
         masjidId: masjid.id,
@@ -226,7 +229,7 @@ export async function syncAllMasjids(): Promise<SyncResult> {
           .where(
             and(
               eq(prayerSchedules.masjidId, masjid.id),
-              eq(prayerSchedules.scheduleDate, dateYmd as unknown as Date),
+              sql`${prayerSchedules.scheduleDate} = ${dateYmd}`,
             ),
           )
           .limit(1);
@@ -267,13 +270,13 @@ export async function syncAllMasjids(): Promise<SyncResult> {
             .where(
               and(
                 eq(prayerSchedules.masjidId, masjid.id),
-                lt(prayerSchedules.scheduleDate, cutoffStr as unknown as Date),
+                sql`${prayerSchedules.scheduleDate} < ${cutoffStr}`,
               ),
             );
 
           await db.insert(prayerSchedules).values({
             masjidId: masjid.id,
-            scheduleDate: dateYmd as unknown as Date,
+            scheduleDate: sql`${dateYmd}`,
             ...timesToRow(fetchResult.data),
             sourceProvider: currentProviderKey,
             calculationMethod: sourceLabel,
@@ -289,10 +292,7 @@ export async function syncAllMasjids(): Promise<SyncResult> {
           .where(
             and(
               eq(prayerScheduleRawSources.masjidId, masjid.id),
-              eq(
-                prayerScheduleRawSources.scheduleDate,
-                dateYmd as unknown as Date,
-              ),
+              sql`${prayerScheduleRawSources.scheduleDate} = ${dateYmd}`,
               eq(prayerScheduleRawSources.providerKey, currentProviderKey),
             ),
           )
@@ -306,7 +306,7 @@ export async function syncAllMasjids(): Promise<SyncResult> {
         } else {
           await db.insert(prayerScheduleRawSources).values({
             masjidId: masjid.id,
-            scheduleDate: dateYmd as unknown as Date,
+            scheduleDate: sql`${dateYmd}`,
             providerKey: currentProviderKey,
             payload: fetchResult.data,
             fetchedAt: sql`NOW()`,
@@ -360,6 +360,11 @@ export async function syncAllMasjids(): Promise<SyncResult> {
 }
 
 // --- Helpers ---
+
+/** Delay helper untuk menghindari rate limiting */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function timesToRow(times: PrayerTimesRaw) {
   return {

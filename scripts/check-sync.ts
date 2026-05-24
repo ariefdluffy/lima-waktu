@@ -87,6 +87,31 @@ async function main() {
   );
   console.table(logs);
 
+  console.log("\n=== SYNC JOBS FAILED (detail) ===");
+  const [failedJobs] = await conn.execute(
+    `SELECT sj.id, m.name AS masjid, sj.provider_key, sj.status,
+            sj.error_message, sj.started_at
+     FROM prayer_sync_jobs sj
+     LEFT JOIN masjids m ON m.id = sj.masjid_id
+     WHERE sj.status = 'failed'
+     ORDER BY sj.id DESC
+     LIMIT 20`,
+  );
+  console.table(failedJobs);
+
+  console.log("\n=== PRAYER SCHEDULES PER MASJID ===");
+  const [schedCount] = await conn.execute(
+    `SELECT m.name, COUNT(ps.id) as total_schedules,
+            MIN(ps.schedule_date) as earliest,
+            MAX(ps.schedule_date) as latest,
+            ps.source_provider
+     FROM masjids m
+     LEFT JOIN prayer_schedules ps ON ps.masjid_id = m.id
+     WHERE m.is_active = 1
+     GROUP BY m.id, m.name, ps.source_provider`,
+  );
+  console.table(schedCount);
+
   await conn.end();
 }
 
