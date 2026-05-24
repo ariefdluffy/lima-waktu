@@ -7,6 +7,10 @@
     <!-- Mencegah TV Masuk Mode Sleep -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+    <!-- Menyatakan dukungan penuh untuk layar TV / Google TV -->
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -14,7 +18,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:banner="@mipmap/ic_launcher"> <!-- Banner untuk Android/Google TV Launcher -->
 
         <activity
             android:name=".MainActivity"
@@ -24,6 +29,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!-- Agar aplikasi muncul di home screen Android TV / Google TV -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
