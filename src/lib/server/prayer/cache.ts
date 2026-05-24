@@ -40,7 +40,16 @@ export function setCachedSchedule(
 }
 
 export function invalidateCache(masjidId: string, dateYmd: string): void {
+  // Delete exact match
   scheduleCache.delete(`${masjidId}:${dateYmd}`);
+  // "*" means invalidate all dates for this masjid
+  if (dateYmd === "*") {
+    for (const key of scheduleCache.keys()) {
+      if (key.startsWith(`${masjidId}:`)) {
+        scheduleCache.delete(key);
+      }
+    }
+  }
 }
 
 export function getCacheStats(): { size: number; keys: string[] } {

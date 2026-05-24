@@ -119,11 +119,15 @@ function isCorrectionActive(
   date: Date,
 ): boolean {
   if (correction.isActive !== 1) return false;
-  const ts = date.getTime();
-  if (correction.activeFrom && correction.activeFrom.getTime() > ts)
-    return false;
-  if (correction.activeUntil && correction.activeUntil.getTime() < ts)
-    return false;
+  const dateOnly = new Date(date.toDateString()); // Midnight of the date
+  if (correction.activeFrom) {
+    const fromDateOnly = new Date(correction.activeFrom.toDateString());
+    if (fromDateOnly > dateOnly) return false;
+  }
+  if (correction.activeUntil) {
+    const untilDateOnly = new Date(correction.activeUntil.toDateString());
+    if (untilDateOnly < dateOnly) return false;
+  }
   return true;
 }
 
@@ -165,7 +169,11 @@ export async function resolvePrayerScheduleForMasjid(
         ),
         or(
           isNull(prayerCorrections.activeUntil),
-          gte(prayerCorrections.activeUntil, new Date()),
+          // Compare end-of-day: activeUntil should be >= today at 23:59:59
+          gte(
+            prayerCorrections.activeUntil,
+            new Date(new Date().toDateString()),
+          ),
         ),
       ),
     );

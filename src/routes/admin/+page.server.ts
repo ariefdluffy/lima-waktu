@@ -20,7 +20,10 @@ import {
   youtubeItems,
 } from "$lib/server/db/schema";
 import { fail } from "@sveltejs/kit";
-import { todayYmdInTimezone } from "$lib/server/prayer/resolver";
+import {
+  resolvePrayerScheduleForMasjid,
+  todayYmdInTimezone,
+} from "$lib/server/prayer/resolver";
 import { invalidateCache } from "$lib/server/prayer/cache";
 
 const PAGE_SIZE = 10;
@@ -116,16 +119,19 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     .limit(1);
 
   const today = todayYmdInTimezone(masjid?.timezone ?? "Asia/Jakarta");
-  const [todaySchedule] = await db
-    .select()
-    .from(prayerSchedules)
-    .where(
-      and(
-        eq(prayerSchedules.masjidId, masjidId),
-        eq(prayerSchedules.scheduleDate, today as unknown as Date),
-      ),
-    )
-    .limit(1);
+  const resolvedSchedule = await resolvePrayerScheduleForMasjid(
+    masjidId,
+    today,
+  );
+  const todaySchedule = resolvedSchedule.resolved
+    ? {
+        subuhTime: resolvedSchedule.resolved.subuh,
+        dzuhurTime: resolvedSchedule.resolved.dzuhur,
+        asharTime: resolvedSchedule.resolved.ashar,
+        maghribTime: resolvedSchedule.resolved.maghrib,
+        isyaTime: resolvedSchedule.resolved.isya,
+      }
+    : null;
 
   const [
     runningTextRows,
@@ -885,7 +891,6 @@ export const actions: Actions = {
     throw redirect(302, "/admin");
   },
 
-
   savePrayerCorrection: async ({ locals, request }) => {
     if (!locals.user) {
       throw redirect(302, "/auth/login");
@@ -937,6 +942,7 @@ export const actions: Actions = {
       console.error("Error saving prayer correction:", error);
       return fail(500, { error: "Gagal menyimpan koreksi" });
     }
+  },
 
   updatePrayerCorrection: async ({ locals, request }) => {
     if (!locals.user) {
