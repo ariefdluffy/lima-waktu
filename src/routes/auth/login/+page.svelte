@@ -57,6 +57,14 @@
                 />
             </label>
 
+            <div class="text-right">
+                <a
+                    href="/auth/forgot-password"
+                    class="text-xs text-emerald-600 hover:underline"
+                    >Lupa password?</a
+                >
+            </div>
+
             {#if form?.message}
                 <p class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
                     {form.message}

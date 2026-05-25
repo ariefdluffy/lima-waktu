@@ -97,14 +97,6 @@ export const actions: Actions = {
       roleId: adminMasjidRole.id,
     });
 
-    // Kirim welcome email — jangan blokir redirect kalau gagal
-    sendWelcomeEmail({
-      email,
-      fullName,
-    }).catch((err) => {
-      console.error("[register] Gagal kirim welcome email:", err);
-    });
-
     throw redirect(302, "/auth/login?toast=register_success");
   },
 };

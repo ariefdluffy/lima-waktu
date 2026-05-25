@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
+import { env } from "$env/dynamic/private";
 import { sendPollEmail } from "./email-service";
 import { renderWelcomeHtml } from "./templates/welcome";
 import { renderResetPasswordHtml } from "./templates/reset-password";
 
-const BASE_URL = process.env.PUBLIC_APP_URL || "http://localhost:5173";
+const BASE_URL = env.PUBLIC_APP_URL || env.ORIGIN || "http://localhost:5173";
 
 // ── Send Welcome Email ──
 export async function sendWelcomeEmail(props: {
@@ -53,6 +54,10 @@ export async function sendResetPasswordEmail(props: {
   });
 
   if (!result.ok) {
-    console.error("[email] Gagal kirim reset password ke", props.email, result.error);
+    console.error(
+      "[email] Gagal kirim reset password ke",
+      props.email,
+      result.error,
+    );
   }
 }

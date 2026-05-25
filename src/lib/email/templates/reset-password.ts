@@ -1,4 +1,4 @@
-const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 100" width="180" height="36">
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 100" width="520" height="100">
   <path d="M40 28 C29 28 22 36 22 44 L22 47 L58 47 L58 44 C58 36 51 28 40 28 Z" fill="none" stroke="#C8A84B" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
   <line x1="40" y1="28" x2="40" y2="21" stroke="#C8A84B" stroke-width="3" stroke-linecap="round"/>
   <path d="M37 18 A4.5 4.5 0 1 1 44.5 15 A3 3 0 1 0 37 18 Z" fill="#C8A84B"/>
@@ -15,9 +15,18 @@ const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 100" 
   <circle cx="47" cy="90" r="3" fill="#C8A84B"/>
   <circle cx="58" cy="90" r="3" fill="#C8A84B"/>
   <line x1="88" y1="20" x2="88" y2="80" stroke="#C8A84B" stroke-width="1" opacity="0.3"/>
-  <text x="102" y="52" font-family="'Georgia','Times New Roman',serif" font-size="32" font-weight="700" fill="#0A3D2E" letter-spacing="1">Lima<tspan fill="#C8A84B">Waktu</tspan></text>
-  <text x="104" y="70" font-family="'Georgia','Times New Roman',serif" font-size="11" fill="#555" letter-spacing="3">JADWAL SHALAT &amp; PENGINGAT</text>
+  <text x="102" y="52" font-family="Georgia,'Times New Roman',serif" font-size="32" font-weight="700" fill="#0A3D2E" letter-spacing="1">Lima<tspan fill="#C8A84B">Waktu</tspan></text>
+  <text x="104" y="70" font-family="Georgia,'Times New Roman',serif" font-size="11" fill="#555" letter-spacing="3">JADWAL SHALAT &amp; PENGINGAT</text>
 </svg>`;
+
+/** Encode SVG string to base64 data URI for use in <img> tags (email-safe) */
+function svgToDataUri(svg: string): string {
+  const cleaned = svg.replace(/\n\s*/g, "").replace(/>\s+</g, "><");
+  const encoded = Buffer.from(cleaned, "utf-8").toString("base64");
+  return `data:image/svg+xml;base64,${encoded}`;
+}
+
+const LOGO_DATA_URI = svgToDataUri(LOGO_SVG);
 
 export interface ResetPasswordTemplateProps {
   fullName: string;
@@ -25,7 +34,9 @@ export interface ResetPasswordTemplateProps {
   expiresInHours: number;
 }
 
-export function renderResetPasswordHtml(props: ResetPasswordTemplateProps): string {
+export function renderResetPasswordHtml(
+  props: ResetPasswordTemplateProps,
+): string {
   return `<!DOCTYPE html>
 <html lang="id">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
@@ -33,7 +44,7 @@ export function renderResetPasswordHtml(props: ResetPasswordTemplateProps): stri
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4">
     <tr><td align="center" style="padding:40px 16px">
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-        <tr><td style="text-align:center;padding:40px 40px 24px">${LOGO_SVG}</td></tr>
+        <tr><td style="text-align:center;padding:40px 40px 24px"><img src="${LOGO_DATA_URI}" alt="Lima Waktu" width="180" style="display:block;margin:0 auto;max-width:180px;height:auto"></td></tr>
         <tr><td style="padding:0 40px 8px;text-align:center">
           <h1 style="margin:0 0 8px;font-size:22px;color:#0A3D2E;font-weight:700">Atur Ulang Kata Sandi</h1>
           <p style="margin:0;font-size:15px;color:#555;line-height:1.6">Halo <strong>${props.fullName}</strong>, kami menerima permintaan reset password untuk akun Lima Waktu Anda.</p>

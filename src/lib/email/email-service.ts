@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { env } from "$env/dynamic/private";
 import type { SendPollEmailInput } from "./types";
 
 export type SendPollEmailResult = {
@@ -8,80 +9,57 @@ export type SendPollEmailResult = {
   error?: string;
 };
 
-// Get SMTP client configuration
-//
-// Supports two Mailtrap credential formats:
-//   1. NEW Mailtrap (unified platform): username="api" + API token
-//      MAILTRAP_API_TOKEN=xxx
-//      Host: sandbox.smtp.mailtrap.io (test) | live.smtp.mailtrap.io (prod)
-//
-//   2. OLD Mailtrap (legacy sandbox):    API key + API secret
-//      MAILTRAP_API_KEY=xxx   MAILTRAP_SECRET=xxx
-//      Host: smtp.mailtrap.io
-//
 function getTransporter() {
-  const isNewFormat = !!process.env.MAILTRAP_API_TOKEN;
-  const isOldFormat =
-    !!process.env.MAILTRAP_API_KEY && !!process.env.MAILTRAP_SECRET;
+  // Env vars: MAIL_HOST, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD, MAIL_SECURE
+  // Fallback: MAILTRAP_API_KEY (nilai token)
+  const host = env.MAIL_HOST || "sandbox.smtp.mailtrap.io";
+  const port = parseInt(env.MAIL_PORT || "587");
+  const user = env.MAIL_USERNAME || "api";
+  const pass = env.MAIL_PASSWORD || env.MAILTRAP_API_KEY || "";
 
-  if (!isNewFormat && !isOldFormat) {
+  if (!pass) {
     throw new Error(
-      "Mailtrap SMTP not configured. Set either:\n" +
-        "  - MAILTRAP_API_TOKEN  (new Mailtrap format)\n" +
-        "  - MAILTRAP_API_KEY + MAILTRAP_SECRET  (old Mailtrap format)",
+      "Mail SMTP not configured.\n" +
+        "Set MAIL_HOST, MAIL_USERNAME, MAIL_PASSWORD di .env.local",
     );
   }
 
-  const transporter = nodemailer.createTransport({
-    host:
-      process.env.MAILTRAP_SMTP_HOST ||
-      (isNewFormat ? "sandbox.smtp.mailtrap.io" : "smtp.mailtrap.io"),
-    port: parseInt(process.env.MAILTRAP_SMTP_PORT || "587"),
-    secure: process.env.MAILTRAP_SMTP_SECURE === "true",
-    auth: {
-      user: isNewFormat ? "api" : process.env.MAILTRAP_API_KEY!,
-      pass: isNewFormat
-        ? process.env.MAILTRAP_API_TOKEN!
-        : process.env.MAILTRAP_SECRET!,
-    },
-  });
+  const secure = env.MAIL_SECURE === "true";
 
-  return transporter;
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+  });
 }
 
 export async function sendPollEmail(
   input: SendPollEmailInput,
 ): Promise<SendPollEmailResult> {
-  const transporter = getTransporter();
-
-  const to = input.toName
-    ? `${input.toName} <${input.toEmail}>`
-    : input.toEmail;
-
   try {
+    const transporter = getTransporter();
+
+    const to = input.toName
+      ? `${input.toName} <${input.toEmail}>`
+      : input.toEmail;
+
     const info = await transporter.sendMail({
-      from: `Lima Waktu <noreply@lima-waktu.dev>`,
+      from: `Lima Waktu <noreply@limawaktu.my.id>`,
       to,
       subject: input.subject,
       html: input.html,
       text: input.text ?? input.html,
     });
 
-    if (info.messageId) {
-      return {
-        ok: true,
-        status: "sent",
-        messageId: info.messageId,
-      };
-    }
-
     return {
       ok: true,
       status: "sent",
-      messageId: undefined,
+      messageId: info.messageId,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("[email] sendPollEmail error:", message);
     return {
       ok: false,
       status: "failed",
