@@ -1,10 +1,10 @@
-import { randomUUID } from "node:crypto";
 import { env } from "$env/dynamic/private";
 import { sendPollEmail } from "./email-service";
 import { renderWelcomeHtml } from "./templates/welcome";
 import { renderResetPasswordHtml } from "./templates/reset-password";
 
 const BASE_URL = env.PUBLIC_APP_URL || env.ORIGIN || "http://localhost:5173";
+const LOGO_URL = `${BASE_URL}/png/logo-horizontal.png`;
 
 // ── Send Welcome Email ──
 export async function sendWelcomeEmail(props: {
@@ -16,6 +16,7 @@ export async function sendWelcomeEmail(props: {
   const html = renderWelcomeHtml({
     fullName: props.fullName,
     loginUrl,
+    logoUrl: LOGO_URL,
   });
 
   const result = await sendPollEmail({
@@ -44,6 +45,7 @@ export async function sendResetPasswordEmail(props: {
     fullName: props.fullName,
     resetUrl,
     expiresInHours,
+    logoUrl: LOGO_URL,
   });
 
   const result = await sendPollEmail({
