@@ -5,6 +5,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { roles, userRoles, users } from "$lib/server/db/schema";
 import { hashPassword } from "$lib/server/auth/password";
+import { sendWelcomeEmail } from "$lib/email/notification";
 
 export const load: PageServerLoad = async () => {
   return {};
@@ -94,6 +95,14 @@ export const actions: Actions = {
     await db.insert(userRoles).values({
       userId,
       roleId: adminMasjidRole.id,
+    });
+
+    // Kirim welcome email — jangan blokir redirect kalau gagal
+    sendWelcomeEmail({
+      email,
+      fullName,
+    }).catch((err) => {
+      console.error("[register] Gagal kirim welcome email:", err);
     });
 
     throw redirect(302, "/auth/login?toast=register_success");

@@ -708,6 +708,19 @@ export const holidayTemplates = mysqlTable("holiday_templates", {
   ...timestamps,
 });
 
+export const passwordResets = mysqlTable("password_resets", {
+  id: bigint("id", { mode: "number", unsigned: true })
+    .autoincrement()
+    .primaryKey(),
+  userId: char("user_id", { length: 36 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  token: varchar("token", { length: 128 }).notNull(),
+  expiresAt: datetime("expires_at").notNull(),
+  usedAt: datetime("used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const globalPrayerConfig = mysqlTable("global_prayer_config", {
   id: int("id").primaryKey().default(1),
   primaryProviderId: bigint("primary_provider_id", {

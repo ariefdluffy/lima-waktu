@@ -43,6 +43,13 @@
       "when": 1779504891177,
       "tag": "0005_cold_gwen_stacy",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1779681228926,
+      "tag": "0006_cool_gideon",
+      "breakpoints": true
     }
   ]
 }
