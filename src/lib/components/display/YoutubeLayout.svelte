@@ -88,6 +88,7 @@
                     playsinline: 1,
                     iv_load_policy: 3,
                     enablejsapi: 1,
+                    origin: window.location.origin,
                 },
                 events: {
                     onReady: (event: any) => {
@@ -251,6 +252,11 @@
         flex-direction: row;
         align-items: stretch;
         gap: 0;
+    }
+
+    /* Saat running text kosong, yt-layout meluas sampai bawah */
+    :global(.no-running) .yt-layout {
+        bottom: 0;
     }
 
     /* ═══════════════════════════════════════════

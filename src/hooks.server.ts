@@ -53,9 +53,7 @@ const securityHandle: Handle = async ({ event, resolve }) => {
         "connect-src 'self'",
         "frame-src 'self'",
         "frame-ancestors 'self'",
-        isProduction
-          ? "report-uri /api/csp-report"
-          : undefined,
+        isProduction ? "report-uri /api/csp-report" : undefined,
       ]
         .filter(Boolean)
         .join("; "),
@@ -65,16 +63,14 @@ const securityHandle: Handle = async ({ event, resolve }) => {
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline'",
+        "script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "img-src 'self' data: blob: https:",
         "font-src 'self' https://fonts.gstatic.com",
-        "connect-src 'self' https://api.open-meteo.com",
-        "frame-src 'self' https://www.youtube.com",
+        "connect-src 'self' https://api.open-meteo.com https://www.youtube.com https://i.ytimg.com",
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
         "frame-ancestors 'self'",
-        isProduction
-          ? "report-uri /api/csp-report"
-          : undefined,
+        isProduction ? "report-uri /api/csp-report" : undefined,
       ]
         .filter(Boolean)
         .join("; "),
