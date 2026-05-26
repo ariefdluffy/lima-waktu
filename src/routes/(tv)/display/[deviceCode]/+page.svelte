@@ -1188,7 +1188,7 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 10%;
+        height: 13%;
         display: flex;
         align-items: center;
         padding: 1.2% 2.5% 0 2%;

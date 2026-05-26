@@ -127,22 +127,15 @@
         <div class="yt-frame-info__inner">
 
             <!-- Label frame -->
-            <div class="yt-info-frame-label">
-                <span class="yt-info-frame-label__icon">🕌</span>
-                WAKTU SHOLAT
-            </div>
-
             <!-- Tanggal & Hijriyah -->
-            {#if liveDate || hijriyahDate}
-                <div class="yt-info-dates">
-                    {#if liveDate}
-                        <div class="yt-info-date-masehi">{liveDate}</div>
-                    {/if}
-                    {#if hijriyahDate}
-                        <div class="yt-info-date-hijri">{hijriyahDate}</div>
-                    {/if}
-                </div>
-            {/if}
+            <div class="yt-info-dates">
+                {#if liveDate}
+                    <div class="yt-info-date-masehi">{liveDate}</div>
+                {/if}
+                {#if hijriyahDate}
+                    <div class="yt-info-date-hijri">{hijriyahDate}</div>
+                {/if}
+            </div>
 
             <!-- Sholat berikutnya -->
             <div class="yt-info-next">
@@ -190,27 +183,7 @@
                 {/each}
             </div>
 
-            <!-- Imsak & Syuruq -->
-            <div class="yt-info-extra">
-                <div class="yt-info-extra__item">
-                    <span class="yt-info-extra__label">Imsak</span>
-                    <span class="yt-info-extra__val">
-                        {payload.schedule.resolved?.imsak ?? "--:--"}
-                    </span>
-                </div>
-                <div class="yt-info-extra__divider">·</div>
-                <div class="yt-info-extra__item">
-                    <span class="yt-info-extra__label">Syuruq</span>
-                    <span class="yt-info-extra__val">
-                        {payload.schedule.resolved?.sunrise ?? "--:--"}
-                    </span>
-                </div>
-            </div>
 
-            <!-- Nama masjid -->
-            <div class="yt-info-masjid">
-                {payload.masjid.name}
-            </div>
 
         </div>
     </div>
@@ -222,7 +195,7 @@
        ═══════════════════════════════════════════ */
     .yt-layout {
         position: absolute;
-        top: calc(10% + 3px);
+        top: calc(13% + 3px);
         bottom: 8%;
         left: 0;
         right: 0;
