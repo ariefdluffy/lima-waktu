@@ -537,6 +537,8 @@
                     countdownProgress={prayer.countdownProgress}
                     iqamahTime={prayer.iqamahTime}
                     activePrayerIndex={prayer.activePrayerIndex}
+                    {liveDate}
+                    {hijriyahDate}
                 />
             {:else}
                 <!-- DEFAULT LAYOUT -->

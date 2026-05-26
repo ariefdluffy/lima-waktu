@@ -15,6 +15,8 @@
         countdownProgress: number;
         iqamahTime: string;
         activePrayerIndex: number;
+        liveDate?: string;
+        hijriyahDate?: string;
     }
 
     let {
@@ -25,11 +27,12 @@
         countdownProgress,
         iqamahTime,
         activePrayerIndex,
+        liveDate = "",
+        hijriyahDate = "",
     }: Props = $props();
 
     let currentYoutubeIndex = $state(0);
     let youtubePlayer: any = $state(null);
-    let iframeRef: HTMLIFrameElement | null = $state(null);
 
     function getYoutubeEmbedUrl(url: string): string {
         let videoId = "";
@@ -57,219 +60,390 @@
 
     function setYoutubeVolume() {
         if (!youtubePlayer) return;
-        youtubePlayer.setVolume(30); // Set volume ke 30%
+        youtubePlayer.setVolume(30);
     }
 
     onMount(() => {
-        // Setup YouTube IFrame API listener
         const handleYoutubeStateChange = (event: any) => {
-            // Simpan player reference
             youtubePlayer = event.target;
-
-            // Set volume ke 30% ketika player ready
             if (event.data === 1) {
-                // 1 = PLAYING
                 setYoutubeVolume();
             }
-
-            // State 0 = ENDED
             if (event.data === 0) {
                 playNextVideo();
             }
         };
-
-        // Expose handler globally untuk YouTube API
         (window as any).onYoutubeStateChange = handleYoutubeStateChange;
     });
 </script>
 
-<main class="main-body--youtube">
-    <!-- VIDEO FULL AREA -->
-    <div class="yt-video-backdrop">
-        {#key currentYoutubeIndex}
-            <iframe
-                src={getYoutubeEmbedUrl(
-                    payload.youtubeItems[currentYoutubeIndex].youtubeUrl,
-                ) + "&onStateChange=onYoutubeStateChange"}
-                title={payload.youtubeItems[currentYoutubeIndex].title ??
-                    "Live Streaming"}
-                class="yt-iframe"
-                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                allowfullscreen
-            ></iframe>
-        {/key}
-        {#if payload.youtubeItems[currentYoutubeIndex].title}
-            <div class="yt-video-label">
-                {payload.youtubeItems[currentYoutubeIndex].title}
+<!-- ═══════════════════════════════════════════════════════════
+     YOUTUBE LAYOUT — 2 Frame: Video (kiri) + Info Sholat (kanan)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="yt-layout">
+
+    <!-- ── FRAME KIRI: YouTube Video ── -->
+    <div class="yt-frame-video">
+        <div class="yt-frame-video__inner">
+            <!-- Label frame -->
+            <div class="yt-frame-label">
+                <span class="yt-frame-label__dot"></span>
+                LIVE STREAMING
                 {#if payload.youtubeItems.length > 1}
-                    <span class="yt-video-counter">
-                        ({currentYoutubeIndex + 1}/{payload.youtubeItems
-                            .length})
+                    <span class="yt-frame-label__counter">
+                        {currentYoutubeIndex + 1}/{payload.youtubeItems.length}
                     </span>
                 {/if}
             </div>
-        {/if}
+
+            <!-- iframe YouTube -->
+            {#key currentYoutubeIndex}
+                <iframe
+                    src={getYoutubeEmbedUrl(
+                        payload.youtubeItems[currentYoutubeIndex].youtubeUrl,
+                    ) + "&onStateChange=onYoutubeStateChange"}
+                    title={payload.youtubeItems[currentYoutubeIndex].title ??
+                        "Live Streaming"}
+                    class="yt-iframe"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+            {/key}
+
+            <!-- Judul video (bottom overlay) -->
+            {#if payload.youtubeItems[currentYoutubeIndex].title}
+                <div class="yt-video-title">
+                    {payload.youtubeItems[currentYoutubeIndex].title}
+                </div>
+            {/if}
+        </div>
     </div>
 
-    <!-- INFO OVERLAY -->
-    <aside class="yt-info-overlay">
-        <!-- NEXT PRAYER -->
-        <div class="ov-next-section">
-            <div class="ov-next-label">WAKTU BERIKUTNYA</div>
-            <div class="ov-next-name">{nextPrayerName}</div>
-            <div class="ov-next-time">{nextPrayerTime}</div>
-        </div>
+    <!-- ── DIVIDER ── -->
+    <div class="yt-divider"></div>
 
-        <!-- COUNTDOWN -->
-        <div class="ov-countdown-box">
-            <div class="ov-countdown-label">MENUJU ADZAN</div>
-            <div class="ov-countdown-val">{countdown}</div>
-            <div class="ov-progress-track">
-                <div
-                    class="ov-progress-fill"
-                    style="width: {countdownProgress}%"
-                ></div>
+    <!-- ── FRAME KANAN: Info Waktu Sholat ── -->
+    <div class="yt-frame-info">
+        <div class="yt-frame-info__inner">
+
+            <!-- Label frame -->
+            <div class="yt-info-frame-label">
+                <span class="yt-info-frame-label__icon">🕌</span>
+                WAKTU SHOLAT
             </div>
-        </div>
 
-        {#if iqamahTime}
-            <div class="ov-iqamah-box">
-                <span class="ov-iqamah-label">IQAMAH</span>
-                <span class="ov-iqamah-val">{iqamahTime}</span>
+            <!-- Tanggal & Hijriyah -->
+            {#if liveDate || hijriyahDate}
+                <div class="yt-info-dates">
+                    {#if liveDate}
+                        <div class="yt-info-date-masehi">{liveDate}</div>
+                    {/if}
+                    {#if hijriyahDate}
+                        <div class="yt-info-date-hijri">{hijriyahDate}</div>
+                    {/if}
+                </div>
+            {/if}
+
+            <!-- Sholat berikutnya -->
+            <div class="yt-info-next">
+                <div class="yt-info-next__label">BERIKUTNYA</div>
+                <div class="yt-info-next__name">{nextPrayerName}</div>
+                <div class="yt-info-next__time">{nextPrayerTime}</div>
             </div>
-        {/if}
 
-        <!-- PRAYER LIST -->
-        <div class="ov-prayer-list">
-            {#each PRAYER_ORDER as prayer, idx}
-                <div
-                    class="ov-prayer-row"
-                    class:ov-prayer-row--active={idx === activePrayerIndex}
-                >
-                    <span class="ov-prayer-icon">{PRAYER_ICONS[prayer]}</span>
-                    <span class="ov-prayer-name">{PRAYER_LABELS[prayer]}</span>
-                    <span class="ov-prayer-time"
-                        >{payload.schedule.resolved?.[prayer] ?? "--:--"}</span
+            <!-- Countdown -->
+            <div class="yt-info-countdown">
+                <div class="yt-info-countdown__label">MENUJU ADZAN</div>
+                <div class="yt-info-countdown__val">{countdown}</div>
+                <div class="yt-info-progress-track">
+                    <div
+                        class="yt-info-progress-fill"
+                        style="width: {countdownProgress}%"
+                    ></div>
+                </div>
+            </div>
+
+            <!-- Iqamah -->
+            {#if iqamahTime}
+                <div class="yt-info-iqamah">
+                    <span class="yt-info-iqamah__label">IQAMAH</span>
+                    <span class="yt-info-iqamah__val">{iqamahTime}</span>
+                </div>
+            {/if}
+
+            <!-- Separator -->
+            <div class="yt-info-sep"></div>
+
+            <!-- Daftar waktu sholat -->
+            <div class="yt-info-prayer-list">
+                {#each PRAYER_ORDER as prayer, idx}
+                    <div
+                        class="yt-info-prayer-row"
+                        class:yt-info-prayer-row--active={idx === activePrayerIndex}
                     >
-                </div>
-            {/each}
-        </div>
+                        <span class="yt-info-prayer-row__icon">{PRAYER_ICONS[prayer]}</span>
+                        <span class="yt-info-prayer-row__name">{PRAYER_LABELS[prayer]}</span>
+                        <span class="yt-info-prayer-row__time">
+                            {payload.schedule.resolved?.[prayer] ?? "--:--"}
+                        </span>
+                    </div>
+                {/each}
+            </div>
 
-        <!-- IMSAKIYAH -->
-        <!-- <div class="ov-imsak-card">
-            <div class="ov-imsak-title">IMSAKIYAH</div>
-            <div class="ov-imsak-row">
-                <div>
-                    <div class="ov-imsak-sub">Imsak</div>
-                    <div class="ov-imsak-val">
+            <!-- Imsak & Syuruq -->
+            <div class="yt-info-extra">
+                <div class="yt-info-extra__item">
+                    <span class="yt-info-extra__label">Imsak</span>
+                    <span class="yt-info-extra__val">
                         {payload.schedule.resolved?.imsak ?? "--:--"}
-                    </div>
+                    </span>
                 </div>
-                <div class="ov-imsak-sep">—</div>
-                <div>
-                    <div class="ov-imsak-sub">Syuruq</div>
-                    <div class="ov-imsak-val">
+                <div class="yt-info-extra__divider">·</div>
+                <div class="yt-info-extra__item">
+                    <span class="yt-info-extra__label">Syuruq</span>
+                    <span class="yt-info-extra__val">
                         {payload.schedule.resolved?.sunrise ?? "--:--"}
-                    </div>
+                    </span>
                 </div>
             </div>
-        </div> -->
-    </aside>
-</main>
+
+            <!-- Nama masjid -->
+            <div class="yt-info-masjid">
+                {payload.masjid.name}
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <style>
-    /* ─── MAIN CONTAINER ─── */
-    .main-body--youtube {
+    /* ═══════════════════════════════════════════
+       CONTAINER UTAMA — 2 kolom
+       ═══════════════════════════════════════════ */
+    .yt-layout {
         position: absolute;
-        top: calc(14% + 3px);
+        top: calc(10% + 3px);
         bottom: 8%;
         left: 0;
         right: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0;
     }
 
-    /* ─── VIDEO BACKDROP ─── */
-    .yt-video-backdrop {
-        position: absolute;
-        inset: 0;
+    /* ═══════════════════════════════════════════
+       FRAME KIRI — VIDEO
+       ═══════════════════════════════════════════ */
+    .yt-frame-video {
+        flex: 0 0 70%;
         display: flex;
         flex-direction: column;
         background: #000;
-        border-right: 4px solid rgba(251, 191, 36, 0.6);
-        box-shadow: -8px 0 20px rgba(251, 191, 36, 0.15);
+        position: relative;
+    }
+
+    .yt-frame-video__inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 2px solid rgba(251, 191, 36, 0.35);
+        border-radius: 12px 0 0 12px;
+        overflow: hidden;
+        box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+            0 0 32px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Label "LIVE STREAMING" di pojok kiri atas */
+    .yt-frame-label {
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        border-radius: 20px;
+        padding: 4px 12px 4px 8px;
+        font-size: clamp(9px, 0.75vw, 13px);
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .yt-frame-label__dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #ef4444;
+        box-shadow: 0 0 6px #ef4444;
+        animation: live-blink 1.4s ease-in-out infinite;
+        flex-shrink: 0;
+    }
+
+    @keyframes live-blink {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.3; }
+    }
+
+    .yt-frame-label__counter {
+        font-size: clamp(8px, 0.65vw, 11px);
+        color: rgba(255, 255, 255, 0.55);
+        margin-left: 2px;
     }
 
     .yt-iframe {
         width: 100%;
         flex: 1;
         border: none;
+        display: block;
     }
 
-    .yt-video-label {
+    /* Judul video — gradient overlay di bawah */
+    .yt-video-title {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
         color: #fff;
-        font-size: clamp(14px, 1.2vw, 24px);
-        padding: 4% 4% 2%;
+        font-size: clamp(11px, 1vw, 18px);
+        padding: 5% 4% 2%;
         text-align: center;
         pointer-events: none;
+        letter-spacing: 0.04em;
     }
 
-    .yt-video-counter {
-        font-size: clamp(10px, 0.8vw, 16px);
-        color: rgba(255, 255, 255, 0.6);
-        margin-left: 0.5em;
+    /* ═══════════════════════════════════════════
+       DIVIDER
+       ═══════════════════════════════════════════ */
+    .yt-divider {
+        flex: 0 0 3px;
+        background: linear-gradient(
+            to bottom,
+            transparent 0%,
+            rgba(251, 191, 36, 0.6) 20%,
+            rgba(251, 191, 36, 0.8) 50%,
+            rgba(251, 191, 36, 0.6) 80%,
+            transparent 100%
+        );
+        box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
     }
 
-    /* ─── INFO OVERLAY ─── */
-    .yt-info-overlay {
-        position: absolute;
-        top: 8%;
-        left: 2.5%;
-        width: 24%;
-        max-height: 95%;
+    /* ═══════════════════════════════════════════
+       FRAME KANAN — INFO WAKTU SHOLAT
+       ═══════════════════════════════════════════ */
+    .yt-frame-info {
+        flex: 0 0 30%;
         display: flex;
         flex-direction: column;
-        padding: 1.8% 2.2%;
-        gap: 0.6%;
-        background: rgba(0, 0, 0, 0.72);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        overflow: hidden;
+        background: rgba(0, 0, 0, 0.55);
+        position: relative;
     }
 
-    /* ─── NEXT PRAYER ─── */
-    .ov-next-section {
+    .yt-frame-info__inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
         display: flex;
         flex-direction: column;
         align-items: center;
-        flex-shrink: 0;
+        padding: 3% 5%;
+        gap: 0;
+        border: 2px solid rgba(251, 191, 36, 0.25);
+        border-left: none;
+        border-radius: 0 12px 12px 0;
+        overflow: hidden;
+        background: linear-gradient(
+            160deg,
+            rgba(15, 23, 42, 0.92) 0%,
+            rgba(10, 15, 30, 0.96) 100%
+        );
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
     }
 
-    .ov-next-label {
-        font-size: clamp(12px, 1.2vw, 30px);
-        color: rgba(255, 255, 255, 0.55);
+    /* Label frame kanan */
+    .yt-info-frame-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: clamp(9px, 0.75vw, 13px);
+        font-weight: 700;
+        color: rgba(251, 191, 36, 0.8);
         letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 3%;
+        padding-bottom: 2%;
+        border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        width: 100%;
+        justify-content: center;
+    }
+
+    .yt-info-frame-label__icon {
+        font-size: clamp(11px, 1vw, 18px);
+    }
+
+    /* Tanggal */
+    .yt-info-dates {
+        text-align: center;
+        margin-bottom: 3%;
+        width: 100%;
+    }
+
+    .yt-info-date-masehi {
+        font-size: clamp(9px, 0.8vw, 14px);
+        color: rgba(255, 255, 255, 0.55);
+        letter-spacing: 0.06em;
+        line-height: 1.4;
+    }
+
+    .yt-info-date-hijri {
+        font-size: clamp(9px, 0.75vw, 13px);
+        color: rgba(251, 191, 36, 0.6);
+        letter-spacing: 0.04em;
+        line-height: 1.4;
+        margin-top: 1px;
+    }
+
+    /* Sholat berikutnya */
+    .yt-info-next {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 3%;
+    }
+
+    .yt-info-next__label {
+        font-size: clamp(8px, 0.65vw, 11px);
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.2em;
         text-transform: uppercase;
         line-height: 1;
     }
 
-    .ov-next-name {
-        font-family: var(--font-heading), serif;
-        font-size: clamp(22px, 3.4vw, 48px);
+    .yt-info-next__name {
+        font-family: var(--font-heading, "Cinzel"), serif;
+        font-size: clamp(18px, 2.8vw, 42px);
         font-weight: 700;
         color: #fbbf24;
-        text-align: center;
         line-height: 1.15;
         margin-top: 2px;
+        text-align: center;
     }
 
-    .ov-next-time {
-        font-size: clamp(36px, 5vw, 84px);
+    .yt-info-next__time {
+        font-size: clamp(28px, 4.2vw, 68px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;
@@ -278,175 +452,198 @@
         margin-top: 2px;
     }
 
-    /* ─── COUNTDOWN ─── */
-    .ov-countdown-box {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 1% 5%;
-        text-align: center;
+    /* Countdown */
+    .yt-info-countdown {
         width: 100%;
-        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 10px;
+        padding: 2% 5%;
+        text-align: center;
+        margin-bottom: 2%;
         box-sizing: border-box;
     }
 
-    .ov-countdown-label {
-        font-size: clamp(10px, 0.8vw, 16px);
-        color: rgba(255, 255, 255, 0.45);
-        letter-spacing: 0.14em;
+    .yt-info-countdown__label {
+        font-size: clamp(8px, 0.65vw, 11px);
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.16em;
         line-height: 1.2;
     }
 
-    .ov-countdown-val {
-        font-size: clamp(18px, 2.8vw, 46px);
+    .yt-info-countdown__val {
+        font-size: clamp(16px, 2.2vw, 36px);
         font-weight: 700;
         color: #34d399;
         font-variant-numeric: tabular-nums;
         line-height: 1.3;
     }
 
-    .ov-progress-track {
+    .yt-info-progress-track {
         margin-top: 4px;
         width: 100%;
         height: 4px;
-        background: rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 2px;
         overflow: hidden;
     }
 
-    .ov-progress-fill {
+    .yt-info-progress-fill {
         height: 100%;
         background: linear-gradient(90deg, #34d399, #10b981);
         border-radius: 2px;
         transition: width 1s linear;
     }
 
-    /* ─── IQAMAH ─── */
-    .ov-iqamah-box {
+    /* Iqamah */
+    .yt-info-iqamah {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 3%;
-        background: rgba(251, 191, 36, 0.12);
-        border: 1px solid rgba(251, 191, 36, 0.25);
-        border-radius: 10px;
-        padding: 0.6% 4%;
+        gap: 6px;
+        background: rgba(251, 191, 36, 0.1);
+        border: 1px solid rgba(251, 191, 36, 0.22);
+        border-radius: 8px;
+        padding: 1.5% 5%;
         width: 100%;
-        flex-shrink: 0;
         box-sizing: border-box;
-        margin-top: 2%;
+        margin-bottom: 2%;
     }
 
-    .ov-iqamah-label {
-        font-size: clamp(10px, 0.8vw, 36px);
-        color: rgba(251, 191, 36, 0.7);
-        letter-spacing: 0.12em;
-        line-height: 1.2;
+    .yt-info-iqamah__label {
+        font-size: clamp(8px, 0.65vw, 11px);
+        color: rgba(251, 191, 36, 0.65);
+        letter-spacing: 0.14em;
     }
 
-    .ov-iqamah-val {
-        font-size: clamp(16px, 2.8vw, 42px);
+    .yt-info-iqamah__val {
+        font-size: clamp(14px, 1.8vw, 28px);
         color: #fbbf24;
         font-weight: 600;
-        line-height: 1.2;
+        font-variant-numeric: tabular-nums;
     }
 
-    /* ─── PRAYER LIST ─── */
-    .ov-prayer-list {
+    /* Separator */
+    .yt-info-sep {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(
+            to right,
+            transparent,
+            rgba(251, 191, 36, 0.3),
+            transparent
+        );
+        margin: 2% 0;
+        flex-shrink: 0;
+    }
+
+    /* Daftar waktu sholat */
+    .yt-info-prayer-list {
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 0.5%;
+        gap: 1.5%;
         flex: 1;
         min-height: 0;
         justify-content: center;
-        margin-top: 2%;
     }
 
-    .ov-prayer-row {
+    .yt-info-prayer-row {
         display: flex;
         align-items: center;
-        gap: 3%;
-        padding: 0.4% 3%;
-        margin-top: 1%;
-        border-radius: 10px;
+        gap: 4%;
+        padding: 1.5% 4%;
+        border-radius: 8px;
         background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: background 0.3s;
     }
 
-    .ov-prayer-row--active {
-        background: rgba(52, 211, 153, 0.15);
-        border-color: rgba(52, 211, 153, 0.35);
+    .yt-info-prayer-row--active {
+        background: rgba(52, 211, 153, 0.13);
+        border-color: rgba(52, 211, 153, 0.3);
     }
 
-    .ov-prayer-icon {
-        font-size: clamp(11px, 0.9vw, 18px);
-        width: 10%;
+    .yt-info-prayer-row__icon {
+        font-size: clamp(10px, 0.85vw, 15px);
+        width: 12%;
         text-align: center;
         flex-shrink: 0;
     }
 
-    .ov-prayer-name {
+    .yt-info-prayer-row__name {
         flex: 1;
-        font-size: clamp(11px, 0.9vw, 18px);
-        color: rgba(255, 255, 255, 0.85);
-        letter-spacing: 0.04em;
+        font-size: clamp(10px, 0.85vw, 15px);
+        color: rgba(255, 255, 255, 0.8);
+        letter-spacing: 0.05em;
         line-height: 1.3;
     }
 
-    .ov-prayer-row--active .ov-prayer-name {
+    .yt-info-prayer-row--active .yt-info-prayer-row__name {
         color: #34d399;
         font-weight: 600;
     }
 
-    .ov-prayer-time {
-        font-size: clamp(12px, 1.1vw, 32px);
+    .yt-info-prayer-row__time {
+        font-size: clamp(11px, 1vw, 18px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;
         line-height: 1.3;
     }
 
-    /* ─── IMSAKIYAH ─── */
-    .ov-imsak-card {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 12px;
-        padding: 1.2% 4%;
-        flex-shrink: 0;
-        box-sizing: border-box;
+    .yt-info-prayer-row--active .yt-info-prayer-row__time {
+        color: #34d399;
     }
 
-    .ov-imsak-title {
-        font-size: clamp(9px, 0.7vw, 14px);
-        color: rgba(255, 255, 255, 0.5);
-        letter-spacing: 0.14em;
-        line-height: 1.1;
-    }
-
-    .ov-imsak-row {
+    /* Imsak & Syuruq */
+    .yt-info-extra {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-top: 1%;
+        justify-content: center;
+        gap: 6%;
+        width: 100%;
+        margin-top: 2%;
+        padding-top: 2%;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
     }
 
-    .ov-imsak-sub {
-        font-size: clamp(9px, 0.7vw, 14px);
-        color: rgba(255, 255, 255, 0.5);
-        line-height: 1.1;
+    .yt-info-extra__item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
     }
 
-    .ov-imsak-val {
-        font-size: clamp(14px, 1.4vw, 28px);
+    .yt-info-extra__label {
+        font-size: clamp(7px, 0.6vw, 10px);
+        color: rgba(255, 255, 255, 0.35);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .yt-info-extra__val {
+        font-size: clamp(10px, 0.9vw, 16px);
         font-weight: 600;
-        color: #fff;
-        line-height: 1.2;
+        color: rgba(255, 255, 255, 0.7);
+        font-variant-numeric: tabular-nums;
     }
 
-    .ov-imsak-sep {
+    .yt-info-extra__divider {
+        font-size: clamp(10px, 0.9vw, 16px);
+        color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Nama masjid */
+    .yt-info-masjid {
+        font-size: clamp(8px, 0.65vw, 11px);
         color: rgba(255, 255, 255, 0.25);
-        font-size: clamp(14px, 1.4vw, 28px);
+        text-align: center;
+        letter-spacing: 0.08em;
+        margin-top: 2%;
+        flex-shrink: 0;
+        padding: 0 4%;
+        line-height: 1.4;
     }
 </style>

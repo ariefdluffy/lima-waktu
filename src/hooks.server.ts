@@ -19,6 +19,7 @@ const authHandle: Handle = async ({ event, resolve }) => {
 const securityHandle: Handle = async ({ event, resolve }) => {
   const response = await resolve(event);
   const isDisplayRoute = event.url.pathname.startsWith("/display");
+  const isProduction = process.env.NODE_ENV === "production";
 
   response.headers.set("X-Frame-Options", "SAMEORIGIN");
   response.headers.set("X-Content-Type-Options", "nosniff");
@@ -28,6 +29,17 @@ const securityHandle: Handle = async ({ event, resolve }) => {
     "camera=(), microphone=(), geolocation=()",
   );
   response.headers.set("X-XSS-Protection", "1; mode=block");
+
+  // HSTS — only in production
+  if (isProduction) {
+    response.headers.set(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains; preload",
+    );
+  }
+
+  // X-Permitted-Cross-Domain-Policies
+  response.headers.set("X-Permitted-Cross-Domain-Policies", "none");
 
   if (!isDisplayRoute) {
     response.headers.set(
@@ -41,7 +53,12 @@ const securityHandle: Handle = async ({ event, resolve }) => {
         "connect-src 'self'",
         "frame-src 'self'",
         "frame-ancestors 'self'",
-      ].join("; "),
+        isProduction
+          ? "report-uri /api/csp-report"
+          : undefined,
+      ]
+        .filter(Boolean)
+        .join("; "),
     );
   } else {
     response.headers.set(
@@ -55,7 +72,12 @@ const securityHandle: Handle = async ({ event, resolve }) => {
         "connect-src 'self' https://api.open-meteo.com",
         "frame-src 'self' https://www.youtube.com",
         "frame-ancestors 'self'",
-      ].join("; "),
+        isProduction
+          ? "report-uri /api/csp-report"
+          : undefined,
+      ]
+        .filter(Boolean)
+        .join("; "),
     );
   }
 
