@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
+    import { invalidate } from "$app/navigation";
     import Pagination from "$lib/components/Pagination.svelte";
 
     let {
@@ -35,7 +37,7 @@
         </span>
     </div>
 
-    <form method="POST" action="?/addDevice" class="mt-4 grid gap-3 sm:grid-cols-2">
+    <form method="POST" action="?/addDevice" use:enhance={() => async ({ result }) => { if (result.type === 'success' || result.type === 'redirect') await invalidate('app:admin'); }} class="mt-4 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="masjid_id" value={data.masjid.id} />
         <input type="hidden" name="device_code" value={generatedDeviceCode} />
         <input
@@ -124,7 +126,7 @@
                     </summary>
                     <div class="mt-3 space-y-2 border-t border-emerald-100 pt-3">
                         <!-- Edit Nama -->
-                        <form method="POST" action="?/editDevice" class="flex items-center gap-2">
+                        <form method="POST" action="?/editDevice" use:enhance={() => async ({ result }) => { if (result.type === 'success' || result.type === 'redirect') await invalidate('app:admin'); }} class="flex items-center gap-2">
                             <input type="hidden" name="device_id" value={item.id} />
                             <label for="device_name_{item.id}" class="text-xs text-slate-500">Nama:</label>
                             <input
@@ -140,7 +142,7 @@
                                 >Simpan</button>
                         </form>
                         <!-- Layout -->
-                        <form method="POST" action="?/updateDeviceLayout" class="flex items-center gap-2">
+                        <form method="POST" action="?/updateDeviceLayout" use:enhance={() => async ({ result }) => { if (result.type === 'success' || result.type === 'redirect') await invalidate('app:admin'); }} class="flex items-center gap-2">
                             <input type="hidden" name="device_id" value={item.id} />
                             <label for="layout_mode_{item.id}" class="text-xs text-slate-500">Layout:</label>
                             <select

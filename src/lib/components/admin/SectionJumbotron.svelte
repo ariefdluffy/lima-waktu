@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
+    import { invalidate } from "$app/navigation";
     import Pagination from "$lib/components/Pagination.svelte";
 
     let {
@@ -8,6 +10,14 @@
         data: any;
         askDeleteJumbotron: (id: number, title: string) => void;
     } = $props();
+
+    function refresh() {
+        return async ({ result }: { result: any }) => {
+            if (result.type === "success" || result.type === "redirect") {
+                await invalidate("app:admin");
+            }
+        };
+    }
 </script>
 
 <section class="rounded-2xl bg-white p-6 shadow-sm">
@@ -19,7 +29,7 @@
     </div>
     <div class="mt-5 grid gap-4 sm:grid-cols-2">
         <div class="space-y-3">
-            <form method="POST" action="?/addJumbotron" class="space-y-3">
+            <form method="POST" action="?/addJumbotron" use:enhance={refresh} class="space-y-3">
                 <input type="hidden" name="masjid_id" value={data.masjid.id} />
                 <input
                     type="text"

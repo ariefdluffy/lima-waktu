@@ -1,12 +1,22 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
+    import { invalidate } from "$app/navigation";
     import Pagination from "$lib/components/Pagination.svelte";
 
     let { data }: { data: any } = $props();
+
+    function refreshYoutube() {
+        return async ({ result }: { result: any }) => {
+            if (result.type === "success" || result.type === "redirect") {
+                await invalidate("app:admin");
+            }
+        };
+    }
 </script>
 
 <article class="rounded-2xl bg-white p-5 shadow-sm">
     <h2 class="text-lg font-semibold text-emerald-900">Tambah YouTube Item</h2>
-    <form method="POST" action="?/addYoutube" class="mt-4 space-y-3">
+    <form method="POST" action="?/addYoutube" use:enhance={refreshYoutube} class="mt-4 space-y-3">
         <input type="hidden" name="masjid_id" value={data.masjid.id} />
         <input
             name="youtube_url"
@@ -48,7 +58,7 @@
 
                         <!-- Tombol naik / turun -->
                         <div class="flex shrink-0 flex-col gap-0.5">
-                            <form method="POST" action="?/reorderYoutube">
+                            <form method="POST" action="?/reorderYoutube" use:enhance={refreshYoutube}>
                                 <input type="hidden" name="masjid_id" value={data.masjid.id} />
                                 <input type="hidden" name="id" value={item.id} />
                                 <input type="hidden" name="direction" value="up" />
@@ -59,7 +69,7 @@
                                     class="flex h-6 w-6 items-center justify-center rounded bg-white text-slate-500 shadow-sm hover:bg-emerald-100 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-30"
                                 >▲</button>
                             </form>
-                            <form method="POST" action="?/reorderYoutube">
+                            <form method="POST" action="?/reorderYoutube" use:enhance={refreshYoutube}>
                                 <input type="hidden" name="masjid_id" value={data.masjid.id} />
                                 <input type="hidden" name="id" value={item.id} />
                                 <input type="hidden" name="direction" value="down" />
@@ -79,7 +89,7 @@
                             Edit / Hapus
                         </summary>
                         <div class="mt-3 space-y-2 border-t border-emerald-100 pt-3">
-                            <form method="POST" action="?/editYoutube" class="space-y-2">
+                            <form method="POST" action="?/editYoutube" use:enhance={refreshYoutube} class="space-y-2">
                                 <input type="hidden" name="id" value={item.id} />
                                 <input
                                     type="url"
@@ -102,6 +112,7 @@
                             <form
                                 method="POST"
                                 action="?/deleteYoutube"
+                                use:enhance={refreshYoutube}
                                 onsubmit={(e) => { if (!confirm("Hapus YouTube item ini?")) e.preventDefault(); }}
                             >
                                 <input type="hidden" name="id" value={item.id} />

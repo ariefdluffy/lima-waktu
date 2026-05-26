@@ -1191,7 +1191,7 @@
         height: 13%;
         display: flex;
         align-items: center;
-        padding: 1.2% 2.5% 0 2%;
+        padding: 1.5% 2.5% 2% 2%;
         background: var(--header-bg);
     }
 

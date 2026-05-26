@@ -1,5 +1,16 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
+    import { invalidate } from "$app/navigation";
+
     let { data }: { data: any } = $props();
+
+    function refresh() {
+        return async ({ result }: { result: any }) => {
+            if (result.type === "success" || result.type === "redirect") {
+                await invalidate("app:admin");
+            }
+        };
+    }
 </script>
 
 <section class="rounded-2xl bg-white p-6 shadow-sm">
@@ -29,6 +40,7 @@
                 <form
                     method="POST"
                     action="?/updateDeviceTheme"
+                    use:enhance={refresh}
                     class="flex flex-wrap items-end gap-3"
                 >
                     <input type="hidden" name="device_id" value={device.id} />

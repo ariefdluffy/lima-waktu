@@ -1,12 +1,22 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
+    import { invalidate } from "$app/navigation";
     import Pagination from "$lib/components/Pagination.svelte";
 
     let { data }: { data: any } = $props();
+
+    function refresh() {
+        return async ({ result }: { result: any }) => {
+            if (result.type === "success" || result.type === "redirect") {
+                await invalidate("app:admin");
+            }
+        };
+    }
 </script>
 
 <article class="rounded-2xl bg-white p-5 shadow-sm">
     <h2 class="text-lg font-semibold text-emerald-900">Tambah Running Text</h2>
-    <form method="POST" action="?/addRunningText" class="mt-4 space-y-3">
+    <form method="POST" action="?/addRunningText" use:enhance={refresh} class="mt-4 space-y-3">
         <input type="hidden" name="masjid_id" value={data.masjid.id} />
         <input
             name="content"
@@ -33,7 +43,7 @@
                         <span class="shrink-0 text-xs text-slate-400">{item.speed ?? 60}s</span>
                     </summary>
                     <div class="mt-3 space-y-2 border-t border-emerald-100 pt-3">
-                        <form method="POST" action="?/editRunningText" class="space-y-2">
+                        <form method="POST" action="?/editRunningText" use:enhance={refresh} class="space-y-2">
                             <input type="hidden" name="id" value={item.id} />
                             <textarea
                                 name="content"
@@ -60,6 +70,7 @@
                         <form
                             method="POST"
                             action="?/deleteRunningText"
+                            use:enhance={refresh}
                             onsubmit={(e) => { if (!confirm("Hapus running text ini?")) e.preventDefault(); }}
                         >
                             <input type="hidden" name="id" value={item.id} />
