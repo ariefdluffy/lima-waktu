@@ -32,9 +32,11 @@
     }: Props = $props();
 
     let currentYoutubeIndex = $state(0);
-    let youtubePlayer: any = $state(null);
+    let ytPlayer: any = null;
+    let ytPlayerReady = false;
 
-    function getYoutubeEmbedUrl(url: string): string {
+    // Ekstrak video ID dari berbagai format URL YouTube
+    function getVideoId(url: string): string {
         let videoId = "";
         try {
             const u = new URL(url);
@@ -49,31 +51,88 @@
         } catch {
             videoId = url;
         }
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=0&loop=0&modestbranding=1&rel=0&enablejsapi=1&playsinline=1&iv_load_policy=3`;
+        return videoId;
     }
 
     function playNextVideo() {
         if (!payload.youtubeItems || payload.youtubeItems.length === 0) return;
-        currentYoutubeIndex =
+        const nextIndex =
             (currentYoutubeIndex + 1) % payload.youtubeItems.length;
-    }
-
-    function setYoutubeVolume() {
-        if (!youtubePlayer) return;
-        youtubePlayer.setVolume(30);
+        currentYoutubeIndex = nextIndex;
+        // Gunakan API untuk load video berikutnya tanpa recreate iframe
+        if (ytPlayer && ytPlayerReady) {
+            const nextId = getVideoId(
+                payload.youtubeItems[nextIndex].youtubeUrl,
+            );
+            if (nextId) ytPlayer.loadVideoById(nextId);
+        }
     }
 
     onMount(() => {
-        const handleYoutubeStateChange = (event: any) => {
-            youtubePlayer = event.target;
-            if (event.data === 1) {
-                setYoutubeVolume();
+        const firstVideoId = getVideoId(
+            payload.youtubeItems?.[0]?.youtubeUrl ?? "",
+        );
+        if (!firstVideoId) return;
+
+        // Load YouTube IFrame API jika belum ada
+        function initPlayer() {
+            ytPlayer = new (window as any).YT.Player("yt-player", {
+                videoId: firstVideoId,
+                playerVars: {
+                    autoplay: 1,
+                    mute: 0,
+                    controls: 0,
+                    loop: 0,
+                    modestbranding: 1,
+                    rel: 0,
+                    playsinline: 1,
+                    iv_load_policy: 3,
+                    enablejsapi: 1,
+                },
+                events: {
+                    onReady: (event: any) => {
+                        ytPlayerReady = true;
+                        event.target.setVolume(30);
+                        event.target.playVideo();
+                    },
+                    onStateChange: (event: any) => {
+                        // 1 = playing, set volume
+                        if (event.data === 1) {
+                            event.target.setVolume(30);
+                        }
+                        // 0 = ended, pindah ke video berikutnya
+                        if (event.data === 0) {
+                            playNextVideo();
+                        }
+                    },
+                },
+            });
+        }
+
+        if ((window as any).YT && (window as any).YT.Player) {
+            // API sudah ter-load sebelumnya
+            initPlayer();
+        } else {
+            // Load API script
+            (window as any).onYouTubeIframeAPIReady = initPlayer;
+            if (!document.getElementById("yt-api-script")) {
+                const script = document.createElement("script");
+                script.id = "yt-api-script";
+                script.src = "https://www.youtube.com/iframe_api";
+                document.head.appendChild(script);
             }
-            if (event.data === 0) {
-                playNextVideo();
+        }
+
+        return () => {
+            // Cleanup saat component di-destroy
+            if (ytPlayer) {
+                try {
+                    ytPlayer.destroy();
+                } catch {}
+                ytPlayer = null;
+                ytPlayerReady = false;
             }
         };
-        (window as any).onYoutubeStateChange = handleYoutubeStateChange;
     });
 </script>
 
@@ -95,19 +154,8 @@
                 {/if}
             </div>
 
-            <!-- iframe YouTube -->
-            {#key currentYoutubeIndex}
-                <iframe
-                    src={getYoutubeEmbedUrl(
-                        payload.youtubeItems[currentYoutubeIndex].youtubeUrl,
-                    ) + "&onStateChange=onYoutubeStateChange"}
-                    title={payload.youtubeItems[currentYoutubeIndex].title ??
-                        "Live Streaming"}
-                    class="yt-iframe"
-                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                    allowfullscreen
-                ></iframe>
-            {/key}
+            <!-- iframe YouTube — dikelola oleh YT.Player API, tidak di-recreate -->
+            <div id="yt-player" class="yt-iframe"></div>
 
             <!-- Judul video (bottom overlay) -->
             {#if payload.youtubeItems[currentYoutubeIndex].title}
@@ -281,6 +329,15 @@
     .yt-iframe {
         width: 100%;
         flex: 1;
+        border: none;
+        display: block;
+        min-height: 0;
+    }
+
+    /* iframe yang di-inject YT.Player ke dalam div#yt-player */
+    .yt-iframe :global(iframe) {
+        width: 100%;
+        height: 100%;
         border: none;
         display: block;
     }
