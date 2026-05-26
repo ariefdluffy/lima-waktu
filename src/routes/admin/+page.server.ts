@@ -633,11 +633,16 @@ export const actions: Actions = {
     const title = String(form.get("title") ?? "").trim();
 
     if (masjidId && youtubeUrl) {
+      // Hitung jumlah item yang sudah ada untuk auto-increment orderIndex
+      const [{ total }] = await db
+        .select({ total: count() })
+        .from(youtubeItems)
+        .where(eq(youtubeItems.masjidId, masjidId));
       await db.insert(youtubeItems).values({
         masjidId,
         youtubeUrl,
         title: title || null,
-        orderIndex: items.length,
+        orderIndex: Number(total),
         isActive: 1,
       });
     }
