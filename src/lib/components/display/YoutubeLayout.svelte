@@ -81,7 +81,6 @@
      YOUTUBE LAYOUT — 2 Frame: Video (kiri) + Info Sholat (kanan)
      ═══════════════════════════════════════════════════════════ -->
 <div class="yt-layout">
-
     <!-- ── FRAME KIRI: YouTube Video ── -->
     <div class="yt-frame-video">
         <div class="yt-frame-video__inner">
@@ -125,7 +124,6 @@
     <!-- ── FRAME KANAN: Info Waktu Sholat ── -->
     <div class="yt-frame-info">
         <div class="yt-frame-info__inner">
-
             <!-- Label frame -->
             <!-- Tanggal & Hijriyah -->
             <div class="yt-info-dates">
@@ -172,19 +170,21 @@
                 {#each PRAYER_ORDER as prayer, idx}
                     <div
                         class="yt-info-prayer-row"
-                        class:yt-info-prayer-row--active={idx === activePrayerIndex}
+                        class:yt-info-prayer-row--active={idx ===
+                            activePrayerIndex}
                     >
-                        <span class="yt-info-prayer-row__icon">{PRAYER_ICONS[prayer]}</span>
-                        <span class="yt-info-prayer-row__name">{PRAYER_LABELS[prayer]}</span>
+                        <span class="yt-info-prayer-row__icon"
+                            >{PRAYER_ICONS[prayer]}</span
+                        >
+                        <span class="yt-info-prayer-row__name"
+                            >{PRAYER_LABELS[prayer]}</span
+                        >
                         <span class="yt-info-prayer-row__time">
                             {payload.schedule.resolved?.[prayer] ?? "--:--"}
                         </span>
                     </div>
                 {/each}
             </div>
-
-
-
         </div>
     </div>
 </div>
@@ -263,8 +263,13 @@
     }
 
     @keyframes live-blink {
-        0%, 100% { opacity: 1; }
-        50%       { opacity: 0.3; }
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.3;
+        }
     }
 
     .yt-frame-label__counter {
@@ -374,14 +379,14 @@
     }
 
     .yt-info-date-masehi {
-        font-size: clamp(9px, 0.8vw, 14px);
+        font-size: clamp(9px, 1.8vw, 34px);
         color: rgba(255, 255, 255, 0.55);
         letter-spacing: 0.06em;
         line-height: 1.4;
     }
 
     .yt-info-date-hijri {
-        font-size: clamp(9px, 0.75vw, 13px);
+        font-size: clamp(9px, 1.75vw, 23px);
         color: rgba(251, 191, 36, 0.6);
         letter-spacing: 0.04em;
         line-height: 1.4;
@@ -398,7 +403,7 @@
     }
 
     .yt-info-next__label {
-        font-size: clamp(8px, 0.65vw, 11px);
+        font-size: clamp(8px, 1.65vw, 18px);
         color: rgba(255, 255, 255, 0.4);
         letter-spacing: 0.2em;
         text-transform: uppercase;
@@ -407,7 +412,7 @@
 
     .yt-info-next__name {
         font-family: var(--font-heading, "Cinzel"), serif;
-        font-size: clamp(18px, 2.8vw, 42px);
+        font-size: clamp(18px, 3.8vw, 52px);
         font-weight: 700;
         color: #fbbf24;
         line-height: 1.15;
@@ -416,7 +421,7 @@
     }
 
     .yt-info-next__time {
-        font-size: clamp(28px, 4.2vw, 68px);
+        font-size: clamp(28px, 6vw, 82px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;
@@ -438,14 +443,14 @@
     }
 
     .yt-info-countdown__label {
-        font-size: clamp(8px, 0.65vw, 11px);
+        font-size: clamp(8px, 1.65vw, 18px);
         color: rgba(255, 255, 255, 0.4);
         letter-spacing: 0.16em;
         line-height: 1.2;
     }
 
     .yt-info-countdown__val {
-        font-size: clamp(16px, 2.2vw, 36px);
+        font-size: clamp(16px, 3.2vw, 46px);
         font-weight: 700;
         color: #34d399;
         font-variant-numeric: tabular-nums;
@@ -484,13 +489,13 @@
     }
 
     .yt-info-iqamah__label {
-        font-size: clamp(8px, 0.65vw, 11px);
+        font-size: clamp(8px, 1.65vw, 18px);
         color: rgba(251, 191, 36, 0.65);
         letter-spacing: 0.14em;
     }
 
     .yt-info-iqamah__val {
-        font-size: clamp(14px, 1.8vw, 28px);
+        font-size: clamp(14px, 3.2vw, 28px);
         color: #fbbf24;
         font-weight: 600;
         font-variant-numeric: tabular-nums;
@@ -546,7 +551,7 @@
 
     .yt-info-prayer-row__name {
         flex: 1;
-        font-size: clamp(10px, 0.85vw, 15px);
+        font-size: clamp(10px, 1.85vw, 24px);
         color: rgba(255, 255, 255, 0.8);
         letter-spacing: 0.05em;
         line-height: 1.3;
@@ -558,7 +563,7 @@
     }
 
     .yt-info-prayer-row__time {
-        font-size: clamp(11px, 1vw, 18px);
+        font-size: clamp(11px, 2vw, 32px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;

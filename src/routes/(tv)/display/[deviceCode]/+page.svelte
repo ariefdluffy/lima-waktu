@@ -580,7 +580,11 @@
             {/if}
 
             <!-- RUNNING TEXT -->
-            <RunningBar content={getRunningTextContent(payload.runningTexts)} />
+            {#if payload.runningTexts?.length}
+                <RunningBar
+                    content={getRunningTextContent(payload.runningTexts)}
+                />
+            {/if}
 
             <!-- MOOD OVERLAY -->
             <MoodOverlay

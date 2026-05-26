@@ -83,11 +83,14 @@ export function getYoutubeEmbedUrl(url: string): string {
 }
 
 // ── Running Text ──────────────────────────────────────────────────
+export const DEFAULT_RUNNING_TEXT =
+  "Selamat datang di Masjid. Mohon menonaktifkan nada dering ponsel.";
+
 export function getRunningTextContent(
   runningTexts: DisplayPayload["runningTexts"],
 ): string {
   if (!runningTexts?.length) {
-    return "Selamat datang di Masjid. Mohon menonaktifkan nada dering ponsel.";
+    return DEFAULT_RUNNING_TEXT;
   }
   return runningTexts.map((rt) => rt.content).join("  |  ");
 }

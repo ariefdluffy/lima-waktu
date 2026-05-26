@@ -190,6 +190,42 @@
     }
 
     // ----------------------------------------------------------------
+    // Confirm dialog (hapus youtube)
+    // ----------------------------------------------------------------
+    let confirmDeleteYoutubeOpen = $state(false);
+    let pendingDeleteYoutubeId = $state<number | null>(null);
+    let pendingDeleteYoutubeTitle = $state("");
+
+    function askDeleteYoutube(id: number, title: string | null) {
+        pendingDeleteYoutubeId = id;
+        pendingDeleteYoutubeTitle = title ?? "Video";
+        confirmDeleteYoutubeOpen = true;
+    }
+
+    function cancelDeleteYoutube() {
+        confirmDeleteYoutubeOpen = false;
+        pendingDeleteYoutubeId = null;
+        pendingDeleteYoutubeTitle = "";
+    }
+
+    async function confirmDeleteYoutube() {
+        if (pendingDeleteYoutubeId === null) return;
+        confirmDeleteYoutubeOpen = false;
+        const formData = new FormData();
+        formData.set("id", String(pendingDeleteYoutubeId));
+        const res = await fetch("?/deleteYoutube", {
+            method: "POST",
+            body: formData,
+        });
+        const result = deserialize(await res.text());
+        if (result.type === "success" || result.type === "redirect") {
+            await invalidate("app:admin");
+        }
+        pendingDeleteYoutubeId = null;
+        pendingDeleteYoutubeTitle = "";
+    }
+
+    // ----------------------------------------------------------------
     // Confirm dialog (hapus device)
     // ----------------------------------------------------------------
     let confirmDeleteDeviceOpen = $state(false);
@@ -1177,7 +1213,7 @@
                     {/if}
 
                     {#if activeSection === "youtube"}
-                        <SectionYoutube {data} />
+                        <SectionYoutube {data} {askDeleteYoutube} />
                     {/if}
 
                     {#if activeSection === "events"}
@@ -1403,6 +1439,16 @@
         cancelLabel="Batal"
         onconfirm={confirmDeleteEvent}
         oncancel={cancelDeleteEvent}
+    />
+
+    <ConfirmDialog
+        open={confirmDeleteYoutubeOpen}
+        title="Hapus YouTube"
+        message={`Yakin ingin menghapus YouTube item "${pendingDeleteYoutubeTitle}"? Tindakan ini tidak bisa dibatalkan.`}
+        confirmLabel="Ya, Hapus"
+        cancelLabel="Batal"
+        onconfirm={confirmDeleteYoutube}
+        oncancel={cancelDeleteYoutube}
     />
 
     <ConfirmDialog
