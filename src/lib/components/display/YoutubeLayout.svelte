@@ -379,7 +379,7 @@
     }
 
     .yt-info-date-masehi {
-        font-size: clamp(9px, 1.8vw, 34px);
+        font-size: clamp(9px, 1.3vw, 34px);
         color: rgba(255, 255, 255, 0.55);
         letter-spacing: 0.06em;
         line-height: 1.4;
@@ -421,7 +421,7 @@
     }
 
     .yt-info-next__time {
-        font-size: clamp(28px, 6vw, 82px);
+        font-size: clamp(28px, 5vw, 82px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;
@@ -450,7 +450,7 @@
     }
 
     .yt-info-countdown__val {
-        font-size: clamp(16px, 3.2vw, 46px);
+        font-size: clamp(16px, 2.5vw, 46px);
         font-weight: 700;
         color: #34d399;
         font-variant-numeric: tabular-nums;
