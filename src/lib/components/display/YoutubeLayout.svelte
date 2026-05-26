@@ -551,7 +551,7 @@
 
     .yt-info-prayer-row__name {
         flex: 1;
-        font-size: clamp(10px, 1.85vw, 24px);
+        font-size: clamp(10px, 1.5vw, 24px);
         color: rgba(255, 255, 255, 0.8);
         letter-spacing: 0.05em;
         line-height: 1.3;
@@ -563,7 +563,7 @@
     }
 
     .yt-info-prayer-row__time {
-        font-size: clamp(11px, 2vw, 32px);
+        font-size: clamp(11px, 1.8vw, 32px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;

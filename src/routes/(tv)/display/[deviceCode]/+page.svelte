@@ -480,6 +480,7 @@
             class="tv-wrap"
             style={themeCssVars(payload?.theme?.palette ?? null)}
             class:tv-wrap--mood={prayer.mood !== "normal"}
+            class:no-running={!payload?.runningTexts?.length}
         >
             <div class="bg-stars"></div>
             <div class="bg-grid"></div>
@@ -1275,6 +1276,11 @@
         right: 0;
         display: flex;
         align-items: stretch;
+    }
+
+    /* MAIN BODY — full height tanpa running bar */
+    .no-running .main-body {
+        bottom: 0;
     }
 
     .sound-unlock-btn {
