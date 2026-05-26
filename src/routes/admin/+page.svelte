@@ -463,7 +463,15 @@
             // reload page to refresh slide list
             setTimeout(() => location.reload(), 1000);
         } catch (e) {
-            slideUploadError = "Terjadi kesalahan saat upload.";
+            const errMsg = e instanceof Error ? e.message : "";
+            if (
+                errMsg.includes("exceeds limit") ||
+                errMsg.includes("Content-length")
+            ) {
+                slideUploadError = "File terlalu besar. Maksimal 1MB.";
+            } else {
+                slideUploadError = "Terjadi kesalahan saat upload.";
+            }
         } finally {
             slideUploading = false;
         }
@@ -889,6 +897,7 @@
             const mediaJson = await mediaRes.json();
             if (!mediaJson.ok) {
                 logoError = mediaJson.message || "Gagal upload";
+                showToastGlobal("⚠️ " + (mediaJson.message || "Upload gagal"));
                 return;
             }
             const fileUrl = mediaJson.data.fileUrl;
@@ -906,8 +915,20 @@
             } else {
                 logoError = json.message || "Gagal";
             }
-        } catch {
-            logoError = "Gagal menghubungi server";
+        } catch (e) {
+            const errMsg = e instanceof Error ? e.message : "";
+            if (
+                errMsg.includes("exceeds limit") ||
+                errMsg.includes("Content-length")
+            ) {
+                logoError = "File terlalu besar. Maksimal 1MB.";
+                showToastGlobal(
+                    "⚠️ Ukuran file maksimal 1MB. Pilih file lebih kecil.",
+                );
+            } else {
+                logoError = "Gagal menghubungi server";
+                showToastGlobal("⚠️ Gagal menghubungi server. Coba lagi.");
+            }
         } finally {
             logoSaving = false;
         }
@@ -1213,7 +1234,7 @@
                     {/if}
 
                     {#if activeSection === "youtube"}
-                        <SectionYoutube {data} {askDeleteYoutube} />
+                        <SectionYoutube {data} {askDeleteYoutube} {showToast} />
                     {/if}
 
                     {#if activeSection === "events"}

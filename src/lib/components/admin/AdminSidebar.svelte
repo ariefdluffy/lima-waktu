@@ -102,15 +102,34 @@
         icon: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
     });
 
-    // Buka grup jika salah satu item-nya active
-    let expandedGroups = $state<Set<string>>(new Set());
-
-    $effect(() => {
+    // Buka grup yang mengandung activeSection saat pertama kali mount
+    function getInitialExpanded(): Set<string> {
+        const set = new Set<string>();
         for (const g of groups) {
             if ("items" in g) {
                 for (const item of g.items) {
                     if (item.id === activeSection) {
-                        expandedGroups.add(g.label);
+                        set.add(g.label);
+                    }
+                }
+            }
+        }
+        return set;
+    }
+
+    let expandedGroups = $state<Set<string>>(getInitialExpanded());
+
+    // Kalau user navigasi ke section yang grupnya belum terbuka, buka otomatis
+    // tapi TIDAK menutup grup yang sudah dibuka user secara manual
+    $effect(() => {
+        for (const g of groups) {
+            if ("items" in g) {
+                for (const item of g.items) {
+                    if (
+                        item.id === activeSection &&
+                        !expandedGroups.has(g.label)
+                    ) {
+                        expandedGroups = new Set([...expandedGroups, g.label]);
                     }
                 }
             }
@@ -118,12 +137,13 @@
     });
 
     function toggleGroup(label: string) {
-        if (expandedGroups.has(label)) {
-            expandedGroups.delete(label);
+        const next = new Set(expandedGroups);
+        if (next.has(label)) {
+            next.delete(label);
         } else {
-            expandedGroups.add(label);
+            next.add(label);
         }
-        expandedGroups = new Set(expandedGroups);
+        expandedGroups = next;
     }
 
     function nav(section: string) {
@@ -198,11 +218,11 @@
             {#if "items" in g}
                 <!-- GROUP -->
                 <button
-                    class="group mb-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 hover:bg-slate-50"
+                    class="group mb-1 flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-800"
                     onclick={() => toggleGroup(g.label)}
                 >
                     <svg
-                        class="h-3 w-3 transition-transform {expandedGroups.has(
+                        class="h-3 w-3 shrink-0 transition-transform {expandedGroups.has(
                             g.label,
                         )
                             ? 'rotate-90'
@@ -211,6 +231,7 @@
                         stroke="currentColor"
                         stroke-width="2"
                         viewBox="0 0 24 24"
+                        style="pointer-events:none"
                     >
                         <path
                             stroke-linecap="round"

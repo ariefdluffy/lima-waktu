@@ -6,26 +6,42 @@
     let {
         data,
         askDeleteYoutube,
+        showToast,
     }: {
         data: any;
         askDeleteYoutube: (id: number, title: string | null) => void;
+        showToast: (msg: string) => void;
     } = $props();
 
-    function refreshYoutube() {
-        return async ({ result }: { result: any }) => {
-            if (result.type === "success" || result.type === "redirect") {
-                await invalidate("app:admin");
-            }
-        };
+    let addFormEl = $state<HTMLFormElement | null>(null);
+
+    function refreshYoutube(action: "add" | "edit" | "reorder" = "edit") {
+        return () =>
+            async ({ result }: { result: any }) => {
+                if (result.type === "success" || result.type === "redirect") {
+                    await invalidate("app:admin");
+                    if (action === "add") {
+                        addFormEl?.reset();
+                        showToast("✓ YouTube item berhasil ditambahkan!");
+                    } else if (action === "edit") {
+                        showToast("✓ YouTube item berhasil disimpan!");
+                    } else if (action === "reorder") {
+                        showToast("✓ Urutan YouTube berubah!");
+                    }
+                } else if (result.type === "error") {
+                    showToast("✗ Gagal: " + (result.message ?? "Server error"));
+                }
+            };
     }
 </script>
 
 <article class="rounded-2xl bg-white p-5 shadow-sm">
     <h2 class="text-lg font-semibold text-emerald-900">Tambah YouTube Item</h2>
     <form
+        bind:this={addFormEl}
         method="POST"
         action="?/addYoutube"
-        use:enhance={refreshYoutube}
+        use:enhance={refreshYoutube("add")}
         class="mt-4 space-y-3"
     >
         <input type="hidden" name="masjid_id" value={data.masjid.id} />
@@ -82,7 +98,7 @@
                             <form
                                 method="POST"
                                 action="?/reorderYoutube"
-                                use:enhance={refreshYoutube}
+                                use:enhance={refreshYoutube("reorder")}
                             >
                                 <input
                                     type="hidden"
@@ -110,7 +126,7 @@
                             <form
                                 method="POST"
                                 action="?/reorderYoutube"
-                                use:enhance={refreshYoutube}
+                                use:enhance={refreshYoutube("reorder")}
                             >
                                 <input
                                     type="hidden"
@@ -152,7 +168,7 @@
                             <form
                                 method="POST"
                                 action="?/editYoutube"
-                                use:enhance={refreshYoutube}
+                                use:enhance={refreshYoutube("edit")}
                                 class="space-y-2"
                             >
                                 <input

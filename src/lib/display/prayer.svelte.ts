@@ -18,11 +18,27 @@ export const prayer = $state({
   moodCountdownLabel: "",
   screensaver: false,
   tahajudMode: false,
+  flash: false,
+  flashType: "adzan" as "adzan" | "iqamah",
 });
 
 // Internal: trigger only once per prayer/iqamah
 let lastTriggeredPrayer = $state("");
 let lastTriggeredIqamahEnd = $state("");
+
+// ── Flash Screen ─────────────────────────────────────────────────
+const FLASH_DURATION_MS = 600;
+let flashTimer: ReturnType<typeof setTimeout> | null = null;
+
+export function triggerFlash(type: "adzan" | "iqamah" = "adzan") {
+  prayer.flash = true;
+  prayer.flashType = type;
+  if (flashTimer) clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => {
+    prayer.flash = false;
+    flashTimer = null;
+  }, FLASH_DURATION_MS);
+}
 
 // ── Helpers ───────────────────────────────────────────────────────
 function getCurrentTimeMinutes(now: Date, timezone: string): number {
@@ -125,6 +141,7 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
     if (diff <= 1 && lastTriggeredPrayer !== activePrayer) {
       lastTriggeredPrayer = activePrayer;
       playAdzanBeep();
+      triggerFlash("adzan");
     }
     prayer.countdownProgress = calcCountdownProgress(
       currentMinutes,
@@ -183,6 +200,7 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
           if (lastTriggeredIqamahEnd !== cp) {
             lastTriggeredIqamahEnd = cp;
             playIqamahBeep();
+            triggerFlash("iqamah");
           }
         } else {
           newMood = "iqamah";
@@ -261,8 +279,11 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
     currentMinutes >= syuruqMin + MORNING_DELAY &&
     currentMinutes < dzuhurMin - MORNING_WAKE;
   prayer.screensaver = dalamJendelaMalam || dalamJendelaPagi;
+  // Hardcode: tahajud mode off 10 menit sebelum Subuh
+  const TAHAJUD_END_OFFSET = 10;
   prayer.tahajudMode =
-    currentMinutes >= subuhMin - SCREENSAVER_WAKE && currentMinutes < subuhMin;
+    currentMinutes >= subuhMin - SCREENSAVER_WAKE &&
+    currentMinutes < subuhMin - TAHAJUD_END_OFFSET;
 }
 
 // Reset beep tracker (call when payload changes)

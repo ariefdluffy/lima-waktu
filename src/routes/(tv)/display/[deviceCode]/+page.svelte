@@ -596,6 +596,21 @@
                 countdownLabel={prayer.moodCountdownLabel}
                 isJumat={getWIBParts(now, tz).day === 5}
             />
+
+            <!-- FLASH OVERLAY -->
+            {#if prayer.flash}
+                <div class="flash-overlay flash-overlay--{prayer.flashType}">
+                    {#if prayer.flashType === "adzan"}
+                        <div class="flash-title">ALLAHU AKBAR</div>
+                        <div class="flash-subtitle">WAKTU ADZAN TELAH TIBA</div>
+                        <div class="flash-arabic">اللهُ أَكْبَر</div>
+                    {:else}
+                        <div class="flash-title">IQAMAH</div>
+                        <div class="flash-subtitle">SEGERA TEGAKKAN SHAF</div>
+                        <div class="flash-arabic">قَدْ قَامَتِ الصَّلَاة</div>
+                    {/if}
+                </div>
+            {/if}
         </div>
     {/if}
 {/if}
@@ -1131,6 +1146,110 @@
         position: relative;
         overflow: hidden;
         color: var(--text-primary);
+    }
+
+    /* Flash layar saat adzan/iqamah bersamaan dengan beep */
+    .flash-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 999;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(8px, 1.5vh, 24px);
+        animation: flashFade 0.6s ease-out forwards;
+    }
+
+    /* Adzan — flash kuning keemasan */
+    .flash-overlay--adzan {
+        background: radial-gradient(
+            ellipse at center,
+            rgba(255, 200, 50, 0.97) 0%,
+            rgba(200, 130, 10, 0.95) 100%
+        );
+        animation: flashFadeAdzan 0.6s ease-out forwards;
+    }
+
+    /* Iqamah — flash hijau */
+    .flash-overlay--iqamah {
+        background: radial-gradient(
+            ellipse at center,
+            rgba(30, 180, 100, 0.97) 0%,
+            rgba(10, 100, 50, 0.95) 100%
+        );
+        animation: flashFadeIqamah 0.6s ease-out forwards;
+    }
+
+    .flash-title {
+        font-size: clamp(36px, 8vw, 120px);
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: 0.12em;
+        text-shadow: 0 4px 32px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        animation: flashTextSlide 0.6s ease-out forwards;
+    }
+
+    .flash-subtitle {
+        font-size: clamp(16px, 3vw, 48px);
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+        letter-spacing: 0.2em;
+        text-align: center;
+        animation: flashTextSlide 0.6s ease-out 0.05s forwards;
+    }
+
+    .flash-arabic {
+        font-family: var(--font-arabic, "Noto Naskh Arabic", serif);
+        font-size: clamp(28px, 6vw, 90px);
+        color: rgba(255, 255, 255, 0.95);
+        direction: rtl;
+        text-align: center;
+        text-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+        animation: flashTextSlide 0.6s ease-out 0.1s forwards;
+    }
+
+    @keyframes flashFadeAdzan {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        70% {
+            opacity: 1;
+            transform: scale(1.02);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(1.04);
+        }
+    }
+
+    @keyframes flashFadeIqamah {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        70% {
+            opacity: 1;
+            transform: scale(1.02);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(1.04);
+        }
+    }
+
+    @keyframes flashTextSlide {
+        0% {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 
     .tv-wrap--mood .main-body {

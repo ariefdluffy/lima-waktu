@@ -99,7 +99,7 @@
     {#if payload.events.length > 0 && payload.events[0].countdownEnabled}
         {@const event = payload.events[0]}
         <div class="info-card event-card">
-            <div class="info-card-title">🗓️ COUNTDOWN HARI BESAR</div>
+            <!-- <div class="info-card-title">🗓️ COUNTDOWN HARI BESAR</div> -->
             <div class="event-days">
                 {Math.max(
                     0,
@@ -120,7 +120,7 @@
 
     <!-- IMSAKIYAH -->
     <div class="info-card">
-        <div class="info-card-title">IMSAKIYAH</div>
+        <!-- <div class="info-card-title">IMSAKIYAH</div> -->
         <div class="imsakiyah-row">
             <div>
                 <div class="info-card-sub">Imsak</div>
@@ -141,7 +141,7 @@
     <!-- SHOLAT JUMAT -->
     {#if showJumatCard}
         <div class="info-card jumat-card">
-            <div class="info-card-title">🔔 SHOLAT JUM'AT</div>
+            <div class="info-card-title">SHOLAT JUM'AT</div>
             <div class="jumat-body">
                 <div>
                     <div class="info-card-sub">Dzuhur / Khutbah</div>
@@ -298,12 +298,12 @@
     }
 
     .imsakiyah-time {
-        font-size: clamp(20px, 2.4vw, 46px);
+        font-size: clamp(20px, 2vw, 46px);
     }
 
     .imsakiyah-sep {
         color: var(--accent-muted);
-        font-size: clamp(20px, 2.4vw, 46px);
+        font-size: clamp(10px, 2vw, 26px);
     }
 
     .jumat-card {
