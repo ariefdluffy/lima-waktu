@@ -243,7 +243,7 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
       .select()
       .from(youtubeItems)
       .where(eq(youtubeItems.masjidId, masjidId))
-      .orderBy(desc(youtubeItems.orderIndex))
+      .orderBy(youtubeItems.orderIndex)
       .limit(PAGE_SIZE)
       .offset((pageYoutube - 1) * PAGE_SIZE),
     db
@@ -532,6 +532,41 @@ export const actions: Actions = {
     if (id) await db.delete(youtubeItems).where(eq(youtubeItems.id, id));
   },
 
+  reorderYoutube: async ({ locals, request }) => {
+    if (!locals.user) throw redirect(302, "/auth/login");
+    const form = await request.formData();
+    const id = Number(form.get("id") ?? 0);
+    const direction = String(form.get("direction") ?? ""); // "up" | "down"
+    const masjidId = String(form.get("masjid_id") ?? "").trim();
+    if (!id || !masjidId || !['up', 'down'].includes(direction)) return;
+
+    // Ambil semua item milik masjid, urut ascending orderIndex
+    const items = await db
+      .select()
+      .from(youtubeItems)
+      .where(eq(youtubeItems.masjidId, masjidId))
+      .orderBy(youtubeItems.orderIndex);
+
+    const idx = items.findIndex((i) => i.id === id);
+    if (idx === -1) return;
+
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= items.length) return;
+
+    // Tukar orderIndex antara dua item
+    const currentOrder = items[idx].orderIndex;
+    const swapOrder = items[swapIdx].orderIndex;
+
+    await db
+      .update(youtubeItems)
+      .set({ orderIndex: swapOrder })
+      .where(eq(youtubeItems.id, items[idx].id));
+    await db
+      .update(youtubeItems)
+      .set({ orderIndex: currentOrder })
+      .where(eq(youtubeItems.id, items[swapIdx].id));
+  },
+
   addEvent: async ({ locals, request }) => {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
@@ -602,7 +637,7 @@ export const actions: Actions = {
         masjidId,
         youtubeUrl,
         title: title || null,
-        orderIndex: 0,
+        orderIndex: items.length,
         isActive: 1,
       });
     }
