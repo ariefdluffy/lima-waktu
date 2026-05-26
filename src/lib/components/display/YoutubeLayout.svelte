@@ -236,7 +236,7 @@
        FRAME KIRI — VIDEO
        ═══════════════════════════════════════════ */
     .yt-frame-video {
-        flex: 0 0 70%;
+        flex: 0 0 75%;
         display: flex;
         flex-direction: column;
         background: #000;
@@ -342,7 +342,7 @@
        FRAME KANAN — INFO WAKTU SHOLAT
        ═══════════════════════════════════════════ */
     .yt-frame-info {
-        flex: 0 0 30%;
+        flex: 0 0 25%;
         display: flex;
         flex-direction: column;
         background: rgba(0, 0, 0, 0.55);
