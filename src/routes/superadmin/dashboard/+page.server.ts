@@ -171,7 +171,7 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       totalUsers,
       totalDevices,
       onlineDevices: Number(onlineDevices),
-      offlineDevices: totalDevices - Number(onlineDevices),
+      offlineDevices: totalDevices - Number(onlineDevices) - unknownDevicesCount,
       subscriptionActive: subMap["active"] ?? 0,
       subscriptionExpired: subMap["expired"] ?? 0,
       subscriptionTrial: subMap["trial"] ?? 0,

@@ -94,10 +94,11 @@
                 class="mt-4 grid gap-3 sm:grid-cols-2"
             >
                 <div class="sm:col-span-2">
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-name" class="block text-xs font-medium text-slate-500"
                         >Nama Masjid</label
                     >
                     <input
+                        id="edit-name"
                         name="name"
                         value={data.masjid.name}
                         required
@@ -105,40 +106,44 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-city" class="block text-xs font-medium text-slate-500"
                         >Kota</label
                     >
                     <input
+                        id="edit-city"
                         name="city"
                         value={data.masjid.city ?? ""}
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-province" class="block text-xs font-medium text-slate-500"
                         >Provinsi</label
                     >
                     <input
+                        id="edit-province"
                         name="province"
                         value={data.masjid.province ?? ""}
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-district" class="block text-xs font-medium text-slate-500"
                         >Kecamatan</label
                     >
                     <input
+                        id="edit-district"
                         name="district"
                         value={data.masjid.district ?? ""}
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-latitude" class="block text-xs font-medium text-slate-500"
                         >Latitude</label
                     >
                     <input
+                        id="edit-latitude"
                         name="latitude"
                         type="number"
                         step="any"
@@ -147,10 +152,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-longitude" class="block text-xs font-medium text-slate-500"
                         >Longitude</label
                     >
                     <input
+                        id="edit-longitude"
                         name="longitude"
                         type="number"
                         step="any"
@@ -159,10 +165,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-hijriOffset" class="block text-xs font-medium text-slate-500"
                         >Hijri Offset</label
                     >
                     <input
+                        id="edit-hijriOffset"
                         name="hijriOffset"
                         type="number"
                         value={data.masjid.hijriOffset ?? 0}
@@ -170,10 +177,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-adzanScreenDuration" class="block text-xs font-medium text-slate-500"
                         >Durasi Layar Adzan (detik)</label
                     >
                     <input
+                        id="edit-adzanScreenDuration"
                         name="adzanScreenDuration"
                         type="number"
                         value={data.masjid.adzanScreenDuration ?? 4}
@@ -181,10 +189,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-khusukScreenDuration" class="block text-xs font-medium text-slate-500"
                         >Durasi Layar Khusuk (detik)</label
                     >
                     <input
+                        id="edit-khusukScreenDuration"
                         name="khusukScreenDuration"
                         type="number"
                         value={data.masjid.khusukScreenDuration ?? 10}
@@ -192,10 +201,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-screensaverDelayMinutes" class="block text-xs font-medium text-slate-500"
                         >Screensaver Delay (menit)</label
                     >
                     <input
+                        id="edit-screensaverDelayMinutes"
                         name="screensaverDelayMinutes"
                         type="number"
                         value={data.masjid.screensaverDelayMinutes ?? 120}
@@ -203,10 +213,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-screensaverWakeMinutes" class="block text-xs font-medium text-slate-500"
                         >Screensaver Wake (menit)</label
                     >
                     <input
+                        id="edit-screensaverWakeMinutes"
                         name="screensaverWakeMinutes"
                         type="number"
                         value={data.masjid.screensaverWakeMinutes ?? 60}
@@ -214,10 +225,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-screensaverMorningDelayMinutes" class="block text-xs font-medium text-slate-500"
                         >Screensaver Pagi Delay (menit stlh Syuruq)</label
                     >
                     <input
+                        id="edit-screensaverMorningDelayMinutes"
                         name="screensaverMorningDelayMinutes"
                         type="number"
                         value={data.masjid.screensaverMorningDelayMinutes ?? 60}
@@ -225,10 +237,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-screensaverMorningWakeMinutes" class="block text-xs font-medium text-slate-500"
                         >Screensaver Pagi Wake (menit sblm Dzuhur)</label
                     >
                     <input
+                        id="edit-screensaverMorningWakeMinutes"
                         name="screensaverMorningWakeMinutes"
                         type="number"
                         value={data.masjid.screensaverMorningWakeMinutes ?? 120}
@@ -236,10 +249,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-timezone" class="block text-xs font-medium text-slate-500"
                         >Timezone</label
                     >
                     <select
+                        id="edit-timezone"
                         name="timezone"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     >
@@ -261,10 +275,11 @@
                     </select>
                 </div>
                 <div class="sm:col-span-2">
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="edit-address" class="block text-xs font-medium text-slate-500"
                         >Alamat</label
                     >
                     <textarea
+                        id="edit-address"
                         name="address"
                         rows="2"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"

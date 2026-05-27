@@ -242,10 +242,16 @@
 
 <!-- Create Announcement Modal -->
 {#if showCreateModal}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
         onclick={() => (showCreateModal = false)}
+        onkeydown={(e) => { if (e.key === 'Escape') showCreateModal = false; }}
     >
+        <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
         <div
             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
             onclick={(e) => e.stopPropagation()}
@@ -259,30 +265,33 @@
                 class="mt-4 grid gap-3"
             >
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="ann-title" class="block text-xs font-medium text-slate-500"
                         >Judul *</label
                     >
                     <input
+                        id="ann-title"
                         name="title"
                         required
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="ann-content" class="block text-xs font-medium text-slate-500"
                         >Konten</label
                     >
                     <textarea
+                        id="ann-content"
                         name="content"
                         rows="3"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     ></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="ann-severity" class="block text-xs font-medium text-slate-500"
                         >Severity</label
                     >
                     <select
+                        id="ann-severity"
                         name="severity"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     >
@@ -292,10 +301,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="ann-target" class="block text-xs font-medium text-slate-500"
                         >Target Audiens</label
                     >
                     <select
+                        id="ann-target"
                         name="targetAudience"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     >
@@ -305,20 +315,22 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="ann-startAt" class="block text-xs font-medium text-slate-500"
                         >Mulai</label
                     >
                     <input
+                        id="ann-startAt"
                         name="startAt"
                         type="datetime-local"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="ann-endAt" class="block text-xs font-medium text-slate-500"
                         >Berakhir</label
                     >
                     <input
+                        id="ann-endAt"
                         name="endAt"
                         type="datetime-local"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"

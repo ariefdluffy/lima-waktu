@@ -23,7 +23,9 @@ export const actions = {
     const priceMonthly = String(form.get("priceMonthly") ?? "0");
     const priceYearly = String(form.get("priceYearly") ?? "0");
     const priceNote = String(form.get("priceNote") ?? "").trim();
-    const featuresJson = String(form.get("featuresJson") ?? "[]");
+    const featuresRaw = String(form.get("featuresJson") ?? "[]");
+    let featuresJson: unknown = [];
+    try { featuresJson = JSON.parse(featuresRaw); } catch { featuresJson = []; }
     const ctaLabel = String(form.get("ctaLabel") ?? "Mulai Gratis");
     const ctaHref = String(form.get("ctaHref") ?? "/auth/login");
     const isHighlight = form.get("isHighlight") === "1" ? 1 : 0;
@@ -58,7 +60,9 @@ export const actions = {
     const priceMonthly = String(form.get("priceMonthly") ?? "0");
     const priceYearly = String(form.get("priceYearly") ?? "0");
     const priceNote = String(form.get("priceNote") ?? "").trim();
-    const featuresJson = String(form.get("featuresJson") ?? "[]");
+    const featuresRaw = String(form.get("featuresJson") ?? "[]");
+    let featuresJson: unknown = [];
+    try { featuresJson = JSON.parse(featuresRaw); } catch { featuresJson = []; }
     const ctaLabel = String(form.get("ctaLabel") ?? "Mulai Gratis");
     const ctaHref = String(form.get("ctaHref") ?? "/auth/login");
     const isHighlight = form.get("isHighlight") === "1" ? 1 : 0;

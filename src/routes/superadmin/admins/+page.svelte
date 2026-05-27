@@ -30,24 +30,7 @@
     });
 
     function findAdmin(id: string) {
-        return (
-            data.admins.find(
-                (a: {
-                    id: string;
-                    fullName: string;
-                    email: string;
-                    phone: string | null;
-                    isActive: number;
-                    lastLoginAt: Date | null;
-                    createdAt: Date;
-                    masjids: {
-                        masjidId: string;
-                        masjidName: string;
-                        roleScope: string;
-                    }[];
-                }) => a.id === id,
-            ) ?? null
-        );
+        return data.admins.find((a) => a.id === id) ?? null;
     }
     const editAdminData = $derived(editAdminId ? findAdmin(editAdminId) : null);
 
@@ -308,10 +291,16 @@
 
     <!-- Edit Admin Modal -->
     {#if editAdminId && editAdminData}
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
             onclick={() => (editAdminId = null)}
+            onkeydown={(e) => { if (e.key === 'Escape') editAdminId = null; }}
         >
+            <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
             <div
                 class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
                 onclick={(e) => e.stopPropagation()}
@@ -330,10 +319,11 @@
                         value={editAdminData.id}
                     />
                     <div>
-                        <label class="block text-xs font-medium text-slate-500"
+                        <label for="edit-fullName" class="block text-xs font-medium text-slate-500"
                             >Nama Lengkap</label
                         >
                         <input
+                            id="edit-fullName"
                             name="fullName"
                             value={editAdminData.fullName}
                             required
@@ -341,10 +331,11 @@
                         />
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500"
+                        <label for="edit-email" class="block text-xs font-medium text-slate-500"
                             >Email</label
                         >
                         <input
+                            id="edit-email"
                             name="email"
                             type="email"
                             value={editAdminData.email}
@@ -353,10 +344,11 @@
                         />
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500"
+                        <label for="edit-phone" class="block text-xs font-medium text-slate-500"
                             >No. HP</label
                         >
                         <input
+                            id="edit-phone"
                             name="phone"
                             value={editAdminData.phone ?? ""}
                             class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
@@ -380,10 +372,16 @@
 
     <!-- Reset Password Modal -->
     {#if resetPassUserId}
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            tabindex="-1"
             onclick={() => (resetPassUserId = null)}
+            onkeydown={(e) => { if (e.key === 'Escape') resetPassUserId = null; }}
         >
+            <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
             <div
                 class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
                 onclick={(e) => e.stopPropagation()}
@@ -402,10 +400,11 @@
                         value={resetPassUserId}
                     />
                     <div>
-                        <label class="block text-xs font-medium text-slate-500"
+                        <label for="reset-password" class="block text-xs font-medium text-slate-500"
                             >Password Baru * (min 6 karakter)</label
                         >
                         <input
+                            id="reset-password"
                             name="password"
                             type="password"
                             required
@@ -527,10 +526,16 @@
 
 <!-- Create Admin Modal -->
 {#if showCreateModal}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+        role="dialog"
+        aria-modal="true"
+        tabindex="-1"
         onclick={() => (showCreateModal = false)}
+        onkeydown={(e) => { if (e.key === 'Escape') showCreateModal = false; }}
     >
+        <!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
         <div
             class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl"
             onclick={(e) => e.stopPropagation()}
@@ -540,20 +545,22 @@
             </h2>
             <form method="POST" action="?/createAdmin" class="mt-4 grid gap-3">
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="create-fullName" class="block text-xs font-medium text-slate-500"
                         >Nama Lengkap *</label
                     >
                     <input
+                        id="create-fullName"
                         name="fullName"
                         required
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="create-email" class="block text-xs font-medium text-slate-500"
                         >Email *</label
                     >
                     <input
+                        id="create-email"
                         name="email"
                         type="email"
                         required
@@ -561,19 +568,21 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="create-phone" class="block text-xs font-medium text-slate-500"
                         >No. HP</label
                     >
                     <input
+                        id="create-phone"
                         name="phone"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="create-password" class="block text-xs font-medium text-slate-500"
                         >Password * (min 6 karakter)</label
                     >
                     <input
+                        id="create-password"
                         name="password"
                         type="password"
                         required
@@ -582,10 +591,11 @@
                     />
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="create-masjid" class="block text-xs font-medium text-slate-500"
                         >Masjid</label
                     >
                     <select
+                        id="create-masjid"
                         name="masjid_id"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     >
@@ -596,10 +606,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-500"
+                    <label for="create-role" class="block text-xs font-medium text-slate-500"
                         >Role</label
                     >
                     <select
+                        id="create-role"
                         name="roleScope"
                         class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                     >

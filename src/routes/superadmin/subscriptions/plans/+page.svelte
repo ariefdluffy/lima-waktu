@@ -335,14 +335,44 @@
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500"
+                            >Catatan Harga</label
+                        >
+                        <input
+                            name="priceNote"
+                            value={plan.priceNote ?? ""}
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
                             >Fitur (JSON)</label
                         >
                         <textarea
                             name="featuresJson"
                             rows="3"
                             class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                            >{plan.featuresJson ?? "[]"}</textarea
+                            >{JSON.stringify(plan.featuresJson ?? [])}</textarea
                         >
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
+                            >CTA Label</label
+                        >
+                        <input
+                            name="ctaLabel"
+                            value={plan.ctaLabel ?? "Mulai Gratis"}
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500"
+                            >CTA Link</label
+                        >
+                        <input
+                            name="ctaHref"
+                            value={plan.ctaHref ?? "/auth/login"}
+                            class="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                        />
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500"

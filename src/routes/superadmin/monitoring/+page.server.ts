@@ -13,7 +13,7 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
   if (!locals.user) throw redirect(302, "/auth/login");
   if (!locals.user.roles.includes("superadmin")) throw redirect(302, "/admin");
 
-  const [deviceRows, deviceCount, providerLogs, syncJobs] = await Promise.all([
+  const [deviceRows, deviceTotal, deviceCount, providerLogs, syncJobs] = await Promise.all([
     // All devices with masjid name
     db
       .select({
@@ -30,6 +30,11 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .leftJoin(masjids, eq(devices.masjidId, masjids.id))
       .orderBy(desc(devices.lastSeenAt))
       .limit(50),
+    // Device total count
+    db
+      .select({ val: count() })
+      .from(devices)
+      .then((r) => Number(r[0].val)),
     // Device stats
     db
       .select({
@@ -64,7 +69,7 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
   return {
     devices: deviceRows,
     deviceStats: devStats,
-    totalDevices: deviceRows.length,
+    totalDevices: deviceTotal,
     onlineCount: devStats["online"] ?? 0,
     offlineCount: devStats["offline"] ?? 0,
     providerLogs,

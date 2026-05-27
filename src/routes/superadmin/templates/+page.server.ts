@@ -41,8 +41,20 @@ export const actions = {
       isGlobal,
       isActive: 1,
     };
-    if (paletteJson) val.paletteJson = JSON.parse(paletteJson);
-    if (layoutJson) val.layoutJson = JSON.parse(layoutJson);
+    if (paletteJson) {
+      try {
+        val.paletteJson = JSON.parse(paletteJson);
+      } catch {
+        return { error: "Palette JSON tidak valid" };
+      }
+    }
+    if (layoutJson) {
+      try {
+        val.layoutJson = JSON.parse(layoutJson);
+      } catch {
+        return { error: "Layout JSON tidak valid" };
+      }
+    }
 
     await db.insert(themes).values(val);
 
@@ -61,8 +73,20 @@ export const actions = {
     if (!id || !name || !themeKey) return;
 
     const updateData: Record<string, unknown> = { name, themeKey, isGlobal };
-    if (paletteJson) updateData.paletteJson = JSON.parse(paletteJson);
-    if (layoutJson) updateData.layoutJson = JSON.parse(layoutJson);
+    if (paletteJson) {
+      try {
+        updateData.paletteJson = JSON.parse(paletteJson);
+      } catch {
+        return { error: "Palette JSON tidak valid" };
+      }
+    }
+    if (layoutJson) {
+      try {
+        updateData.layoutJson = JSON.parse(layoutJson);
+      } catch {
+        return { error: "Layout JSON tidak valid" };
+      }
+    }
 
     await db.update(themes).set(updateData).where(eq(themes.id, id));
 

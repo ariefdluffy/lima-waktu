@@ -12,7 +12,19 @@
     let editLayoutJson = $state("");
     let editIsGlobal = $state(false);
     let deleteTarget = $state<{ id: number; name: string } | null>(null);
-    let deleteFormEl = $state<HTMLFormElement | null>(null);
+    let deleteForms = $state<Map<number, HTMLFormElement>>(new Map());
+
+    function registerDeleteForm(node: HTMLFormElement, id: number) {
+        const existing = deleteForms.get(id);
+        if (existing) existing.remove();
+        node.dataset.deleteId = String(id);
+        deleteForms.set(id, node);
+        return {
+            destroy() {
+                deleteForms.delete(id);
+            }
+        };
+    }
 
     $effect(() => {
         if (form?.deleted) showToast("Template berhasil dinonaktifkan");
@@ -157,7 +169,7 @@
                                             method="POST"
                                             action="?/deleteTheme"
                                             class="inline"
-                                            bind:this={deleteFormEl}
+                                            use:registerDeleteForm={t.id}
                                         >
                                             <input
                                                 type="hidden"
@@ -194,13 +206,15 @@
         confirmLabel="Ya, Hapus"
         cancelLabel="Batal"
         onconfirm={() => {
-            if (deleteFormEl) deleteFormEl.requestSubmit();
+            if (deleteTarget) {
+                const form = deleteForms.get(deleteTarget.id);
+                if (form) form.requestSubmit();
+                deleteForms.delete(deleteTarget.id);
+            }
             deleteTarget = null;
-            deleteFormEl = null;
         }}
         oncancel={() => {
             deleteTarget = null;
-            deleteFormEl = null;
         }}
     />
 

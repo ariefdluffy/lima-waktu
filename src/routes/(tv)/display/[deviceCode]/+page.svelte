@@ -1380,13 +1380,7 @@
         letter-spacing: 0.05em;
     }
 
-    .header-tz {
-        font-size: 0.35em;
-        font-weight: 600;
-        color: var(--text-muted);
-        vertical-align: super;
-        margin-left: 3px;
-    }
+
 
     /* MAIN BODY */
     .main-body {

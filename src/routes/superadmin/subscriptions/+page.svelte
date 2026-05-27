@@ -334,7 +334,7 @@
                         >
                         <button
                             class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-                            onclick={closeEdit}>Simpan</button
+                            >Simpan</button
                         >
                     </div>
                 </form>
