@@ -118,7 +118,7 @@
                 url =
                     "/api/v1/prayer-fetch?action=bulk&provider=" +
                     provider +
-                    "&cityId=" +
+                    "&kota_id=" +
                     selectedKota.id +
                     "&month=" +
                     bulkMonth +
@@ -132,9 +132,9 @@
                 url =
                     "/api/v1/prayer-fetch?action=bulk&provider=" +
                     provider +
-                    "&lat=" +
+                    "&latitude=" +
                     data.masjid.latitude +
-                    "&lon=" +
+                    "&longitude=" +
                     data.masjid.longitude +
                     "&month=" +
                     bulkMonth +
