@@ -532,6 +532,27 @@ export const actions: Actions = {
     if (id) await db.delete(youtubeItems).where(eq(youtubeItems.id, id));
   },
 
+  dragReorderYoutube: async ({ locals, request }) => {
+    if (!locals.user) throw redirect(302, "/auth/login");
+    const form = await request.formData();
+    const masjidId = String(form.get("masjid_id") ?? "").trim();
+    const orderedIdsRaw = String(form.get("ordered_ids") ?? "").trim();
+    if (!masjidId || !orderedIdsRaw) return;
+
+    const orderedIds = orderedIdsRaw.split(",").map(Number).filter(Boolean);
+    if (orderedIds.length === 0) return;
+
+    // Update orderIndex sesuai posisi baru
+    await Promise.all(
+      orderedIds.map((id, index) =>
+        db
+          .update(youtubeItems)
+          .set({ orderIndex: index })
+          .where(and(eq(youtubeItems.id, id), eq(youtubeItems.masjidId, masjidId)))
+      )
+    );
+  },
+
   reorderYoutube: async ({ locals, request }) => {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
