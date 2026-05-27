@@ -15,24 +15,44 @@ export const POST: RequestHandler = async (event) => {
   const { request, url } = event;
   const body = await request.json().catch(() => null);
   if (!body || !body.city)
-    return json({ ok: false, message: "Nama kota wajib diisi" }, { status: 400 });
+    return json(
+      { ok: false, message: "Nama kota wajib diisi" },
+      { status: 400 },
+    );
 
-  const masjidId = await resolveMasjidIdForUser(user, url.searchParams.get("masjid_id"));
+  const masjidId = await resolveMasjidIdForUser(
+    user,
+    url.searchParams.get("masjid_id"),
+  );
   const cityName = body.city.trim();
 
   // Server-side geocoding via Open-Meteo
-  const geoRes = await fetch(
-    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=id&format=json`,
-    { signal: AbortSignal.timeout(8000) },
-  );
-  if (!geoRes.ok) {
+  let geoJson: any;
+  try {
+    const geoRes = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=id&format=json`,
+      { signal: AbortSignal.timeout(8000) },
+    );
+    if (!geoRes.ok) {
+      return json(
+        { ok: false, message: "Gagal menghubungi layanan geocoding" },
+        { status: 502 },
+      );
+    }
+    geoJson = await geoRes.json();
+  } catch (err) {
+    const isTimeout = err instanceof Error && err.name === "TimeoutError";
     return json(
-      { ok: false, message: "Gagal menghubungi layanan geocoding" },
+      {
+        ok: false,
+        message: isTimeout
+          ? "Layanan geocoding timeout, coba lagi"
+          : "Gagal menghubungi layanan geocoding",
+      },
       { status: 502 },
     );
   }
 
-  const geoJson = await geoRes.json();
   const result = geoJson?.results?.[0];
   if (!result?.latitude || !result?.longitude) {
     return json(
@@ -56,6 +76,11 @@ export const POST: RequestHandler = async (event) => {
 
   return json({
     ok: true,
-    data: { latitude: lat, longitude: lon, city: cityName, timezone: result.timezone ?? "Asia/Jakarta" },
+    data: {
+      latitude: lat,
+      longitude: lon,
+      city: cityName,
+      timezone: result.timezone ?? "Asia/Jakarta",
+    },
   });
 };

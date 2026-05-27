@@ -46,11 +46,11 @@ const securityHandle: Handle = async ({ event, resolve }) => {
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline'",
+        "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob:",
         "font-src 'self'",
-        "connect-src 'self'",
+        "connect-src 'self' https://cloudflareinsights.com",
         "frame-src 'self'",
         "frame-ancestors 'self'",
         isProduction ? "report-uri /api/csp-report" : undefined,
