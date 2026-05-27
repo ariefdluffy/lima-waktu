@@ -27,7 +27,7 @@ let lastTriggeredPrayer = $state("");
 let lastTriggeredIqamahEnd = $state("");
 
 // ── Flash Screen ─────────────────────────────────────────────────
-const FLASH_DURATION_MS = 600;
+const FLASH_DURATION_MS = 2500;
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function triggerFlash(type: "adzan" | "iqamah" = "adzan") {

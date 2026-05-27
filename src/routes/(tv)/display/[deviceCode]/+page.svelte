@@ -587,15 +587,17 @@
                 />
             {/if}
 
-            <!-- MOOD OVERLAY -->
-            <MoodOverlay
-                mood={prayer.mood}
-                moodPrayerName={prayer.moodPrayerName}
-                moodPrayerKey={prayer.moodPrayerKey}
-                countdown={prayer.moodCountdown}
-                countdownLabel={prayer.moodCountdownLabel}
-                isJumat={getWIBParts(now, tz).day === 5}
-            />
+            <!-- MOOD OVERLAY — sembunyi saat flash aktif biar gak bertumpuk -->
+            {#if !prayer.flash}
+                <MoodOverlay
+                    mood={prayer.mood}
+                    moodPrayerName={prayer.moodPrayerName}
+                    moodPrayerKey={prayer.moodPrayerKey}
+                    countdown={prayer.moodCountdown}
+                    countdownLabel={prayer.moodCountdownLabel}
+                    isJumat={getWIBParts(now, tz).day === 5}
+                />
+            {/if}
 
             <!-- FLASH OVERLAY -->
             {#if prayer.flash}

@@ -27,7 +27,7 @@
     {#if isJumatAdzan}
         <!-- LAYAR JUMAT -->
         <div class="mood-overlay mood-overlay--jumat">
-            <div class="mood-icon">🕌</div>
+            <!-- <div class="mood-icon">🕌</div> -->
             <div class="mood-jumat-badge">HARI JUM'AT</div>
             <div class="mood-title">أَذَانُ الْجُمُعَة</div>
             <div class="mood-subtitle">ADZAN JUM'AT</div>
@@ -50,7 +50,7 @@
     {:else}
         <!-- LAYAR ADZAN BIASA -->
         <div class="mood-overlay mood-overlay--adzan">
-            <div class="mood-icon">🕌</div>
+            <!-- <div class="mood-icon">🕌</div> -->
             <div class="mood-title">وَقْتُ الْأَذَان</div>
             <div class="mood-subtitle">WAKTU ADZAN</div>
             <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
@@ -73,7 +73,7 @@
 
 {#if mood === "iqamah"}
     <div class="mood-overlay mood-overlay--iqamah">
-        <div class="mood-icon">🕌</div>
+        <!-- <div class="mood-icon">🕌</div> -->
         <div class="mood-title">WAKTU MENUNGGU IQAMAH</div>
         <div class="mood-subtitle">BERSEGERA WUDHU DAN SHOLAT SUNNAH</div>
         <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
