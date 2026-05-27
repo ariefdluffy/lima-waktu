@@ -9,7 +9,7 @@ import { mediaAssets } from "$lib/server/db/schema";
 import { invalidateDisplayForMasjid } from "$lib/server/display/invalidate";
 
 const ALLOWED_MIME = ["image/jpeg", "image/png"];
-const MAX_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
+const MAX_SIZE_BYTES = 512 * 1024; // 512KB
 
 export const GET: RequestHandler = async (event) => {
   const user = await authenticateEvent(event);

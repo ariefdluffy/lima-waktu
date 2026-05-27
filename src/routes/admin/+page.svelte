@@ -848,9 +848,12 @@
             if (json.ok) {
                 profileSuccess = "✓ Profil disimpan";
                 setTimeout(() => (profileSuccess = ""), 3000);
-                // Auto-resolve lat/lon dari city jika belum ada
+                // Auto-resolve lat/lon dari city setiap kali city berubah
                 const city = profileCity.trim();
-                if (city && !weatherLat && !data.masjid?.latitude) {
+                const cityChanged = city && city !== data.masjid?.city;
+                const noCoords =
+                    !data.masjid?.latitude || !data.masjid?.longitude;
+                if (city && (cityChanged || noCoords)) {
                     resolveAndSaveLatLon(city);
                 }
                 await invalidate(() => true);
@@ -881,6 +884,17 @@
     async function uploadLogo() {
         if (!logoFile) {
             logoError = "Pilih file logo terlebih dahulu";
+            return;
+        }
+        if (logoFile.size > 512 * 1024) {
+            logoError = "Ukuran file maksimal 512KB. Pilih file lebih kecil.";
+            showToastGlobal(
+                "⚠️ Ukuran file maksimal 512KB. Pilih file lebih kecil.",
+            );
+            return;
+        }
+        if (!["image/jpeg", "image/png"].includes(logoFile.type)) {
+            logoError = "Tipe file tidak diizinkan. Hanya JPEG dan PNG.";
             return;
         }
         logoSaving = true;
