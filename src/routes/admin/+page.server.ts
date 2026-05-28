@@ -302,9 +302,15 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
   }
 
   if (section === SECTION_TEMA) {
-    themeRows = await db.select().from(themes)
-      .where(eq(themes.isActive, 1))
-      .orderBy(desc(themes.isGlobal), desc(themes.createdAt));
+    [themeRows, deviceRows] = await Promise.all([
+      db.select().from(themes)
+        .where(eq(themes.isActive, 1))
+        .orderBy(desc(themes.isGlobal), desc(themes.createdAt)),
+      db.select().from(devices)
+        .where(eq(devices.masjidId, masjidId))
+        .orderBy(desc(devices.createdAt)),
+    ]);
+    deviceTotal = deviceRows.length;
   }
 
   // dashboard butuh iqamah + count semua konten untuk stats cards

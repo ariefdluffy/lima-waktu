@@ -26,20 +26,29 @@ export const POST: RequestHandler = async (event) => {
   );
   const cityName = body.city.trim();
 
-  // Server-side geocoding via Open-Meteo
-  let geoJson: any;
-  try {
-    const geoRes = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=id&format=json`,
+  // Helper: query Open-Meteo untuk satu nama kota
+  async function fetchGeoResult(name: string) {
+    const res = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=id&format=json`,
       { signal: AbortSignal.timeout(8000) },
     );
-    if (!geoRes.ok) {
-      return json(
-        { ok: false, message: "Gagal menghubungi layanan geocoding" },
-        { status: 502 },
-      );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.results?.[0] ?? null;
+  }
+
+  // Coba nama lengkap dulu, lalu fallback dengan memotong kata terakhir
+  // Contoh: "Jakarta Selatan" → "Jakarta Selatan" → "Jakarta"
+  let result: any = null;
+  let triedName = cityName;
+  try {
+    const parts = cityName.split(/\s+/);
+    for (let i = parts.length; i >= 1; i--) {
+      triedName = parts.slice(0, i).join(" ");
+      result = await fetchGeoResult(triedName);
+      if (result?.latitude && result?.longitude) break;
+      result = null;
     }
-    geoJson = await geoRes.json();
   } catch (err) {
     const isTimeout = err instanceof Error && err.name === "TimeoutError";
     return json(
@@ -53,7 +62,6 @@ export const POST: RequestHandler = async (event) => {
     );
   }
 
-  const result = geoJson?.results?.[0];
   if (!result?.latitude || !result?.longitude) {
     return json(
       { ok: false, message: `Koordinat untuk "${cityName}" tidak ditemukan` },
@@ -74,8 +82,15 @@ export const POST: RequestHandler = async (event) => {
     })
     .where(eq(masjids.id, masjidId));
 
+  // Jika fallback terjadi, beri tahu nama yang berhasil di-resolve
+  const resolvedNote = triedName !== cityName
+    ? ` (via "${triedName}")`
+    : "";
+
   return json({
     ok: true,
+    resolvedName: triedName,
+    note: resolvedNote ? `Koordinat ditemukan via "${triedName}"` : null,
     data: {
       latitude: lat,
       longitude: lon,

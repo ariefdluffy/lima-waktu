@@ -684,7 +684,8 @@
     // ----------------------------------------------------------------
     async function resolveAndSaveLatLon(cityName: string) {
         try {
-            const res = await fetch("/api/v1/masjid/geocode", {
+            const masjidId = data.masjid?.id ?? "";
+            const res = await fetch(`/api/v1/masjid/geocode${masjidId ? `?masjid_id=${encodeURIComponent(masjidId)}` : ""}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ city: cityName }),
@@ -733,7 +734,8 @@
         weatherGeoSuccess = "";
         weatherGeoError = "";
         try {
-            const res = await fetch("/api/v1/masjid/geocode", {
+            const masjidId = data.masjid?.id ?? "";
+            const res = await fetch(`/api/v1/masjid/geocode${masjidId ? `?masjid_id=${encodeURIComponent(masjidId)}` : ""}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ city }),
@@ -742,7 +744,9 @@
             if (json.ok) {
                 weatherLat = json.data.latitude;
                 weatherLon = json.data.longitude;
-                weatherGeoSuccess = `✓ Koordinat untuk "${city}" tersimpan`;
+                weatherGeoSuccess = json.note
+                    ? `✓ ${json.note} tersimpan`
+                    : `✓ Koordinat untuk "${city}" tersimpan`;
                 setTimeout(() => (weatherGeoSuccess = ""), 4000);
                 await invalidate(() => true);
             } else {
