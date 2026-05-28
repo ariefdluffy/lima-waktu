@@ -306,7 +306,7 @@
                                     <input type="hidden" name="direction" value="up" />
                                     <button
                                         type="submit"
-                                        disabled={idx === 0}
+                                        disabled={idx === 0 && data.youtubePage === 1}
                                         title="Naik"
                                         class="flex h-7 w-7 items-center justify-center rounded bg-white text-slate-400 shadow-sm hover:bg-emerald-100 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-30 transition-colors"
                                     >▲</button>
@@ -321,7 +321,7 @@
                                     <input type="hidden" name="direction" value="down" />
                                     <button
                                         type="submit"
-                                        disabled={idx === items.length - 1}
+                                        disabled={idx === items.length - 1 && data.youtubePage === data.youtubeTotalPages}
                                         title="Turun"
                                         class="flex h-7 w-7 items-center justify-center rounded bg-white text-slate-400 shadow-sm hover:bg-emerald-100 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-30 transition-colors"
                                     >▼</button>
