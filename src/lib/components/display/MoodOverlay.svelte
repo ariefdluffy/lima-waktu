@@ -90,7 +90,6 @@
 
 {#if mood === "khusuk"}
     <div class="mood-overlay mood-overlay--khusuk" class:mood-overlay--vertical={orientation === "vertical"}>
-        <div class="mood-icon">☪️</div>
         <div class="mood-title">SHOLAT {moodPrayerName}</div>
         <div class="mood-subtitle">MOHON KHUSYUK</div>
         <div class="mood-ayat">

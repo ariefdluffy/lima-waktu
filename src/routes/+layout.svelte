@@ -42,7 +42,7 @@
                         class="text-sm font-medium text-slate-700 hover:text-emerald-700 transition"
                         >Admin</a
                     >
-                    {#if data.user}
+                    {#if data.user && !data.user?.roles.includes("superadmin")}
                         <a
                             href="/display"
                             class="text-sm text-slate-700 hover:text-emerald-700"

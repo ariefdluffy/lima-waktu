@@ -196,6 +196,8 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
         const iqamahMin = timeToMinutes(iqData.time);
         if (currentMinutes >= iqamahMin) {
           newMood = "khusuk";
+          // Assign mood immediately so template hides MoodOverlay before flash renders
+          prayer.mood = "khusuk";
           // Trigger alarm when iqamah ends (transitioning to khusuk)
           if (lastTriggeredIqamahEnd !== cp) {
             lastTriggeredIqamahEnd = cp;
@@ -287,7 +289,12 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
 }
 
 // Reset beep tracker (call when payload changes)
+// Skip reset for active mood to prevent beep/flash re-triggering during fetch polling
 export function resetBeepTriggers() {
-  lastTriggeredPrayer = "";
-  lastTriggeredIqamahEnd = "";
+  if (prayer.mood !== "adzan") {
+    lastTriggeredPrayer = "";
+  }
+  if (prayer.mood !== "khusuk") {
+    lastTriggeredIqamahEnd = "";
+  }
 }

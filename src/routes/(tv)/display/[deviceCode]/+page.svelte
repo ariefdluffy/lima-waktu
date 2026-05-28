@@ -319,8 +319,8 @@
 
     $effect(() => {
         if (payload) {
-            // Initial prayer state sync (interval handles subsequent updates)
-            updatePrayerState(payload, now);
+            // prayerInterval already calls updatePrayerState every 1s —
+            // do NOT also call it here to avoid double-triggering beep/flash.
             updateHijriyah();
             if (payload.masjid?.latitude && payload.masjid?.longitude) {
                 fetchWeather(payload.masjid.latitude, payload.masjid.longitude);
