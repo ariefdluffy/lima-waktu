@@ -278,8 +278,9 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
     currentMinutes >= isyaMin + SCREENSAVER_DELAY ||
     currentMinutes < subuhMin - SCREENSAVER_WAKE;
   const dalamJendelaPagi =
+    MORNING_DELAY > 0 &&
     currentMinutes >= syuruqMin + MORNING_DELAY &&
-    currentMinutes < dzuhurMin - MORNING_WAKE;
+    currentMinutes < dzuhurMin - (MORNING_WAKE > 0 ? MORNING_WAKE : 0);
   prayer.screensaver = dalamJendelaMalam || dalamJendelaPagi;
   // Hardcode: tahajud mode off 10 menit sebelum Subuh
   const TAHAJUD_END_OFFSET = 10;

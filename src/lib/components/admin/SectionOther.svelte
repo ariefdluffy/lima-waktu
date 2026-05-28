@@ -303,6 +303,9 @@
                 />
                 <span class="text-xs text-slate-400">menit</span>
             </div>
+            {#if screensaverDelay > 300}
+                <p class="mt-1 text-[11px] font-medium text-red-500">Maksimal 300 menit</p>
+            {/if}
         </div>
 
         <!-- Bangun sebelum Subuh -->
@@ -325,12 +328,15 @@
                     id="screensaver-wake"
                     type="number"
                     min="0"
-                    max="120"
+                    max="160"
                     bind:value={screensaverWake}
                     class="w-20 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-center text-sm font-bold text-indigo-700 shadow-inner focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-100"
                 />
                 <span class="text-xs text-slate-400">menit</span>
             </div>
+            {#if screensaverWake > 160}
+                <p class="mt-1 text-[11px] font-medium text-red-500">Maksimal 160 menit</p>
+            {/if}
         </div>
 
         <!-- Aktif setelah Syuruq -->
@@ -353,12 +359,15 @@
                     id="morning-delay"
                     type="number"
                     min="0"
-                    max="300"
+                    max="160"
                     bind:value={morningDelay}
                     class="w-20 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-center text-sm font-bold text-amber-700 shadow-inner focus:border-amber-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-100"
                 />
                 <span class="text-xs text-slate-400">menit</span>
             </div>
+            {#if morningDelay > 160}
+                <p class="mt-1 text-[11px] font-medium text-red-500">Maksimal 160 menit</p>
+            {/if}
         </div>
 
         <!-- Bangun sebelum Dzuhur -->
@@ -381,13 +390,30 @@
                     id="morning-wake"
                     type="number"
                     min="0"
-                    max="300"
+                    max="160"
                     bind:value={morningWake}
                     class="w-20 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-center text-sm font-bold text-orange-700 shadow-inner focus:border-orange-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-100"
                 />
                 <span class="text-xs text-slate-400">menit</span>
             </div>
+            {#if morningWake > 160}
+                <p class="mt-1 text-[11px] font-medium text-red-500">Maksimal 160 menit</p>
+            {/if}
         </div>
+    </div>
+
+    <!-- Caption penjelasan -->
+    <div class="flex items-start gap-2.5 rounded-xl border border-amber-100 bg-amber-50/50 px-4 py-3">
+        <span class="mt-0.5 text-amber-500">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </span>
+        <p class="text-xs text-amber-700 leading-relaxed">
+            <span class="font-semibold">Isi 0 untuk menonaktifkan.</span> Hemat Pagi = 0 berarti layar tidak masuk mode hemat setelah Syuruq.
+            Bangun Pagi = 0 berarti layar tidak bangun sebelum Dzuhur (tetap hemat sampai Dzuhur).
+        </p>
     </div>
 
     <!-- Ringkasan jadwal hemat -->
