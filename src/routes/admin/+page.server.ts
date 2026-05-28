@@ -537,17 +537,19 @@ export const actions: Actions = {
     const form = await request.formData();
     const masjidId = String(form.get("masjid_id") ?? "").trim();
     const orderedIdsRaw = String(form.get("ordered_ids") ?? "").trim();
+    const pageOffset = Math.max(0, Number(form.get("page_offset") ?? 0));
     if (!masjidId || !orderedIdsRaw) return;
 
     const orderedIds = orderedIdsRaw.split(",").map(Number).filter(Boolean);
     if (orderedIds.length === 0) return;
 
-    // Update orderIndex sesuai posisi baru
+    // Update orderIndex sesuai posisi baru + offset halaman
+    // Contoh: halaman 2 (PAGE_SIZE=10) → pageOffset=10, item pertama dapat orderIndex=10
     await Promise.all(
       orderedIds.map((id, index) =>
         db
           .update(youtubeItems)
-          .set({ orderIndex: index })
+          .set({ orderIndex: pageOffset + index })
           .where(and(eq(youtubeItems.id, id), eq(youtubeItems.masjidId, masjidId)))
       )
     );

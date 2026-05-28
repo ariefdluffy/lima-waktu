@@ -146,16 +146,20 @@
 
     async function submitDragReorder() {
         const orderedIds = items.map((i) => i.id).join(",");
+        // Hitung offset berdasarkan halaman aktif
+        // PAGE_SIZE = 10 (sama dengan server), halaman dari URL param pageYT
+        const pageYT = Math.max(1, Number(new URLSearchParams(window.location.search).get("pageYT") ?? 1));
+        const pageOffset = (pageYT - 1) * 10;
+
         const formData = new FormData();
         formData.set("masjid_id", data.masjid.id);
         formData.set("ordered_ids", orderedIds);
+        formData.set("page_offset", String(pageOffset));
 
         const res = await fetch("?/dragReorderYoutube", {
             method: "POST",
             body: formData,
         });
-        const text = await res.text();
-        // SvelteKit action response — cek apakah sukses
         if (res.ok) {
             await invalidate("app:admin");
             showToast("✓ Urutan YouTube berubah!");

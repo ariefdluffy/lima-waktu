@@ -310,79 +310,99 @@
         </div>
     {/if}
 
-    <div class="mt-4 overflow-x-auto">
-        <table class="w-full text-xs">
-            <thead>
-                <tr
-                    class="border-b border-emerald-100 text-left text-slate-500"
-                >
-                    <th class="pb-1 pr-2 font-medium">Tanggal</th>
-                    <th class="pb-1 pr-2 font-medium">Imsak</th>
-                    <th class="pb-1 pr-2 font-medium">Subuh</th>
-                    <th class="pb-1 pr-2 font-medium">Dzuhur</th>
-                    <th class="pb-1 pr-2 font-medium">Ashar</th>
-                    <th class="pb-1 pr-2 font-medium">Maghrib</th>
-                    <th class="pb-1 pr-2 font-medium">Isya</th>
-                    <th class="pb-1 font-medium"></th>
-                </tr>
-            </thead>
-            <tbody>
-                {#each data.prayerScheduleList as s}
-                    <tr class="border-b border-emerald-50 hover:bg-emerald-50">
-                        <td class="py-1 pr-2 font-medium text-slate-700">
-                            {new Date(s.scheduleDate).toLocaleDateString(
-                                "id-ID",
-                                {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                },
-                            )}
-                        </td>
-                        <td class="py-1 pr-2 text-slate-600">{s.imsakTime}</td>
-                        <td class="py-1 pr-2 text-slate-600">{s.subuhTime}</td>
-                        <td class="py-1 pr-2 text-slate-600">{s.dzuhurTime}</td>
-                        <td class="py-1 pr-2 text-slate-600">{s.asharTime}</td>
-                        <td class="py-1 pr-2 text-slate-600">{s.maghribTime}</td
+    <div class="mt-4">
+        <!-- Mobile: card list -->
+        <div class="space-y-2 sm:hidden">
+            {#each data.prayerScheduleList as s}
+                <div class="rounded-xl border border-emerald-100 bg-white p-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-sm font-semibold text-slate-700">
+                            {new Date(s.scheduleDate).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+                        </p>
+                        <button
+                            type="button"
+                            onclick={() => askDeleteSchedule(s.id, String(s.scheduleDate))}
+                            disabled={scheduleActionLoading}
+                            class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                            title="Hapus jadwal ini"
                         >
-                        <td class="py-1 pr-2 text-slate-600">{s.isyaTime}</td>
-                        <td class="py-1">
-                            <button
-                                type="button"
-                                onclick={() =>
-                                    askDeleteSchedule(
-                                        s.id,
-                                        String(s.scheduleDate),
-                                    )}
-                                disabled={scheduleActionLoading}
-                                class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
-                                title="Hapus jadwal ini"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    class="h-3.5 w-3.5"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="mt-2 grid grid-cols-3 gap-1.5">
+                        {#each [
+                            { label: "Imsak",   time: s.imsakTime },
+                            { label: "Subuh",   time: s.subuhTime },
+                            { label: "Dzuhur",  time: s.dzuhurTime },
+                            { label: "Ashar",   time: s.asharTime },
+                            { label: "Maghrib", time: s.maghribTime },
+                            { label: "Isya",    time: s.isyaTime },
+                        ] as p}
+                            <div class="rounded-lg bg-emerald-50 px-2 py-1.5 text-center">
+                                <p class="text-[9px] font-medium text-slate-400">{p.label}</p>
+                                <p class="text-xs font-bold text-emerald-700 tabular-nums">{p.time}</p>
+                            </div>
+                        {/each}
+                    </div>
+                </div>
+            {/each}
+            {#if data.prayerScheduleList.length === 0}
+                <p class="py-4 text-center text-sm text-slate-400">Belum ada jadwal tersimpan.</p>
+            {/if}
+        </div>
+
+        <!-- Desktop: tabel -->
+        <div class="hidden overflow-x-auto sm:block">
+            <table class="w-full text-xs">
+                <thead>
+                    <tr class="border-b border-emerald-100 text-left text-slate-500">
+                        <th class="pb-1 pr-2 font-medium">Tanggal</th>
+                        <th class="pb-1 pr-2 font-medium">Imsak</th>
+                        <th class="pb-1 pr-2 font-medium">Subuh</th>
+                        <th class="pb-1 pr-2 font-medium">Dzuhur</th>
+                        <th class="pb-1 pr-2 font-medium">Ashar</th>
+                        <th class="pb-1 pr-2 font-medium">Maghrib</th>
+                        <th class="pb-1 pr-2 font-medium">Isya</th>
+                        <th class="pb-1 font-medium"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each data.prayerScheduleList as s}
+                        <tr class="border-b border-emerald-50 hover:bg-emerald-50">
+                            <td class="py-1 pr-2 font-medium text-slate-700">
+                                {new Date(s.scheduleDate).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+                            </td>
+                            <td class="py-1 pr-2 text-slate-600">{s.imsakTime}</td>
+                            <td class="py-1 pr-2 text-slate-600">{s.subuhTime}</td>
+                            <td class="py-1 pr-2 text-slate-600">{s.dzuhurTime}</td>
+                            <td class="py-1 pr-2 text-slate-600">{s.asharTime}</td>
+                            <td class="py-1 pr-2 text-slate-600">{s.maghribTime}</td>
+                            <td class="py-1 pr-2 text-slate-600">{s.isyaTime}</td>
+                            <td class="py-1">
+                                <button
+                                    type="button"
+                                    onclick={() => askDeleteSchedule(s.id, String(s.scheduleDate))}
+                                    disabled={scheduleActionLoading}
+                                    class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                                    title="Hapus jadwal ini"
                                 >
-                                    <path
-                                        fill-rule="evenodd"
-                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                        clip-rule="evenodd"
-                                    />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                {/each}
-                {#if data.prayerScheduleList.length === 0}
-                    <tr>
-                        <td colspan="8" class="py-3 text-center text-slate-400"
-                            >Belum ada jadwal tersimpan.</td
-                        >
-                    </tr>
-                {/if}
-            </tbody>
-        </table>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    {/each}
+                    {#if data.prayerScheduleList.length === 0}
+                        <tr>
+                            <td colspan="8" class="py-3 text-center text-slate-400">Belum ada jadwal tersimpan.</td>
+                        </tr>
+                    {/if}
+                </tbody>
+            </table>
+        </div>
     </div>
     <Pagination
         currentPage={data.prayerPage}
