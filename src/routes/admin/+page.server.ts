@@ -505,8 +505,9 @@ export const actions: Actions = {
     const form = await request.formData();
     const id = String(form.get("device_id") ?? "").trim();
     const name = String(form.get("name") ?? "").trim();
+    const orientation = String(form.get("orientation") ?? "horizontal") === "vertical" ? "vertical" : "horizontal";
     if (id && name) {
-      await db.update(devices).set({ name }).where(eq(devices.id, id));
+      await db.update(devices).set({ name, orientation }).where(eq(devices.id, id));
     }
   },
 

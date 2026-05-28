@@ -541,7 +541,7 @@
         adzanDurationSaving = true;
         adzanDurationSuccess = false;
         try {
-            const res = await fetch("/api/v1/masjid/profile", {
+            const res = await fetch(`/api/v1/masjid/profile?masjid_id=${data.masjid?.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -593,7 +593,7 @@
         screensaverSaving = true;
         screensaverSuccess = false;
         try {
-            const res = await fetch("/api/v1/masjid/profile", {
+            const res = await fetch(`/api/v1/masjid/profile?masjid_id=${data.masjid?.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -630,7 +630,7 @@
         hijriOffsetSuccess = "";
         hijriOffsetError = "";
         try {
-            const res = await fetch("/api/v1/masjid/profile", {
+            const res = await fetch(`/api/v1/masjid/profile?masjid_id=${data.masjid?.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ hijriOffset: Number(hijriOffset) }),
@@ -766,7 +766,7 @@
         weatherLocSuccess = "";
         weatherLocError = "";
         try {
-            const res = await fetch("/api/v1/masjid/profile", {
+            const res = await fetch(`/api/v1/masjid/profile?masjid_id=${data.masjid?.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -836,7 +836,7 @@
         profileSuccess = "";
         profileError = "";
         try {
-            const res = await fetch("/api/v1/masjid/profile", {
+            const res = await fetch(`/api/v1/masjid/profile?masjid_id=${data.masjid?.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -920,7 +920,7 @@
             }
             const fileUrl = mediaJson.data.fileUrl;
 
-            const res = await fetch("/api/v1/masjid/profile", {
+            const res = await fetch(`/api/v1/masjid/profile?masjid_id=${data.masjid?.id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ logoUrl: fileUrl }),

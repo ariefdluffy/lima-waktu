@@ -186,28 +186,44 @@
                                     {item.layoutMode === "youtube" ? "▶ YouTube" : "⊞ Default"}
                                 </span>
 
-                                <!-- Edit Nama -->
+                                <!-- Edit Nama & Orientasi -->
                                 <form
                                     method="POST"
                                     action="?/editDevice"
                                     use:enhance={() => async ({ result }) => {
                                         if (result.type === "success" || result.type === "redirect") await invalidate("app:admin");
                                     }}
-                                    class="flex flex-col gap-2 sm:flex-row sm:items-center"
+                                    class="flex flex-col gap-3 rounded-xl border border-emerald-50 bg-slate-50/50 p-3 sm:flex-row sm:items-center sm:gap-2"
                                 >
                                     <input type="hidden" name="device_id" value={item.id} />
-                                    <label for="device_name_{item.id}" class="shrink-0 text-xs text-slate-500 sm:w-16">Nama:</label>
-                                    <input
-                                        id="device_name_{item.id}"
-                                        type="text"
-                                        name="name"
-                                        value={item.name}
-                                        class="flex-1 rounded-lg border border-emerald-200 px-3 py-1.5 text-sm focus:border-emerald-400 focus:outline-none"
-                                    />
+                                    
+                                    <div class="flex flex-col gap-1 sm:flex-1">
+                                        <label for="device_name_{item.id}" class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Nama Device</label>
+                                        <input
+                                            id="device_name_{item.id}"
+                                            type="text"
+                                            name="name"
+                                            value={item.name}
+                                            class="w-full rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm focus:border-emerald-400 focus:outline-none"
+                                        />
+                                    </div>
+
+                                    <div class="flex flex-col gap-1 sm:w-36">
+                                        <label for="device_orient_{item.id}" class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Orientasi</label>
+                                        <select
+                                            id="device_orient_{item.id}"
+                                            name="orientation"
+                                            class="w-full rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm focus:border-emerald-400 focus:outline-none"
+                                        >
+                                            <option value="horizontal" selected={item.orientation === "horizontal"}>Horizontal</option>
+                                            <option value="vertical" selected={item.orientation === "vertical"}>Vertical</option>
+                                        </select>
+                                    </div>
+
                                     <button
                                         type="submit"
-                                        class="self-start rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors sm:self-auto"
-                                    >Simpan</button>
+                                        class="mt-2 self-start rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors sm:mt-4 sm:self-auto"
+                                    >Simpan Perubahan</button>
                                 </form>
 
                                 <!-- Layout Mode -->

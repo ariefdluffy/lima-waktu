@@ -6,6 +6,7 @@
         countdown: string;
         countdownLabel: string;
         isJumat: boolean;
+        orientation?: "horizontal" | "vertical";
     }
 
     let {
@@ -15,6 +16,7 @@
         countdown = "",
         countdownLabel = "",
         isJumat = false,
+        orientation = "horizontal",
     }: Props = $props();
 
     // Layar Jumat: hari Jumat + adzan Dzuhur
@@ -26,14 +28,14 @@
 {#if mood === "adzan"}
     {#if isJumatAdzan}
         <!-- LAYAR JUMAT -->
-        <div class="mood-overlay mood-overlay--jumat">
+        <div class="mood-overlay mood-overlay--jumat" class:mood-overlay--vertical={orientation === "vertical"}>
             <!-- <div class="mood-icon">🕌</div> -->
             <div class="mood-jumat-badge">HARI JUM'AT</div>
             <div class="mood-title">أَذَانُ الْجُمُعَة</div>
             <div class="mood-subtitle">ADZAN JUM'AT</div>
             <div class="mood-prayer">SHOLAT JUM'AT</div>
             <div class="mood-ayat">
-                يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا نُودِيَ لِلصَّلَاةِ مِن
+                يَا أَيُّهَا الَّذِينَ آمَنُوا إِإذَا نُودِيَ لِلصَّلَاةِ مِن
                 يَوْمِ الْجُمُعَةِ فَاسْعَوْا إِلَىٰ ذِكْرِ اللَّهِ
             </div>
             <div class="mood-ayat-src">QS. Al-Jumu'ah: 9</div>
@@ -49,7 +51,7 @@
         </div>
     {:else}
         <!-- LAYAR ADZAN BIASA -->
-        <div class="mood-overlay mood-overlay--adzan">
+        <div class="mood-overlay mood-overlay--adzan" class:mood-overlay--vertical={orientation === "vertical"}>
             <!-- <div class="mood-icon">🕌</div> -->
             <div class="mood-title">وَقْتُ الْأَذَان</div>
             <div class="mood-subtitle">WAKTU ADZAN</div>
@@ -72,7 +74,7 @@
 {/if}
 
 {#if mood === "iqamah"}
-    <div class="mood-overlay mood-overlay--iqamah">
+    <div class="mood-overlay mood-overlay--iqamah" class:mood-overlay--vertical={orientation === "vertical"}>
         <!-- <div class="mood-icon">🕌</div> -->
         <div class="mood-title">WAKTU MENUNGGU IQAMAH</div>
         <div class="mood-subtitle">BERSEGERA WUDHU DAN SHOLAT SUNNAH</div>
@@ -87,7 +89,7 @@
 {/if}
 
 {#if mood === "khusuk"}
-    <div class="mood-overlay mood-overlay--khusuk">
+    <div class="mood-overlay mood-overlay--khusuk" class:mood-overlay--vertical={orientation === "vertical"}>
         <div class="mood-icon">☪️</div>
         <div class="mood-title">SHOLAT {moodPrayerName}</div>
         <div class="mood-subtitle">MOHON KHUSYUK</div>
@@ -221,6 +223,48 @@
         max-width: 60%;
         line-height: 1.4;
         font-style: italic;
+    }
+
+    /* ── Penyesuaian Vertikal untuk MoodOverlay ── */
+    .mood-overlay--vertical {
+        gap: clamp(8px, 2.5vh, 24px);
+        padding: 3vh 4vw;
+    }
+
+    .mood-overlay--vertical .mood-ayat {
+        max-width: 90%;
+        line-height: 1.6;
+        font-size: clamp(12px, 2.8vw, 22px);
+    }
+
+    .mood-overlay--vertical .mood-title {
+        font-size: clamp(24px, 5.5vw, 56px);
+    }
+
+    .mood-overlay--vertical .mood-subtitle {
+        font-size: clamp(11px, 2.4vw, 22px);
+    }
+
+    .mood-overlay--vertical .mood-prayer {
+        font-size: clamp(16px, 3.5vw, 32px);
+    }
+
+    .mood-overlay--vertical .mood-adzan-call {
+        font-size: clamp(12px, 2.6vw, 22px);
+        line-height: 1.6;
+    }
+
+    .mood-overlay--vertical .mood-countdown {
+        padding: 1.5vh 4vw;
+        max-width: 80vw;
+    }
+
+    .mood-overlay--vertical .mood-countdown-label {
+        font-size: clamp(9px, 1.8vw, 16px);
+    }
+
+    .mood-overlay--vertical .mood-countdown-val {
+        font-size: clamp(22px, 5vw, 56px);
     }
 
     .mood-ayat-src {

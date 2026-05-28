@@ -29,7 +29,7 @@
 
     .running-icon {
         flex-shrink: 0;
-        width: 6%;
+        width: 7vw;
         height: 100%;
         background: var(--prayer-active-glow);
         border-right: 1px solid var(--running-bar-border);
@@ -46,22 +46,44 @@
         flex: 1;
         overflow: hidden;
         white-space: nowrap;
+        position: relative;
     }
 
     .running-text {
         display: inline-block;
         font-size: clamp(22px, 2vw, 48px);
         color: var(--text-secondary);
+        white-space: nowrap;
         animation: marquee 70s linear infinite;
+        will-change: transform;
         padding-left: 100%;
     }
 
     @keyframes marquee {
-        from {
+        0% {
             transform: translateX(0);
         }
-        to {
+        100% {
             transform: translateX(-100%);
+        }
+    }
+
+    /* ── Penyesuaian Khusus Layar Portrait (Vertikal) ── */
+    @media (orientation: portrait) {
+        .running-bar {
+            height: 6vh; /* Kunci tinggi proporsional */
+        }
+
+        .running-icon {
+            width: auto;
+            padding: 0 4vw; /* Beri ruang horizontal */
+            font-size: clamp(12px, 2.5vw, 22px);
+            white-space: nowrap;
+        }
+
+        .running-text {
+            font-size: clamp(16px, 3.2vw, 32px); /* Besarkan font agar sangat jelas */
+            font-weight: 500;
         }
     }
 

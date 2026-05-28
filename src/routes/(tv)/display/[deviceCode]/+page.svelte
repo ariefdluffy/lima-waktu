@@ -7,6 +7,8 @@
     import RightPanel from "$lib/components/display/RightPanel.svelte";
     import RunningBar from "$lib/components/display/RunningBar.svelte";
     import YoutubeLayout from "$lib/components/display/YoutubeLayout.svelte";
+    import VerticalLayout from "$lib/components/display/VerticalLayout.svelte";
+    import VerticalYoutubeLayout from "$lib/components/display/VerticalYoutubeLayout.svelte";
     import MoodOverlay from "$lib/components/display/MoodOverlay.svelte";
     import "$lib/styles/display-fullhd.css";
     import "$lib/styles/display-layout-fix.css";
@@ -15,7 +17,7 @@
     import { DEFAULT_SLIDES } from "$lib/utils/prayer";
 
     // Extracted modules
-    import { prayer, updatePrayerState } from "$lib/display/prayer.svelte";
+    import { prayer, updatePrayerState, resetBeepTriggers } from "$lib/display/prayer.svelte";
     import {
         audio,
         handleUnlockAudio,
@@ -136,6 +138,7 @@
             const json = await res.json();
             if (json.ok) {
                 payload = json.data;
+                resetBeepTriggers();
                 error = null; // sukses → bersihkan flag error
             } else if (!payload) {
                 error = json.message ?? "Gagal mengambil data";
@@ -388,6 +391,7 @@
     {#if prayer.screensaver}
         <div
             class="screensaver"
+            class:screensaver--vertical={payload.device.orientation === "vertical"}
             style={themeCssVars(payload?.theme?.palette ?? null)}
         >
             <div class="screensaver-bg"></div>
@@ -447,6 +451,7 @@
     {:else if prayer.tahajudMode}
         <div
             class="tahajud"
+            class:tahajud--vertical={payload.device.orientation === "vertical"}
             style={themeCssVars(payload?.theme?.palette ?? null)}
         >
             <div class="tahajud-bg"></div>
@@ -498,37 +503,75 @@
             </button>
             <div class="top-bar"></div>
 
-            <!-- HEADER -->
-            <header class="header">
-                <div class="masjid-logo-area">
-                    <div class="masjid-logo">
-                        {#if payload.masjid.logoUrl}
-                            <img
-                                src={payload.masjid.logoUrl}
-                                alt="Logo {payload.masjid.name}"
-                                class="masjid-logo-img"
-                            />
-                        {:else}
-                            🕌
-                        {/if}
-                    </div>
-                    <div class="masjid-name-block">
-                        <div class="masjid-name">{payload.masjid.name}</div>
-                        <div class="masjid-loc">
-                            {getLocationText(payload.masjid)}
+            <!-- HEADER (Hanya Tampil di Horizontal) -->
+            {#if payload.device.orientation !== "vertical"}
+                <header class="header">
+                    <div class="masjid-logo-area">
+                        <div class="masjid-logo">
+                            {#if payload.masjid.logoUrl}
+                                <img
+                                    src={payload.masjid.logoUrl}
+                                    alt="Logo {payload.masjid.name}"
+                                    class="masjid-logo-img"
+                                />
+                            {:else}
+                                🕌
+                            {/if}
+                        </div>
+                        <div class="masjid-name-block">
+                            <div class="masjid-name">{payload.masjid.name}</div>
+                            <div class="masjid-loc">
+                                {getLocationText(payload.masjid)}
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="header-right">
-                    <div class="header-time">
-                        {liveClock}
-                        <!-- <span class="header-tz">{tzLabel}</span> -->
+                    <div class="header-right">
+                        <div class="header-time">
+                            {liveClock}
+                            <!-- <span class="header-tz">{tzLabel}</span> -->
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
+            {/if}
 
             <!-- MAIN BODY -->
-            {#if payload.device.layoutMode === "youtube" && payload.youtubeItems.length > 0}
+            {#if payload.device.orientation === "vertical"}
+                {#if payload.device.layoutMode === "youtube" && payload.youtubeItems.length > 0}
+                    <!-- VERTICAL YOUTUBE LAYOUT -->
+                    <VerticalYoutubeLayout
+                        {payload}
+                        nextPrayerName={prayer.nextPrayerName}
+                        nextPrayerTime={prayer.nextPrayerTime}
+                        countdown={prayer.countdown}
+                        countdownProgress={prayer.countdownProgress}
+                        iqamahTime={prayer.iqamahTime}
+                        activePrayerIndex={prayer.activePrayerIndex}
+                        {liveClock}
+                        {liveDate}
+                        {hijriyahDate}
+                    />
+                {:else}
+                    <!-- VERTICAL DEFAULT LAYOUT -->
+                    <VerticalLayout
+                        {payload}
+                        nextPrayerName={prayer.nextPrayerName}
+                        nextPrayerTime={prayer.nextPrayerTime}
+                        countdown={prayer.countdown}
+                        countdownProgress={prayer.countdownProgress}
+                        iqamahTime={prayer.iqamahTime}
+                        activePrayerIndex={prayer.activePrayerIndex}
+                        {liveClock}
+                        {liveDate}
+                        {hijriyahDate}
+                        {currentSlide}
+                        {slideFading}
+                        {currentJumbotron}
+                        weatherTemp={weather.temp}
+                        weatherCode={weather.code}
+                        weatherLoading={weather.loading}
+                    />
+                {/if}
+            {:else if payload.device.layoutMode === "youtube" && payload.youtubeItems.length > 0}
                 <!-- YOUTUBE LAYOUT -->
                 <YoutubeLayout
                     {payload}
@@ -596,6 +639,7 @@
                     countdown={prayer.moodCountdown}
                     countdownLabel={prayer.moodCountdownLabel}
                     isJumat={getWIBParts(now, tz).day === 5}
+                    orientation={payload.device.orientation}
                 />
             {/if}
 
@@ -830,6 +874,84 @@
         width: 100%;
         max-width: 1200px;
         padding: 0 48px;
+    }
+
+    /* ── Penyesuaian Vertikal untuk Screensaver (Mode Hemat Energi) ── */
+    .screensaver--vertical .screensaver-body {
+        flex-direction: column;
+        gap: 4vh;
+        max-width: 90%;
+        padding: 0;
+    }
+
+    .screensaver--vertical .screensaver-col-left {
+        flex: none;
+        gap: 1.5vh;
+    }
+
+    .screensaver--vertical .screensaver-logo {
+        width: 18vw;
+        height: 18vw;
+        max-width: 120px;
+        max-height: 120px;
+        font-size: clamp(32px, 8vw, 64px);
+    }
+
+    .screensaver--vertical .screensaver-masjid-name {
+        font-size: clamp(20px, 4.5vw, 40px);
+    }
+
+    .screensaver--vertical .screensaver-time {
+        font-size: clamp(56px, 13vw, 120px);
+    }
+
+    .screensaver--vertical .screensaver-date,
+    .screensaver--vertical .screensaver-hijri {
+        font-size: clamp(13px, 2.8vw, 24px);
+    }
+
+    .screensaver--vertical .screensaver-sub {
+        font-size: clamp(10px, 2.2vw, 18px);
+        margin-top: 0.5vh;
+    }
+
+    .screensaver--vertical .screensaver-divider {
+        width: 80%;
+        height: 1px;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            var(--border-accent, rgba(200, 168, 75, 0.25)) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        margin: 2vh 0;
+    }
+
+    .screensaver--vertical .screensaver-col-right {
+        flex: none;
+    }
+
+    .screensaver--vertical .screensaver-next-prayer {
+        padding: 3vh 6vw;
+        max-width: 85vw;
+        gap: 1.5vh;
+    }
+
+    .screensaver--vertical .screensaver-next-label {
+        font-size: clamp(11px, 2.5vw, 20px);
+    }
+
+    .screensaver--vertical .screensaver-next-name {
+        font-size: clamp(26px, 6vw, 48px);
+    }
+
+    .screensaver--vertical .screensaver-next-time {
+        font-size: clamp(32px, 7vw, 64px);
+    }
+
+    .screensaver--vertical .screensaver-next-iqamah,
+    .screensaver--vertical .screensaver-next-countdown {
+        font-size: clamp(13px, 3vw, 24px);
     }
 
     @keyframes screensaverFade {
@@ -1067,6 +1189,49 @@
         max-width: 700px;
         padding: 0 24px;
         animation: screensaverFade 2s ease-out;
+    }
+
+    /* ── Penyesuaian Vertikal untuk Layar Tahajud ── */
+    .tahajud--vertical .tahajud-body {
+        max-width: 90vw;
+        padding: 0 4vw;
+        gap: 3.5vh;
+    }
+
+    .tahajud--vertical .tahajud-badge {
+        font-size: clamp(14px, 3.5vw, 24px);
+        letter-spacing: 0.2em;
+    }
+
+    .tahajud--vertical .tahajud-ayat {
+        font-size: clamp(13px, 3vw, 22px);
+        line-height: 1.6;
+        max-width: 100%;
+    }
+
+    .tahajud--vertical .tahajud-ayat-src {
+        font-size: clamp(10px, 2vw, 15px);
+        margin-top: -1.5vh;
+    }
+
+    .tahajud--vertical .tahajud-time {
+        font-size: clamp(56px, 14vw, 120px);
+    }
+
+    .tahajud--vertical .tahajud-sub {
+        font-size: clamp(12px, 2.5vw, 20px);
+    }
+
+    .tahajud--vertical .tahajud-countdown-label {
+        font-size: clamp(11px, 2.2vw, 18px);
+    }
+
+    .tahajud--vertical .tahajud-countdown-val {
+        font-size: clamp(24px, 5vw, 48px);
+    }
+
+    .tahajud--vertical .tahajud-masjid {
+        font-size: clamp(11px, 2.2vw, 20px);
     }
 
     .tahajud-badge {
