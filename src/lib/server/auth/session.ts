@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { Cookies, RequestEvent } from '@sveltejs/kit';
+import { dev } from '$app/environment';
 import { db } from '$lib/server/db';
 import { roles, userRoles, users, userSessions } from '$lib/server/db/schema';
 import type { AuthUser } from '$lib/server/auth/basic';
@@ -13,7 +14,7 @@ function getCookieOptions() {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax' as const,
-		secure: false,
+		secure: !dev,
 		maxAge: SESSION_MAX_AGE_SECONDS
 	};
 }
