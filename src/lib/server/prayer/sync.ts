@@ -160,29 +160,39 @@ export async function syncAllMasjids(): Promise<SyncResult> {
       let usedFallback = false;
 
       try {
-        // Coba primary provider
-        let fetchResult = await fetchFromProvider(primaryProvider.providerKey, {
-          dateYmd,
-          latitude: String(lat),
-          longitude: String(lng),
-          timezone: tz,
-          methodCode,
-          baseUrl: primaryProvider.baseUrl ?? "",
-          apiKey: primaryApiKey,
-        });
+        // Coba primary provider dengan retry (max 2x, backoff 1s/2s)
+        let fetchResult = await withRetry(
+          () =>
+            fetchFromProvider(primaryProvider.providerKey, {
+              dateYmd,
+              latitude: String(lat),
+              longitude: String(lng),
+              timezone: tz,
+              methodCode,
+              baseUrl: primaryProvider.baseUrl ?? "",
+              apiKey: primaryApiKey,
+            }),
+          2,
+          1000,
+        );
 
-        // Jika gagal, coba fallback
+        // Jika masih gagal setelah retry, coba fallback provider
         if (!fetchResult.success && fallbackProvider) {
           usedFallback = true;
-          fetchResult = await fetchFromProvider(fallbackProvider.providerKey, {
-            dateYmd,
-            latitude: String(lat),
-            longitude: String(lng),
-            timezone: tz,
-            methodCode,
-            baseUrl: fallbackProvider.baseUrl ?? "",
-            apiKey: primaryApiKey,
-          });
+          fetchResult = await withRetry(
+            () =>
+              fetchFromProvider(fallbackProvider!.providerKey, {
+                dateYmd,
+                latitude: String(lat),
+                longitude: String(lng),
+                timezone: tz,
+                methodCode,
+                baseUrl: fallbackProvider!.baseUrl ?? "",
+                apiKey: primaryApiKey,
+              }),
+            2,
+            1000,
+          );
         }
 
         if (!fetchResult.success) {
@@ -364,6 +374,39 @@ export async function syncAllMasjids(): Promise<SyncResult> {
 /** Delay helper untuk menghindari rate limiting */
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Retry wrapper dengan exponential backoff.
+ * Hanya retry untuk error transient (network, timeout, 5xx).
+ * Error permanen (400, 404, koordinat salah) tidak di-retry.
+ *
+ * @param fn        Fungsi async yang akan di-retry
+ * @param maxRetries Jumlah maksimal percobaan ulang (default: 2)
+ * @param baseDelayMs Delay awal sebelum retry pertama (default: 1000ms)
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 2,
+  baseDelayMs = 1000,
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxRetries) {
+        const waitMs = baseDelayMs * Math.pow(2, attempt); // 1s, 2s
+        console.warn(
+          `[PrayerSync] retry attempt ${attempt + 1}/${maxRetries} after ${waitMs}ms`,
+          err,
+        );
+        await delay(waitMs);
+      }
+    }
+  }
+  throw lastError;
 }
 
 function timesToRow(times: PrayerTimesRaw) {

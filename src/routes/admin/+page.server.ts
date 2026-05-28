@@ -54,21 +54,32 @@ async function getMethodInfo(methodId: number | null) {
   return method ?? null;
 }
 
+// Sections yang butuh data spesifik
+const SECTION_RUNNINGTEXT = "runningtext";
+const SECTION_DEVICES     = "devices";
+const SECTION_SLIDES      = "slides";
+const SECTION_JUMBOTRON   = "jumbotron";
+const SECTION_YOUTUBE     = "youtube";
+const SECTION_SCHEDULE    = "schedule";
+const SECTION_IQAMAH      = "iqamah";
+const SECTION_EVENTS      = "events";
+const SECTION_TEMA        = "tema";
+const SECTION_DASHBOARD   = "dashboard";
+
 export const load: PageServerLoad = async ({ locals, url, depends }) => {
   depends("app:admin");
-  const pageRunningText = Math.max(
-    1,
-    Number(url.searchParams.get("pageRT") ?? 1),
-  );
-  const pageYoutube = Math.max(1, Number(url.searchParams.get("pageYT") ?? 1));
-  const pagePrayer = Math.max(1, Number(url.searchParams.get("pagePR") ?? 1));
-  const pageDevice = Math.max(1, Number(url.searchParams.get("pageDV") ?? 1));
-  const pageSlide = Math.max(1, Number(url.searchParams.get("pageSL") ?? 1));
-  const pageJumbotron = Math.max(
-    1,
-    Number(url.searchParams.get("pageJB") ?? 1),
-  );
-  const pageEvent = Math.max(1, Number(url.searchParams.get("pageEV") ?? 1));
+
+  // Section aktif — dipakai untuk lazy load
+  const section = url.searchParams.get("section") ?? SECTION_DASHBOARD;
+
+  const pageRunningText = Math.max(1, Number(url.searchParams.get("pageRT") ?? 1));
+  const pageYoutube     = Math.max(1, Number(url.searchParams.get("pageYT") ?? 1));
+  const pagePrayer      = Math.max(1, Number(url.searchParams.get("pagePR") ?? 1));
+  const pageDevice      = Math.max(1, Number(url.searchParams.get("pageDV") ?? 1));
+  const pageSlide       = Math.max(1, Number(url.searchParams.get("pageSL") ?? 1));
+  const pageJumbotron   = Math.max(1, Number(url.searchParams.get("pageJB") ?? 1));
+  const pageEvent       = Math.max(1, Number(url.searchParams.get("pageEV") ?? 1));
+
   if (!locals.user) {
     throw redirect(302, "/auth/login");
   }
@@ -105,41 +116,22 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
   if (!masjidId) {
     return {
       masjid: null,
-      runningTexts: [],
-      runningTextTotal: 0,
-      runningTextPage: 1,
-      runningTextTotalPages: 1,
-      devices: [],
-      slides: [],
-      jumbotrons: [],
-      youtubeItems: [],
-      youtubeTotal: 0,
-      youtubePage: 1,
-      youtubeTotalPages: 1,
-      prayerScheduleList: [],
-      prayerTotal: 0,
-      prayerPage: 1,
-      prayerTotalPages: 1,
+      user: locals.user,
+      section,
+      runningTexts: [], runningTextTotal: 0, runningTextPage: 1, runningTextTotalPages: 1,
+      devices: [], deviceTotal: 0, devicePage: 1, deviceTotalPages: 1,
+      slides: [], slideTotal: 0, slidePage: 1, slideTotalPages: 1,
+      jumbotrons: [], jumbotronTotal: 0, jumbotronPage: 1, jumbotronTotalPages: 1,
+      youtubeItems: [], youtubeTotal: 0, youtubePage: 1, youtubeTotalPages: 1,
+      prayerScheduleList: [], prayerTotal: 0, prayerPage: 1, prayerTotalPages: 1,
+      events: [], eventTotal: 0, eventPage: 1, eventTotalPages: 1,
       todaySchedule: null,
       iqamahSettings: [],
-      devicePage: 1,
-      deviceTotalPages: 1,
-      deviceTotal: 0,
-      slidePage: 1,
-      slideTotalPages: 1,
-      slideTotal: 0,
-      jumbotronPage: 1,
-      jumbotronTotalPages: 1,
-      jumbotronTotal: 0,
-      events: [],
-      eventTotal: 0,
-      eventPage: 1,
-      eventTotalPages: 1,
-      prayerProviderInfo: {
-        providerKey: "myquran",
-        providerName: "MyQuran API",
-        supportsSearch: true,
-      },
+      prayerCorrections: [],
+      themes: [],
+      subscription: null,
+      maxDevices: 1,
+      prayerProviderInfo: { providerKey: "myquran", providerName: "MyQuran API", supportsSearch: true },
     };
   }
 
@@ -149,11 +141,26 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     .where(eq(masjids.id, masjidId))
     .limit(1);
 
+  // ── Data wajib: selalu di-load (dipakai dashboard, header, iqamah) ──────────
+  const [subscriptionRow, configRow] = await Promise.all([
+    db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.masjidId, masjidId))
+      .orderBy(desc(subscriptions.createdAt))
+      .limit(1)
+      .then((r) => r[0] ?? null),
+    db
+      .select()
+      .from(globalPrayerConfig)
+      .where(eq(globalPrayerConfig.id, 1))
+      .limit(1)
+      .then((r) => r[0] ?? null),
+  ]);
+
+  // todaySchedule dipakai di dashboard
   const today = todayYmdInTimezone(masjid?.timezone ?? "Asia/Jakarta");
-  const resolvedSchedule = await resolvePrayerScheduleForMasjid(
-    masjidId,
-    today,
-  );
+  const resolvedSchedule = await resolvePrayerScheduleForMasjid(masjidId, today);
   const todaySchedule = resolvedSchedule.resolved
     ? {
         subuhTime: resolvedSchedule.resolved.subuh,
@@ -164,161 +171,11 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
       }
     : null;
 
-  const [
-    runningTextRows,
-    runningTextCountRows,
-    deviceRows,
-    deviceCountRows,
-    slideRows,
-    slideCountRows,
-    jumbotronRows,
-    jumbotronCountRows,
-    youtubeRows,
-    youtubeCountRows,
-    prayerRows,
-    prayerCountRows,
-    iqamahRows,
-    eventRows,
-    eventCountRows,
-    prayerCorrectionsRows,
-  ] = await Promise.all([
-    db
-      .select()
-      .from(runningTexts)
-      .where(eq(runningTexts.masjidId, masjidId))
-      .orderBy(desc(runningTexts.createdAt))
-      .limit(PAGE_SIZE)
-      .offset((pageRunningText - 1) * PAGE_SIZE),
-    db
-      .select({ total: count() })
-      .from(runningTexts)
-      .where(eq(runningTexts.masjidId, masjidId)),
-    db
-      .select()
-      .from(devices)
-      .where(eq(devices.masjidId, masjidId))
-      .orderBy(desc(devices.createdAt))
-      .limit(PAGE_SIZE)
-      .offset((pageDevice - 1) * PAGE_SIZE),
-    db
-      .select({ total: count() })
-      .from(devices)
-      .where(eq(devices.masjidId, masjidId)),
-    db
-      .select({
-        id: slides.id,
-        masjidId: slides.masjidId,
-        mediaAssetId: slides.mediaAssetId,
-        title: slides.title,
-        orderIndex: slides.orderIndex,
-        startAt: slides.startAt,
-        endAt: slides.endAt,
-        isActive: slides.isActive,
-        createdAt: slides.createdAt,
-        updatedAt: slides.updatedAt,
-        fileUrl: mediaAssets.fileUrl,
-      })
-      .from(slides)
-      .leftJoin(mediaAssets, eq(slides.mediaAssetId, mediaAssets.id))
-      .where(eq(slides.masjidId, masjidId))
-      .orderBy(desc(slides.orderIndex))
-      .limit(PAGE_SIZE)
-      .offset((pageSlide - 1) * PAGE_SIZE),
-    db
-      .select({ total: count() })
-      .from(slides)
-      .where(eq(slides.masjidId, masjidId)),
-    db
-      .select()
-      .from(jumbotrons)
-      .where(eq(jumbotrons.masjidId, masjidId))
-      .orderBy(desc(jumbotrons.createdAt))
-      .limit(PAGE_SIZE)
-      .offset((pageJumbotron - 1) * PAGE_SIZE),
-    db
-      .select({ total: count() })
-      .from(jumbotrons)
-      .where(eq(jumbotrons.masjidId, masjidId)),
-    db
-      .select()
-      .from(youtubeItems)
-      .where(eq(youtubeItems.masjidId, masjidId))
-      .orderBy(youtubeItems.orderIndex)
-      .limit(PAGE_SIZE)
-      .offset((pageYoutube - 1) * PAGE_SIZE),
-    db
-      .select({ total: count() })
-      .from(youtubeItems)
-      .where(eq(youtubeItems.masjidId, masjidId)),
-    db
-      .select()
-      .from(prayerSchedules)
-      .where(eq(prayerSchedules.masjidId, masjidId))
-      .orderBy(desc(prayerSchedules.scheduleDate))
-      .limit(PAGE_SIZE)
-      .offset((pagePrayer - 1) * PAGE_SIZE),
-    db
-      .select({ total: count() })
-      .from(prayerSchedules)
-      .where(eq(prayerSchedules.masjidId, masjidId)),
-    db
-      .select()
-      .from(iqamahSettings)
-      .where(eq(iqamahSettings.masjidId, masjidId)),
-    db
-      .select()
-      .from(events)
-      .where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1)))
-      .orderBy(desc(events.eventDate))
-      .limit(PAGE_SIZE)
-      .offset((pageEvent - 1) * PAGE_SIZE),
-    db
-      .select({ total: count() })
-      .from(events)
-      .where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1))),
-    db
-      .select()
-      .from(prayerCorrections)
-      .where(eq(prayerCorrections.masjidId, masjidId))
-      .orderBy(desc(prayerCorrections.createdAt)),
-  ]);
-
-  const runningTextTotal = runningTextCountRows[0]?.total ?? 0;
-  const deviceTotal = deviceCountRows[0]?.total ?? 0;
-  const slideTotal = slideCountRows[0]?.total ?? 0;
-  const jumbotronTotal = jumbotronCountRows[0]?.total ?? 0;
-  const youtubeTotal = youtubeCountRows[0]?.total ?? 0;
-  const prayerTotal = prayerCountRows[0]?.total ?? 0;
-  const eventTotal = eventCountRows[0]?.total ?? 0;
-
-  // Load all global + masjid-specific themes
-  const themeRows = await db
-    .select()
-    .from(themes)
-    .where(eq(themes.isActive, 1))
-    .orderBy(desc(themes.isGlobal), desc(themes.createdAt));
-
-  // Load subscription data
-  const [subscriptionRow] = await db
-    .select()
-    .from(subscriptions)
-    .where(eq(subscriptions.masjidId, masjidId))
-    .orderBy(desc(subscriptions.createdAt))
-    .limit(1);
-
-  // Load prayer provider config
-  const [configRow] = await db
-    .select()
-    .from(globalPrayerConfig)
-    .where(eq(globalPrayerConfig.id, 1))
-    .limit(1);
-
   let prayerProviderInfo = {
     providerKey: "myquran",
     providerName: "MyQuran API",
     supportsSearch: true,
   };
-
   if (configRow?.primaryProviderId) {
     const provider = await getProviderInfo(configRow.primaryProviderId);
     if (provider) {
@@ -330,8 +187,158 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     }
   }
 
+  // ── Default empty values untuk semua section ────────────────────────────────
+  let runningTextRows:    typeof runningTexts.$inferSelect[]     = [];
+  let runningTextTotal    = 0;
+  let deviceRows:         typeof devices.$inferSelect[]          = [];
+  let deviceTotal         = 0;
+  let slideRows:          Array<typeof slides.$inferSelect & { fileUrl: string | null }> = [];
+  let slideTotal          = 0;
+  let jumbotronRows:      typeof jumbotrons.$inferSelect[]       = [];
+  let jumbotronTotal      = 0;
+  let youtubeRows:        typeof youtubeItems.$inferSelect[]     = [];
+  let youtubeTotal        = 0;
+  let prayerRows:         typeof prayerSchedules.$inferSelect[]  = [];
+  let prayerTotal         = 0;
+  let iqamahRows:         typeof iqamahSettings.$inferSelect[]   = [];
+  let eventRows:          typeof events.$inferSelect[]           = [];
+  let eventTotal          = 0;
+  let prayerCorrectionsRows: typeof prayerCorrections.$inferSelect[] = [];
+  let themeRows:          typeof themes.$inferSelect[]           = [];
+
+  // ── Lazy load: hanya fetch data yang dibutuhkan section aktif ───────────────
+  if (section === SECTION_RUNNINGTEXT) {
+    [runningTextRows, [{ total: runningTextTotal }]] = await Promise.all([
+      db.select().from(runningTexts)
+        .where(eq(runningTexts.masjidId, masjidId))
+        .orderBy(desc(runningTexts.createdAt))
+        .limit(PAGE_SIZE).offset((pageRunningText - 1) * PAGE_SIZE),
+      db.select({ total: count() }).from(runningTexts)
+        .where(eq(runningTexts.masjidId, masjidId)),
+    ]);
+  }
+
+  if (section === SECTION_DEVICES) {
+    [deviceRows, [{ total: deviceTotal }]] = await Promise.all([
+      db.select().from(devices)
+        .where(eq(devices.masjidId, masjidId))
+        .orderBy(desc(devices.createdAt))
+        .limit(PAGE_SIZE).offset((pageDevice - 1) * PAGE_SIZE),
+      db.select({ total: count() }).from(devices)
+        .where(eq(devices.masjidId, masjidId)),
+    ]);
+  }
+
+  if (section === SECTION_SLIDES) {
+    const [rawSlides, [{ total }]] = await Promise.all([
+      db.select({
+          id: slides.id, masjidId: slides.masjidId, mediaAssetId: slides.mediaAssetId,
+          title: slides.title, orderIndex: slides.orderIndex, startAt: slides.startAt,
+          endAt: slides.endAt, isActive: slides.isActive, createdAt: slides.createdAt,
+          updatedAt: slides.updatedAt, fileUrl: mediaAssets.fileUrl,
+        })
+        .from(slides)
+        .leftJoin(mediaAssets, eq(slides.mediaAssetId, mediaAssets.id))
+        .where(eq(slides.masjidId, masjidId))
+        .orderBy(desc(slides.orderIndex))
+        .limit(PAGE_SIZE).offset((pageSlide - 1) * PAGE_SIZE),
+      db.select({ total: count() }).from(slides)
+        .where(eq(slides.masjidId, masjidId)),
+    ]);
+    slideRows  = rawSlides;
+    slideTotal = total;
+  }
+
+  if (section === SECTION_JUMBOTRON) {
+    [jumbotronRows, [{ total: jumbotronTotal }]] = await Promise.all([
+      db.select().from(jumbotrons)
+        .where(eq(jumbotrons.masjidId, masjidId))
+        .orderBy(desc(jumbotrons.createdAt))
+        .limit(PAGE_SIZE).offset((pageJumbotron - 1) * PAGE_SIZE),
+      db.select({ total: count() }).from(jumbotrons)
+        .where(eq(jumbotrons.masjidId, masjidId)),
+    ]);
+  }
+
+  if (section === SECTION_YOUTUBE) {
+    [youtubeRows, [{ total: youtubeTotal }]] = await Promise.all([
+      db.select().from(youtubeItems)
+        .where(eq(youtubeItems.masjidId, masjidId))
+        .orderBy(youtubeItems.orderIndex)
+        .limit(PAGE_SIZE).offset((pageYoutube - 1) * PAGE_SIZE),
+      db.select({ total: count() }).from(youtubeItems)
+        .where(eq(youtubeItems.masjidId, masjidId)),
+    ]);
+  }
+
+  if (section === SECTION_SCHEDULE) {
+    [prayerRows, [{ total: prayerTotal }], prayerCorrectionsRows] = await Promise.all([
+      db.select().from(prayerSchedules)
+        .where(eq(prayerSchedules.masjidId, masjidId))
+        .orderBy(desc(prayerSchedules.scheduleDate))
+        .limit(PAGE_SIZE).offset((pagePrayer - 1) * PAGE_SIZE),
+      db.select({ total: count() }).from(prayerSchedules)
+        .where(eq(prayerSchedules.masjidId, masjidId)),
+      db.select().from(prayerCorrections)
+        .where(eq(prayerCorrections.masjidId, masjidId))
+        .orderBy(desc(prayerCorrections.createdAt)),
+    ]);
+  }
+
+  if (section === SECTION_IQAMAH) {
+    iqamahRows = await db.select().from(iqamahSettings)
+      .where(eq(iqamahSettings.masjidId, masjidId));
+  }
+
+  if (section === SECTION_EVENTS) {
+    [eventRows, [{ total: eventTotal }]] = await Promise.all([
+      db.select().from(events)
+        .where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1)))
+        .orderBy(desc(events.eventDate))
+        .limit(PAGE_SIZE).offset((pageEvent - 1) * PAGE_SIZE),
+      db.select({ total: count() }).from(events)
+        .where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1))),
+    ]);
+  }
+
+  if (section === SECTION_TEMA) {
+    themeRows = await db.select().from(themes)
+      .where(eq(themes.isActive, 1))
+      .orderBy(desc(themes.isGlobal), desc(themes.createdAt));
+  }
+
+  // dashboard butuh iqamah + count semua konten untuk stats cards
+  if (section === SECTION_DASHBOARD) {
+    const [
+      iqamah,
+      [{ total: rtTotal }],
+      [{ total: devTotal }],
+      [{ total: slTotal }],
+      [{ total: jbTotal }],
+      [{ total: ytTotal }],
+      [{ total: evTotal }],
+    ] = await Promise.all([
+      db.select().from(iqamahSettings).where(eq(iqamahSettings.masjidId, masjidId)),
+      db.select({ total: count() }).from(runningTexts).where(eq(runningTexts.masjidId, masjidId)),
+      db.select({ total: count() }).from(devices).where(eq(devices.masjidId, masjidId)),
+      db.select({ total: count() }).from(slides).where(eq(slides.masjidId, masjidId)),
+      db.select({ total: count() }).from(jumbotrons).where(eq(jumbotrons.masjidId, masjidId)),
+      db.select({ total: count() }).from(youtubeItems).where(eq(youtubeItems.masjidId, masjidId)),
+      db.select({ total: count() }).from(events).where(and(eq(events.masjidId, masjidId), eq(events.isActive, 1))),
+    ]);
+    iqamahRows     = iqamah;
+    runningTextTotal = rtTotal;
+    deviceTotal    = devTotal;
+    slideTotal     = slTotal;
+    jumbotronTotal = jbTotal;
+    youtubeTotal   = ytTotal;
+    eventTotal     = evTotal;
+  }
+
   return {
     masjid,
+    user: locals.user,
+    section,
     runningTexts: runningTextRows,
     runningTextTotal,
     runningTextPage: pageRunningText,
@@ -341,17 +348,10 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     devicePage: pageDevice,
     deviceTotalPages: Math.max(1, Math.ceil(deviceTotal / PAGE_SIZE)),
     slides: slideRows.map((row) => ({
-      id: row.id,
-      masjidId: row.masjidId,
-      mediaAssetId: row.mediaAssetId,
-      title: row.title,
-      orderIndex: row.orderIndex,
-      startAt: row.startAt,
-      endAt: row.endAt,
-      isActive: row.isActive,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-      fileUrl: row.fileUrl,
+      id: row.id, masjidId: row.masjidId, mediaAssetId: row.mediaAssetId,
+      title: row.title, orderIndex: row.orderIndex, startAt: row.startAt,
+      endAt: row.endAt, isActive: row.isActive, createdAt: row.createdAt,
+      updatedAt: row.updatedAt, fileUrl: row.fileUrl,
     })),
     slideTotal,
     slidePage: pageSlide,
