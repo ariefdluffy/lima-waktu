@@ -149,13 +149,6 @@
                         {payload.schedule.resolved?.dzuhur ?? "--:--"}
                     </div>
                 </div>
-                <div class="imsakiyah-sep">→</div>
-                <div>
-                    <div class="info-card-sub">Iqamah</div>
-                    <div class="info-card-value imsakiyah-time">
-                        {payload.schedule.iqamah.jumat.time}
-                    </div>
-                </div>
             </div>
         </div>
     {/if}

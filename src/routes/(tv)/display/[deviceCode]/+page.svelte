@@ -604,6 +604,7 @@
                         countdownProgress={prayer.countdownProgress}
                         iqamahTime={prayer.iqamahTime}
                         {liveDate}
+                        isJumat={getWIBParts(now, tz).day === 5}
                     />
 
                     <!-- CENTER PANEL -->

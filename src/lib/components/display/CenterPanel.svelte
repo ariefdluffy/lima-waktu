@@ -40,7 +40,11 @@
         {#each PRAYER_ORDER as prayer, idx}
             <div class="prayer-card" class:active={idx === activePrayerIndex}>
                 <div class="prayer-card-icon">{PRAYER_ICONS[prayer]}</div>
-                <div class="prayer-card-name">{PRAYER_LABELS[prayer]}</div>
+                <div class="prayer-card-name">
+                    {isJumat && prayer === "dzuhur"
+                        ? "JUM'AT"
+                        : PRAYER_LABELS[prayer]}
+                </div>
                 <div class="prayer-card-time">
                     {payload.schedule.resolved?.[prayer] ?? "--:--"}
                 </div>

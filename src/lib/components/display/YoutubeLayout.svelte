@@ -18,6 +18,9 @@
         liveDate?: string;
         hijriyahDate?: string;
         isJumat?: boolean;
+        isJumatCardVisible?: boolean;
+        mood?: "normal" | "adzan" | "iqamah" | "khusuk";
+        moodPrayerKey?: string;
     }
 
     let {
@@ -31,7 +34,17 @@
         liveDate = "",
         hijriyahDate = "",
         isJumat = false,
+        isJumatCardVisible = false,
+        mood = "normal" as "normal" | "adzan" | "iqamah" | "khusuk",
+        moodPrayerKey = "",
     }: Props = $props();
+
+    // Card SHOLAT JUM'AT: hari Jumat + sebelum adzan Dzuhur
+    const showJumatCard = $derived(
+        isJumatCardVisible &&
+            payload.schedule.iqamah?.jumat?.enabled &&
+            !(mood === "adzan" && moodPrayerKey === "dzuhur"),
+    );
 
     let currentYoutubeIndex = $state(0);
     let ytPlayer: any = null;
@@ -210,7 +223,7 @@
             </div>
 
             <!-- Iqamah -->
-            {#if iqamahTime}
+            {#if iqamahTime && !isJumat}
                 <div class="yt-info-iqamah">
                     <span class="yt-info-iqamah__label">IQAMAH</span>
                     <span class="yt-info-iqamah__val">{iqamahTime}</span>
@@ -239,12 +252,6 @@
                         <span class="yt-info-prayer-row__time">
                             {payload.schedule.resolved?.[prayer] ?? "--:--"}
                         </span>
-                        {#if payload.schedule.iqamah[prayer]?.enabled && !(isJumat && prayer === "dzuhur")}
-                            <span class="yt-info-prayer-row__iqamah"
-                                >IQ: {payload.schedule.iqamah[prayer]
-                                    .time}</span
-                            >
-                        {/if}
                     </div>
                 {/each}
             </div>

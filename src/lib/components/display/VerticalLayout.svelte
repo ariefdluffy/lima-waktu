@@ -141,7 +141,7 @@
                 </div>
             </div>
 
-            {#if iqamahTime}
+            {#if iqamahTime && !isJumat}
                 <div class="v-iqamah-tag">
                     ⏱️ JEDA IQAMAH: <span class="v-iq-time">{iqamahTime}</span>
                 </div>
@@ -199,7 +199,11 @@
                     class:active={idx === activePrayerIndex}
                 >
                     <span class="v-prayer-icon">{PRAYER_ICONS[prayer]}</span>
-                    <span class="v-prayer-name">{PRAYER_LABELS[prayer]}</span>
+                    <span class="v-prayer-name"
+                        >{isJumat && prayer === "dzuhur"
+                            ? "JUM'AT"
+                            : PRAYER_LABELS[prayer]}</span
+                    >
                     <span class="v-prayer-time">
                         {payload.schedule.resolved?.[prayer] ?? "--:--"}
                     </span>

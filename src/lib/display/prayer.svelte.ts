@@ -134,8 +134,11 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
       : PRAYER_LABELS[activePrayer];
   prayer.nextPrayerTime = resolved[activePrayer];
 
-  // Iqamah
-  const iqamahData = payload.schedule.iqamah[activePrayer];
+  // Iqamah — Jumat Dzuhur pakai slot iqamah.jumat, bukan iqamah.dzuhur
+  const iqamahData =
+    activePrayer === "dzuhur" && isJumat
+      ? payload.schedule.iqamah?.jumat
+      : payload.schedule.iqamah[activePrayer];
   prayer.iqamahTime = iqamahData?.enabled ? iqamahData.time : "";
 
   // ── Countdown ────────────────────────────────────────────────────

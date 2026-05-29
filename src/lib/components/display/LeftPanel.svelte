@@ -6,6 +6,7 @@
         countdownProgress: number;
         iqamahTime: string;
         liveDate: string;
+        isJumat?: boolean;
     }
 
     let {
@@ -15,6 +16,7 @@
         countdownProgress,
         iqamahTime,
         liveDate,
+        isJumat = false,
     }: Props = $props();
 </script>
 
@@ -34,7 +36,7 @@
             ></div>
         </div>
     </div>
-    {#if iqamahTime}
+    {#if iqamahTime && !isJumat}
         <div class="iqamah-box">
             <div class="iqamah-label">IQAMAH</div>
             <div class="iqamah-val">{iqamahTime}</div>

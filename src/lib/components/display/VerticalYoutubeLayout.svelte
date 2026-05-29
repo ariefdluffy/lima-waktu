@@ -215,7 +215,7 @@
                 </div>
             </div>
 
-            {#if iqamahTime}
+            {#if iqamahTime && !isJumat}
                 <div class="v-yt-iqamah-tag">
                     ⏱️ JEDA IQAMAH: <span class="v-yt-iq-time"
                         >{iqamahTime}</span
