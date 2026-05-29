@@ -19,6 +19,8 @@
         liveClock: string;
         liveDate: string;
         hijriyahDate: string;
+        currentJumbotron?: number;
+        isJumat?: boolean;
     }
 
     let {
@@ -32,6 +34,8 @@
         liveClock,
         liveDate,
         hijriyahDate,
+        currentJumbotron = 0,
+        isJumat = false,
     }: Props = $props();
 
     let currentYoutubeIndex = $state(0);
@@ -111,7 +115,12 @@
         if ((window as any).YT && (window as any).YT.Player) {
             initPlayer();
         } else {
-            (window as any).onYouTubeIframeAPIReady = initPlayer;
+            // Chain callback agar tidak overwrite instance lain (misal YoutubeLayout)
+            const prev = (window as any).onYouTubeIframeAPIReady;
+            (window as any).onYouTubeIframeAPIReady = () => {
+                if (typeof prev === "function") prev();
+                initPlayer();
+            };
             if (!document.getElementById("yt-api-script")) {
                 const script = document.createElement("script");
                 script.id = "yt-api-script";
@@ -158,7 +167,11 @@
         <div class="v-yt-card v-yt-masjid-card">
             <div class="v-yt-masjid-logo">
                 {#if payload.masjid.logoUrl}
-                    <img src={payload.masjid.logoUrl} alt="Logo" class="v-yt-logo-img" />
+                    <img
+                        src={payload.masjid.logoUrl}
+                        alt="Logo"
+                        class="v-yt-logo-img"
+                    />
                 {:else}
                     🕌
                 {/if}
@@ -195,13 +208,18 @@
                     <span class="v-yt-cd-val">{countdown}</span>
                 </div>
                 <div class="v-yt-progress-track">
-                    <div class="v-yt-progress-fill" style="width: {countdownProgress}%"></div>
+                    <div
+                        class="v-yt-progress-fill"
+                        style="width: {countdownProgress}%"
+                    ></div>
                 </div>
             </div>
 
             {#if iqamahTime}
                 <div class="v-yt-iqamah-tag">
-                    ⏱️ JEDA IQAMAH: <span class="v-yt-iq-time">{iqamahTime}</span>
+                    ⏱️ JEDA IQAMAH: <span class="v-yt-iq-time"
+                        >{iqamahTime}</span
+                    >
                 </div>
             {/if}
         </div>
@@ -210,14 +228,24 @@
         <div class="v-yt-card v-yt-grid-card">
             <div class="v-yt-prayer-grid">
                 {#each PRAYER_ORDER as prayer, idx}
-                    <div class="v-yt-prayer-item" class:active={idx === activePrayerIndex}>
+                    <div
+                        class="v-yt-prayer-item"
+                        class:active={idx === activePrayerIndex}
+                    >
                         <span class="v-yt-p-icon">{PRAYER_ICONS[prayer]}</span>
-                        <span class="v-yt-p-name">{PRAYER_LABELS[prayer]}</span>
+                        <span class="v-yt-p-name"
+                            >{isJumat && prayer === "dzuhur"
+                                ? "JUM'AT"
+                                : PRAYER_LABELS[prayer]}</span
+                        >
                         <span class="v-yt-p-time">
                             {payload.schedule.resolved?.[prayer] ?? "--:--"}
                         </span>
-                        {#if payload.schedule.iqamah[prayer]?.enabled}
-                            <span class="v-yt-p-iq">IQ: {payload.schedule.iqamah[prayer].time}</span>
+                        {#if payload.schedule.iqamah[prayer]?.enabled && !(isJumat && prayer === "dzuhur")}
+                            <span class="v-yt-p-iq"
+                                >IQ: {payload.schedule.iqamah[prayer]
+                                    .time}</span
+                            >
                         {/if}
                     </div>
                 {/each}
@@ -226,20 +254,35 @@
 
         <!-- ── 6. CARD FOOTER JUMBOTRON ── -->
         {#if payload.jumbotrons.length > 0}
-            {@const jumbotron = payload.jumbotrons[0]}
+            {@const jumbotron =
+                payload.jumbotrons[
+                    currentJumbotron % payload.jumbotrons.length
+                ]}
             <div class="v-yt-card v-yt-jumbotron-card">
                 {#if jumbotron.backgroundUrl}
-                    <img src={jumbotron.backgroundUrl} alt={jumbotron.title ?? "Jumbotron"} class="v-yt-jb-bg-img" />
+                    <img
+                        src={jumbotron.backgroundUrl}
+                        alt={jumbotron.title ?? "Jumbotron"}
+                        class="v-yt-jb-bg-img"
+                    />
                     <div class="v-yt-jb-img-overlay">
-                        {#if jumbotron.title}<span class="v-yt-jb-img-title">{jumbotron.title}</span>{/if}
-                        {#if jumbotron.content}<span class="v-yt-jb-img-content">{jumbotron.content}</span>{/if}
+                        {#if jumbotron.title}<span class="v-yt-jb-img-title"
+                                >{jumbotron.title}</span
+                            >{/if}
+                        {#if jumbotron.content}<span class="v-yt-jb-img-content"
+                                >{jumbotron.content}</span
+                            >{/if}
                     </div>
                 {:else}
                     <span class="v-yt-jb-tag">📢</span>
                     <div class="v-yt-jb-scroll-wrap">
                         <div class="v-yt-jb-scroll-text">
-                            <span class="v-yt-jb-title">{jumbotron.title ?? "Pengumuman"}:</span>
-                            <span class="v-yt-jb-content">{jumbotron.content}</span>
+                            <span class="v-yt-jb-title"
+                                >{jumbotron.title ?? "Pengumuman"}:</span
+                            >
+                            <span class="v-yt-jb-content"
+                                >{jumbotron.content}</span
+                            >
                         </div>
                     </div>
                 {/if}
@@ -249,7 +292,17 @@
             <div class="v-yt-card v-yt-jumbotron-card">
                 <span class="v-yt-jb-tag">🗓️</span>
                 <span class="v-yt-event-text">
-                    <strong>{Math.max(0, Math.ceil((new Date(event.eventDate).getTime() - Date.now()) / 86400000))}</strong> hari lagi menuju <strong>{event.title}</strong>
+                    <strong
+                        >{Math.max(
+                            0,
+                            Math.ceil(
+                                (new Date(event.eventDate).getTime() -
+                                    Date.now()) /
+                                    86400000,
+                            ),
+                        )}</strong
+                    >
+                    hari lagi menuju <strong>{event.title}</strong>
                 </span>
             </div>
         {/if}
@@ -268,7 +321,11 @@
         right: 0;
         display: flex;
         flex-direction: column;
-        background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        background: linear-gradient(
+            180deg,
+            var(--bg-primary) 0%,
+            var(--bg-secondary) 100%
+        );
         overflow: hidden;
         box-sizing: border-box;
     }
@@ -317,8 +374,13 @@
     }
 
     @keyframes live-blink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.3;
+        }
     }
 
     .v-yt-counter {
@@ -436,7 +498,11 @@
         align-items: center;
         justify-content: center;
         padding: 2.2vh 4vw;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.05) 0%,
+            rgba(255, 255, 255, 0.01) 100%
+        );
     }
 
     .v-yt-time-display {
@@ -681,7 +747,11 @@
         padding: 0 3vw;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 100%);
+        background: linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.2) 100%
+        );
         border-radius: inherit;
     }
 
@@ -696,7 +766,7 @@
 
     .v-yt-jb-img-content {
         font-size: clamp(9px, 1.8vw, 14px);
-        color: rgba(255,255,255,0.8);
+        color: rgba(255, 255, 255, 0.8);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -725,8 +795,12 @@
     }
 
     @keyframes marquee-yt-jb {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-100%); }
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-100%);
+        }
     }
 
     .v-yt-jb-title {

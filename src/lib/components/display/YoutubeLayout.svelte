@@ -17,6 +17,7 @@
         activePrayerIndex: number;
         liveDate?: string;
         hijriyahDate?: string;
+        isJumat?: boolean;
     }
 
     let {
@@ -29,6 +30,7 @@
         activePrayerIndex,
         liveDate = "",
         hijriyahDate = "",
+        isJumat = false,
     }: Props = $props();
 
     let currentYoutubeIndex = $state(0);
@@ -114,8 +116,12 @@
             // API sudah ter-load sebelumnya
             initPlayer();
         } else {
-            // Load API script
-            (window as any).onYouTubeIframeAPIReady = initPlayer;
+            // Load API script — gunakan array agar tidak overwrite callback lain
+            const prev = (window as any).onYouTubeIframeAPIReady;
+            (window as any).onYouTubeIframeAPIReady = () => {
+                if (typeof prev === "function") prev();
+                initPlayer();
+            };
             if (!document.getElementById("yt-api-script")) {
                 const script = document.createElement("script");
                 script.id = "yt-api-script";
@@ -226,11 +232,19 @@
                             >{PRAYER_ICONS[prayer]}</span
                         >
                         <span class="yt-info-prayer-row__name"
-                            >{PRAYER_LABELS[prayer]}</span
+                            >{isJumat && prayer === "dzuhur"
+                                ? "JUM'AT"
+                                : PRAYER_LABELS[prayer]}</span
                         >
                         <span class="yt-info-prayer-row__time">
                             {payload.schedule.resolved?.[prayer] ?? "--:--"}
                         </span>
+                        {#if payload.schedule.iqamah[prayer]?.enabled && !(isJumat && prayer === "dzuhur")}
+                            <span class="yt-info-prayer-row__iqamah"
+                                >IQ: {payload.schedule.iqamah[prayer]
+                                    .time}</span
+                            >
+                        {/if}
                     </div>
                 {/each}
             </div>

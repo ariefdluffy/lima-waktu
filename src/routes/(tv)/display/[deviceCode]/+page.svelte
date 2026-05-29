@@ -17,7 +17,11 @@
     import { DEFAULT_SLIDES } from "$lib/utils/prayer";
 
     // Extracted modules
-    import { prayer, updatePrayerState, resetBeepTriggers } from "$lib/display/prayer.svelte";
+    import {
+        prayer,
+        updatePrayerState,
+        resetBeepTriggers,
+    } from "$lib/display/prayer.svelte";
     import {
         audio,
         handleUnlockAudio,
@@ -391,7 +395,8 @@
     {#if prayer.screensaver}
         <div
             class="screensaver"
-            class:screensaver--vertical={payload.device.orientation === "vertical"}
+            class:screensaver--vertical={payload.device.orientation ===
+                "vertical"}
             style={themeCssVars(payload?.theme?.palette ?? null)}
         >
             <div class="screensaver-bg"></div>
@@ -549,6 +554,8 @@
                         {liveClock}
                         {liveDate}
                         {hijriyahDate}
+                        {currentJumbotron}
+                        isJumat={getWIBParts(now, tz).day === 5}
                     />
                 {:else}
                     <!-- VERTICAL DEFAULT LAYOUT -->
@@ -569,6 +576,7 @@
                         weatherTemp={weather.temp}
                         weatherCode={weather.code}
                         weatherLoading={weather.loading}
+                        isJumat={getWIBParts(now, tz).day === 5}
                     />
                 {/if}
             {:else if payload.device.layoutMode === "youtube" && payload.youtubeItems.length > 0}
@@ -583,6 +591,7 @@
                     activePrayerIndex={prayer.activePrayerIndex}
                     {liveDate}
                     {hijriyahDate}
+                    isJumat={getWIBParts(now, tz).day === 5}
                 />
             {:else}
                 <!-- DEFAULT LAYOUT -->
@@ -630,7 +639,7 @@
                 />
             {/if}
 
-            <!-- MOOD OVERLAY — sembunyi saat flash aktif biar gak bertumpuk -->
+            <!-- MOOD OVERLAY — aktif di semua mode layout, sembunyi saat flash -->
             {#if !prayer.flash}
                 <MoodOverlay
                     mood={prayer.mood}
@@ -1544,8 +1553,6 @@
         font-variant-numeric: tabular-nums;
         letter-spacing: 0.05em;
     }
-
-
 
     /* MAIN BODY */
     .main-body {

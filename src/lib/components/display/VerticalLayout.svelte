@@ -25,6 +25,7 @@
         weatherTemp: number | null;
         weatherCode: number | null;
         weatherLoading: boolean;
+        isJumat?: boolean;
     }
 
     let {
@@ -44,6 +45,7 @@
         weatherTemp,
         weatherCode,
         weatherLoading,
+        isJumat = false,
     }: Props = $props();
 
     function getCurrentSlideContent() {
@@ -89,7 +91,11 @@
     <div class="v-card v-masjid-card">
         <div class="v-masjid-logo">
             {#if payload.masjid.logoUrl}
-                <img src={payload.masjid.logoUrl} alt="Logo" class="v-logo-img" />
+                <img
+                    src={payload.masjid.logoUrl}
+                    alt="Logo"
+                    class="v-logo-img"
+                />
             {:else}
                 🕌
             {/if}
@@ -121,14 +127,17 @@
                 </div>
                 <div class="v-next-time">{nextPrayerTime}</div>
             </div>
-            
+
             <div class="v-countdown-section">
                 <div class="v-cd-meta">
                     <span class="v-cd-label">MENUJU ADZAN</span>
                     <span class="v-cd-val">{countdown}</span>
                 </div>
                 <div class="v-progress-track">
-                    <div class="v-progress-fill" style="width: {countdownProgress}%"></div>
+                    <div
+                        class="v-progress-fill"
+                        style="width: {countdownProgress}%"
+                    ></div>
                 </div>
             </div>
 
@@ -140,9 +149,15 @@
         </div>
 
         <!-- Card Hari Besar (25%) — hanya tampil jika ada event aktif -->
-        {#if payload.events.filter(e => e.countdownEnabled).length > 0}
-            {@const event = payload.events.filter(e => e.countdownEnabled)[0]}
-            {@const daysLeft = Math.max(0, Math.ceil((new Date(event.eventDate).getTime() - Date.now()) / 86400000))}
+        {#if payload.events.filter((e) => e.countdownEnabled).length > 0}
+            {@const event = payload.events.filter((e) => e.countdownEnabled)[0]}
+            {@const daysLeft = Math.max(
+                0,
+                Math.ceil(
+                    (new Date(event.eventDate).getTime() - Date.now()) /
+                        86400000,
+                ),
+            )}
             <div class="v-card v-event-card">
                 <div class="v-event-days">{daysLeft}</div>
                 <div class="v-event-days-label">HARI LAGI</div>
@@ -156,8 +171,10 @@
         <div class="v-slide-area" class:fade-out={slideFading}>
             {#if payload.slides.length > 0 && payload.slides[currentSlide % payload.slides.length]?.fileUrl}
                 <img
-                    src={payload.slides[currentSlide % payload.slides.length].fileUrl}
-                    alt={payload.slides[currentSlide % payload.slides.length].title ?? "Slide"}
+                    src={payload.slides[currentSlide % payload.slides.length]
+                        .fileUrl}
+                    alt={payload.slides[currentSlide % payload.slides.length]
+                        .title ?? "Slide"}
                     class="v-slide-image"
                 />
             {:else}
@@ -177,14 +194,19 @@
     <div class="v-card v-prayer-list-card">
         <div class="v-prayer-list">
             {#each PRAYER_ORDER as prayer, idx}
-                <div class="v-prayer-row" class:active={idx === activePrayerIndex}>
+                <div
+                    class="v-prayer-row"
+                    class:active={idx === activePrayerIndex}
+                >
                     <span class="v-prayer-icon">{PRAYER_ICONS[prayer]}</span>
                     <span class="v-prayer-name">{PRAYER_LABELS[prayer]}</span>
                     <span class="v-prayer-time">
                         {payload.schedule.resolved?.[prayer] ?? "--:--"}
                     </span>
-                    {#if payload.schedule.iqamah[prayer]?.enabled}
-                        <span class="v-prayer-iqamah">IQ: {payload.schedule.iqamah[prayer].time}</span>
+                    {#if payload.schedule.iqamah[prayer]?.enabled && !(isJumat && prayer === "dzuhur")}
+                        <span class="v-prayer-iqamah"
+                            >IQ: {payload.schedule.iqamah[prayer].time}</span
+                        >
                     {/if}
                 </div>
             {/each}
@@ -199,10 +221,13 @@
                 {#if weatherLoading}
                     <span class="v-weather-loading">⏳</span>
                 {:else if weatherTemp !== null && weatherCode !== null}
-                    <span class="v-weather-icon">{getWeatherIcon(weatherCode)}</span>
+                    <span class="v-weather-icon"
+                        >{getWeatherIcon(weatherCode)}</span
+                    >
                     <div class="v-weather-text">
                         <span class="v-temp">{weatherTemp}°C</span>
-                        <span class="v-desc">{getWeatherDesc(weatherCode)}</span>
+                        <span class="v-desc">{getWeatherDesc(weatherCode)}</span
+                        >
                     </div>
                 {/if}
             </div>
@@ -210,28 +235,49 @@
 
         <!-- Jumbotron / Announcement & Hari Besar -->
         {#if payload.jumbotrons.length > 0 || (payload.events.length > 0 && payload.events[0].countdownEnabled)}
-            {@const totalItems = payload.jumbotrons.length + (payload.events.filter(e => e.countdownEnabled).length)}
+            {@const totalItems =
+                payload.jumbotrons.length +
+                payload.events.filter((e) => e.countdownEnabled).length}
             {@const itemIndex = currentJumbotron % totalItems}
             {@const isJumbotron = itemIndex < payload.jumbotrons.length}
-            {@const jumbotron = isJumbotron ? payload.jumbotrons[itemIndex] : null}
-            {@const event = !isJumbotron ? payload.events.filter(e => e.countdownEnabled)[itemIndex - payload.jumbotrons.length] : null}
+            {@const jumbotron = isJumbotron
+                ? payload.jumbotrons[itemIndex]
+                : null}
+            {@const event = !isJumbotron
+                ? payload.events.filter((e) => e.countdownEnabled)[
+                      itemIndex - payload.jumbotrons.length
+                  ]
+                : null}
 
             <div class="v-card v-jumbotron-card">
                 {#if isJumbotron && jumbotron}
                     {#if jumbotron.backgroundUrl}
                         <!-- Jumbotron foto -->
-                        <img src={jumbotron.backgroundUrl} alt={jumbotron.title ?? "Jumbotron"} class="v-jb-bg-img" />
+                        <img
+                            src={jumbotron.backgroundUrl}
+                            alt={jumbotron.title ?? "Jumbotron"}
+                            class="v-jb-bg-img"
+                        />
                         <div class="v-jb-img-overlay">
-                            {#if jumbotron.title}<span class="v-jb-img-title">{jumbotron.title}</span>{/if}
-                            {#if jumbotron.content}<span class="v-jb-img-content">{jumbotron.content}</span>{/if}
+                            {#if jumbotron.title}<span class="v-jb-img-title"
+                                    >{jumbotron.title}</span
+                                >{/if}
+                            {#if jumbotron.content}<span
+                                    class="v-jb-img-content"
+                                    >{jumbotron.content}</span
+                                >{/if}
                         </div>
                     {:else}
                         <!-- Jumbotron teks berjalan -->
                         <span class="v-jb-tag">📢</span>
                         <div class="v-jb-scroll-wrap">
                             <div class="v-jb-scroll-text">
-                                <span class="v-jb-title">{jumbotron.title ?? "Pengumuman"}:</span>
-                                <span class="v-jb-content">{jumbotron.content}</span>
+                                <span class="v-jb-title"
+                                    >{jumbotron.title ?? "Pengumuman"}:</span
+                                >
+                                <span class="v-jb-content"
+                                    >{jumbotron.content}</span
+                                >
                             </div>
                         </div>
                     {/if}
@@ -239,7 +285,17 @@
                     <!-- Hari Besar / Event -->
                     <span class="v-jb-tag">🗓️</span>
                     <span class="v-event-text">
-                        <strong>{Math.max(0, Math.ceil((new Date(event.eventDate).getTime() - Date.now()) / 86400000))}</strong> hari lagi menuju <strong>{event.title}</strong>
+                        <strong
+                            >{Math.max(
+                                0,
+                                Math.ceil(
+                                    (new Date(event.eventDate).getTime() -
+                                        Date.now()) /
+                                        86400000,
+                                ),
+                            )}</strong
+                        >
+                        hari lagi menuju <strong>{event.title}</strong>
                     </span>
                 {/if}
             </div>
@@ -262,7 +318,11 @@
         justify-content: space-around;
         padding: 3vh 4vw;
         gap: 1.6vh;
-        background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        background: linear-gradient(
+            180deg,
+            var(--bg-primary) 0%,
+            var(--bg-secondary) 100%
+        );
         overflow: hidden;
         box-sizing: border-box;
     }
@@ -344,7 +404,11 @@
         align-items: center;
         justify-content: center;
         padding: 2.2vh 4vw;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.05) 0%,
+            rgba(255, 255, 255, 0.01) 100%
+        );
     }
 
     .v-time-display {
@@ -401,7 +465,11 @@
         padding: 1.5vh 2vw;
         text-align: center;
         gap: 0.5vh;
-        background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(245, 158, 11, 0.03) 100%);
+        background: linear-gradient(
+            135deg,
+            rgba(251, 191, 36, 0.08) 0%,
+            rgba(245, 158, 11, 0.03) 100%
+        );
         border-color: rgba(251, 191, 36, 0.3);
     }
 
@@ -541,7 +609,9 @@
     .v-prayer-row.active {
         background: var(--prayer-active-bg);
         border-color: var(--prayer-active-border);
-        box-shadow: 0 0 10px var(--prayer-active-glow), inset 0 0 8px rgba(255,255,255,0.03);
+        box-shadow:
+            0 0 10px var(--prayer-active-glow),
+            inset 0 0 8px rgba(255, 255, 255, 0.03);
     }
 
     .v-prayer-row.active .v-prayer-name {
@@ -731,7 +801,11 @@
         justify-content: center;
         padding: 0 3vw;
         width: 100%;
-        background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 100%);
+        background: linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.2) 100%
+        );
         height: 100%;
         border-radius: inherit;
     }
@@ -747,7 +821,7 @@
 
     .v-jb-img-content {
         font-size: clamp(9px, 1.8vw, 14px);
-        color: rgba(255,255,255,0.8);
+        color: rgba(255, 255, 255, 0.8);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -775,8 +849,12 @@
     }
 
     @keyframes marquee-jb {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-100%); }
+        0% {
+            transform: translateX(0);
+        }
+        100% {
+            transform: translateX(-100%);
+        }
     }
 
     .v-jb-title {

@@ -124,7 +124,14 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
 
   prayer.activePrayerIndex = nextIdx;
   const activePrayer = PRAYER_ORDER[nextIdx];
-  prayer.nextPrayerName = PRAYER_LABELS[activePrayer];
+
+  // Hari Jumat: label Dzuhur diganti "JUM'AT" di seluruh UI
+  const { day: dayOfWeek } = getTZParts(now, getTZOffsetHours(timezone));
+  const isJumat = dayOfWeek === 5;
+  prayer.nextPrayerName =
+    activePrayer === "dzuhur" && isJumat
+      ? "JUM'AT"
+      : PRAYER_LABELS[activePrayer];
   prayer.nextPrayerTime = resolved[activePrayer];
 
   // Iqamah
@@ -181,8 +188,11 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
     const adzanEndMin = adzanMin + ADZAN_DURATION;
     const iqData = payload.schedule.iqamah[cp];
 
+    // Hari Jumat + waktu Dzuhur: fase iqamah dilewati, langsung khusuk
+    const isJumatDzuhur = isJumat && cp === "dzuhur";
+
     let khusukEndMin: number;
-    if (iqData?.enabled && iqData?.time) {
+    if (!isJumatDzuhur && iqData?.enabled && iqData?.time) {
       const iqamahMin = timeToMinutes(iqData.time);
       khusukEndMin = iqamahMin + KHUSUK_DURATION;
     } else {
@@ -192,7 +202,8 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
     if (currentMinutes >= adzanMin && currentMinutes < khusukEndMin) {
       if (currentMinutes < adzanEndMin) {
         newMood = "adzan";
-      } else if (iqData?.enabled && iqData?.time) {
+      } else if (!isJumatDzuhur && iqData?.enabled && iqData?.time) {
+        // Waktu sholat biasa: ada fase iqamah
         const iqamahMin = timeToMinutes(iqData.time);
         if (currentMinutes >= iqamahMin) {
           newMood = "khusuk";
@@ -208,9 +219,15 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
           newMood = "iqamah";
         }
       } else {
+        // Hari Jumat Dzuhur atau tidak ada iqamah: langsung khusuk setelah adzan
         newMood = "khusuk";
+        if (lastTriggeredIqamahEnd !== cp) {
+          lastTriggeredIqamahEnd = cp;
+          playIqamahBeep();
+          triggerFlash("iqamah");
+        }
       }
-      newMoodPrayerName = PRAYER_LABELS[cp];
+      newMoodPrayerName = isJumatDzuhur ? "JUM'AT" : PRAYER_LABELS[cp];
     }
   }
 
@@ -234,6 +251,7 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
       remainingSec = adzanEndMin * 60 - currentTotalSeconds;
       label = "ADZAN BERAKHIR DALAM";
     } else if (newMood === "iqamah" && currentPrayerIdx >= 0) {
+      // Fase iqamah tidak pernah aktif di Jumat Dzuhur, tapi guard tetap ada
       const cp = PRAYER_ORDER[currentPrayerIdx];
       const iqData = payload.schedule.iqamah[cp];
       if (iqData?.enabled && iqData?.time) {
@@ -243,12 +261,15 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
       }
     } else if (newMood === "khusuk" && currentPrayerIdx >= 0) {
       const cp = PRAYER_ORDER[currentPrayerIdx];
+      const isJumatDzuhurKhusuk = isJumat && cp === "dzuhur";
       const iqData = payload.schedule.iqamah[cp];
       let khusukEndMin: number;
-      if (iqData?.enabled && iqData?.time) {
+      if (!isJumatDzuhurKhusuk && iqData?.enabled && iqData?.time) {
+        // Sholat biasa dengan iqamah
         const iqamahMin = timeToMinutes(iqData.time);
         khusukEndMin = iqamahMin + KHUSUK_DURATION;
       } else {
+        // Jumat Dzuhur atau tidak ada iqamah: hitung dari akhir adzan
         const adzanEndMin = timeToMinutes(resolved[cp]) + ADZAN_DURATION;
         khusukEndMin = adzanEndMin + KHUSUK_DURATION;
       }
