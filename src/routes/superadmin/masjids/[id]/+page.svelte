@@ -52,9 +52,9 @@
 
     <!-- Info Umum & Edit -->
     <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="text-base font-semibold text-slate-800">Info Umum</h2>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <form method="POST" action="?/toggleSuspend">
                     <button
                         class="rounded-lg px-3 py-1.5 text-xs font-medium {data

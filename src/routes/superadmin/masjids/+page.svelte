@@ -177,7 +177,7 @@
                             <div class="flex items-center gap-1">
                                 <a
                                     href="/superadmin/masjids/{m.id}"
-                                    class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 hover:bg-emerald-100 hover:text-emerald-700"
+                                    class="rounded-lg bg-slate-100 px-3 py-2.5 text-xs min-h-[44px] font-medium text-slate-600 hover:bg-emerald-100 hover:text-emerald-700 inline-flex items-center justify-center"
                                 >
                                     ✎
                                 </a>
@@ -197,7 +197,7 @@
                                         value={m.isActive}
                                     />
                                     <button
-                                        class="rounded-lg px-2 py-1 text-xs font-medium {m.isActive
+                                        class="rounded-lg px-3 py-2.5 text-xs min-h-[44px] font-medium inline-flex items-center justify-center {m.isActive
                                             ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                                             : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}"
                                     >
@@ -205,7 +205,7 @@
                                     </button>
                                 </form>
                                 <button
-                                    class="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200"
+                                    class="rounded-lg bg-red-100 px-3 py-2.5 text-xs min-h-[44px] font-medium text-red-600 hover:bg-red-200 inline-flex items-center justify-center"
                                     onclick={() => askDelete(m.id, m.name)}
                                 >
                                     🗑
@@ -233,7 +233,7 @@
         <div class="flex items-center justify-center gap-2">
             {#if data.page > 1}
                 <button
-                    class="rounded-lg border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50"
+                    class="rounded-lg border border-slate-200 px-3 py-2.5 text-sm min-h-[44px] text-slate-600 hover:bg-slate-50 inline-flex items-center justify-center"
                     onclick={() => goPage(data.page - 1)}>Sebelumnya</button
                 >
             {/if}
@@ -242,7 +242,7 @@
             </span>
             {#if data.page < data.totalPages}
                 <button
-                    class="rounded-lg border border-slate-200 px-3 py-1 text-sm text-slate-600 hover:bg-slate-50"
+                    class="rounded-lg border border-slate-200 px-3 py-2.5 text-sm min-h-[44px] text-slate-600 hover:bg-slate-50 inline-flex items-center justify-center"
                     onclick={() => goPage(data.page + 1)}>Selanjutnya</button
                 >
             {/if}

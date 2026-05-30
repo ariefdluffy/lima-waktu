@@ -27,7 +27,7 @@ let lastTriggeredPrayer = $state("");
 let lastTriggeredIqamahEnd = $state("");
 
 // ── Flash Screen ─────────────────────────────────────────────────
-const FLASH_DURATION_MS = 2500;
+const FLASH_DURATION_MS = 3000;
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function triggerFlash(type: "adzan" | "iqamah" = "adzan") {
@@ -172,7 +172,7 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
   // ── Mood: Adzan / Iqamah / Khusuk ───────────────────────────────
   let newMood: "normal" | "adzan" | "iqamah" | "khusuk" = "normal";
   let newMoodPrayerName = "";
-  const ADZAN_DURATION = payload?.masjid?.adzanScreenDuration ?? 2;
+  const ADZAN_DURATION = payload?.masjid?.adzanScreenDuration ?? 3;
   const KHUSUK_DURATION = payload?.masjid?.khusukScreenDuration ?? 10;
 
   // Current (last passed) prayer

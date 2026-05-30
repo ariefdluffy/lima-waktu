@@ -52,8 +52,8 @@
 <style>
     .toast-container {
         position: fixed;
-        top: 16px;
-        right: 16px;
+        top: calc(16px + var(--safe-top, 0px));
+        right: calc(16px + var(--safe-right, 0px));
         z-index: 9999;
         display: flex;
         flex-direction: column;

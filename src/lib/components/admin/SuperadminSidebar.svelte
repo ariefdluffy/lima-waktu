@@ -122,7 +122,7 @@
 
 <!-- Mobile Hamburger -->
 <button
-    class="fixed top-3 left-3 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-lg transition-all hover:bg-emerald-700 active:scale-95 xl:hidden"
+    class="fixed top-[calc(0.75rem+var(--safe-top,0px))] left-[calc(0.75rem+var(--safe-left,0px))] z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-lg transition-all hover:bg-emerald-700 active:scale-95 xl:hidden"
     onclick={() => (mobileOpen = !mobileOpen)}
     aria-label="Toggle menu"
 >

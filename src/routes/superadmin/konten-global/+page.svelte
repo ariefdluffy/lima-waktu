@@ -128,7 +128,7 @@
                                                 value={a.id}
                                             />
                                             <button
-                                                class="rounded-lg px-2 py-1 text-xs font-medium {a.isActive
+                                                class="rounded-lg px-3 py-2.5 text-xs min-h-[44px] font-medium inline-flex items-center justify-center {a.isActive
                                                     ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                                                     : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'}"
                                             >
@@ -147,7 +147,7 @@
                                             />
                                             <button
                                                 type="button"
-                                                class="rounded-lg bg-red-100 px-2 py-1 text-xs font-medium text-red-600 hover:bg-red-200"
+                                                class="rounded-lg bg-red-100 px-3 py-2.5 text-xs min-h-[44px] font-medium text-red-600 hover:bg-red-200 inline-flex items-center justify-center"
                                                 onclick={(e) => {
                                                     deleteTarget = {
                                                         id: a.id,

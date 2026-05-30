@@ -401,6 +401,22 @@
     let toastMessage = $state("");
     let toastVisible = $state(false);
 
+    // Scroll input into view saat keyboard mobile muncul
+    function onInputFocus(e: FocusEvent) {
+        const el = e.target as HTMLElement;
+        if (
+            el instanceof HTMLInputElement ||
+            el instanceof HTMLTextAreaElement ||
+            el instanceof HTMLSelectElement
+        ) {
+            if ('ontouchstart' in window) {
+                setTimeout(() => {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+        }
+    }
+
     function showToast(msg: string) {
         toastMessage = msg;
         toastVisible = true;
@@ -960,7 +976,7 @@
     <div class="flex flex-1 flex-col xl:ml-72">
         <!-- Top Header Bar -->
         <header
-            class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md px-4 py-3 sm:px-6 lg:px-8"
+            class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur-md px-4 py-3 sm:px-6 lg:px-8 pt-[calc(0.75rem+var(--safe-top))]"
         >
             <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
@@ -1021,7 +1037,7 @@
         </header>
 
         <!-- Content Area -->
-        <div class="flex-1 px-4 py-4 sm:px-6 lg:px-8">
+        <div class="flex-1 px-4 py-4 sm:px-6 lg:px-8" onfocusin={onInputFocus}>
             <div class="mx-auto w-full max-w-7xl space-y-6">
                 <!-- Announcement Banners -->
                 {#if announcements.length > 0}
@@ -1302,20 +1318,20 @@
 
                 {#snippet mobileNavSnippet()}
                     <nav
-                        class="fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-md xl:hidden pb-safe"
+                        class="fixed bottom-0 inset-x-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-md xl:hidden pb-[calc(0.375rem+var(--safe-bottom))]"
                     >
                         <div
                             class="flex items-center justify-around px-2 py-1.5"
                         >
                             <button
                                 onclick={() => navigateTo("dashboard")}
-                                class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection ===
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg min-w-0 min-h-[44px] {activeSection ===
                                 'dashboard'
                                     ? 'text-emerald-600'
                                     : 'text-slate-400'}"
                             >
                                 <svg
-                                    class="h-5 w-5"
+                                    class="h-6 w-6"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="1.8"
@@ -1327,19 +1343,19 @@
                                     /></svg
                                 >
                                 <span
-                                    class="text-[10px] font-medium leading-none"
+                                    class="text-[11px] font-medium leading-none"
                                     >Home</span
                                 >
                             </button>
                             <button
                                 onclick={() => navigateTo("schedule")}
-                                class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection ===
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg min-w-0 min-h-[44px] {activeSection ===
                                 'schedule'
                                     ? 'text-emerald-600'
                                     : 'text-slate-400'}"
                             >
                                 <svg
-                                    class="h-5 w-5"
+                                    class="h-6 w-6"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="1.8"
@@ -1351,19 +1367,19 @@
                                     /></svg
                                 >
                                 <span
-                                    class="text-[10px] font-medium leading-none"
+                                    class="text-[11px] font-medium leading-none"
                                     >Jadwal</span
                                 >
                             </button>
                             <button
                                 onclick={() => navigateTo("runningtext")}
-                                class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection ===
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg min-w-0 min-h-[44px] {activeSection ===
                                 'runningtext'
                                     ? 'text-emerald-600'
                                     : 'text-slate-400'}"
                             >
                                 <svg
-                                    class="h-5 w-5"
+                                    class="h-6 w-6"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="1.8"
@@ -1375,19 +1391,19 @@
                                     /></svg
                                 >
                                 <span
-                                    class="text-[10px] font-medium leading-none"
+                                    class="text-[11px] font-medium leading-none"
                                     >Text</span
                                 >
                             </button>
                             <button
                                 onclick={() => navigateTo("devices")}
-                                class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection ===
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg min-w-0 min-h-[44px] {activeSection ===
                                 'devices'
                                     ? 'text-emerald-600'
                                     : 'text-slate-400'}"
                             >
                                 <svg
-                                    class="h-5 w-5"
+                                    class="h-6 w-6"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="1.8"
@@ -1399,19 +1415,19 @@
                                     /></svg
                                 >
                                 <span
-                                    class="text-[10px] font-medium leading-none"
+                                    class="text-[11px] font-medium leading-none"
                                     >Device</span
                                 >
                             </button>
                             <button
                                 onclick={() => navigateTo("events")}
-                                class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection ===
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg min-w-0 min-h-[44px] {activeSection ===
                                 'events'
                                     ? 'text-emerald-600'
                                     : 'text-slate-400'}"
                             >
                                 <svg
-                                    class="h-5 w-5"
+                                    class="h-6 w-6"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="1.8"
@@ -1423,19 +1439,19 @@
                                     /></svg
                                 >
                                 <span
-                                    class="text-[10px] font-medium leading-none"
+                                    class="text-[11px] font-medium leading-none"
                                     >Events</span
                                 >
                             </button>
                             <button
                                 onclick={() => navigateTo("profile")}
-                                class="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg min-w-0 {activeSection ===
+                                class="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg min-w-0 min-h-[44px] {activeSection ===
                                 'profile'
                                     ? 'text-emerald-600'
                                     : 'text-slate-400'}"
                             >
                                 <svg
-                                    class="h-5 w-5"
+                                    class="h-6 w-6"
                                     fill="none"
                                     stroke="currentColor"
                                     stroke-width="1.8"
@@ -1447,7 +1463,7 @@
                                     /></svg
                                 >
                                 <span
-                                    class="text-[10px] font-medium leading-none"
+                                    class="text-[11px] font-medium leading-none"
                                     >Profil</span
                                 >
                             </button>
@@ -1563,6 +1579,13 @@
         pointer-events: none;
         border: 1px solid rgba(255, 255, 255, 0.15);
         backdrop-filter: blur(4px);
+        max-width: calc(100vw - 32px);
+    }
+
+    @media (max-width: 1279px) {
+        .toast {
+            bottom: calc(32px + var(--safe-bottom) + 60px);
+        }
     }
 
     .toast-icon {
