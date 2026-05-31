@@ -147,9 +147,9 @@
     async function submitDragReorder() {
         const orderedIds = items.map((i) => i.id).join(",");
         // Hitung offset berdasarkan halaman aktif
-        // PAGE_SIZE = 10 (sama dengan server), halaman dari URL param pageYT
+        // PAGE_SIZE = 15 (sama dengan server), halaman dari URL param pageYT
         const pageYT = Math.max(1, Number(new URLSearchParams(window.location.search).get("pageYT") ?? 1));
-        const pageOffset = (pageYT - 1) * 10;
+        const pageOffset = (pageYT - 1) * 15;
 
         const formData = new FormData();
         formData.set("masjid_id", data.masjid.id);

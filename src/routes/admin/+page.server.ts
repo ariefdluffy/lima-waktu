@@ -31,6 +31,7 @@ import { invalidateCache } from "$lib/server/prayer/cache";
 import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
+const YOUTUBE_PAGE_SIZE = 15;
 
 // Helper: get provider info dari DB
 async function getProviderInfo(providerId: number | null) {
@@ -265,7 +266,7 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
       db.select().from(youtubeItems)
         .where(eq(youtubeItems.masjidId, masjidId))
         .orderBy(youtubeItems.orderIndex)
-        .limit(PAGE_SIZE).offset((pageYoutube - 1) * PAGE_SIZE),
+        .limit(YOUTUBE_PAGE_SIZE).offset((pageYoutube - 1) * YOUTUBE_PAGE_SIZE),
       db.select({ total: count() }).from(youtubeItems)
         .where(eq(youtubeItems.masjidId, masjidId)),
     ]);
@@ -373,7 +374,7 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     youtubeItems: youtubeRows,
     youtubeTotal,
     youtubePage: pageYoutube,
-    youtubeTotalPages: Math.max(1, Math.ceil(youtubeTotal / PAGE_SIZE)),
+    youtubeTotalPages: Math.max(1, Math.ceil(youtubeTotal / YOUTUBE_PAGE_SIZE)),
     prayerScheduleList: prayerRows,
     prayerTotal,
     prayerPage: pagePrayer,
