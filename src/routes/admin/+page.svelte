@@ -1037,7 +1037,7 @@
         </header>
 
         <!-- Content Area -->
-        <div class="flex-1 px-4 py-4 sm:px-6 lg:px-8" onfocusin={onInputFocus}>
+        <div class="flex-1 px-4 py-4 sm:px-6 lg:px-8 pb-[calc(0.375rem+var(--safe-bottom,0px)+56px)] xl:pb-4" onfocusin={onInputFocus}>
             <div class="mx-auto w-full max-w-7xl space-y-6">
                 <!-- Announcement Banners -->
                 {#if announcements.length > 0}
