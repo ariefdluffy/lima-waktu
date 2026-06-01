@@ -253,23 +253,28 @@
 
                                 <!-- Aksi Lain -->
                                 <div class="flex items-center gap-3 border-t border-slate-100 pt-3">
-                                    <form
-                                        method="POST"
-                                        action="?/reloadDevice"
-                                        use:enhance={() => async ({ result }) => {
-                                            if (result.type === "success" || result.type === "redirect") {
-                                                showToast("🔄 Perintah reload dikirim ke TV!");
-                                                await invalidate("app:admin");
+                                    <button
+                                        type="button"
+                                        onclick={async () => {
+                                            try {
+                                                const res = await fetch("/api/v1/masjid/devices/reload", {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ deviceId: item.id })
+                                                });
+                                                const json = await res.json();
+                                                if (json.ok) {
+                                                    showToast("🔄 Perintah reload dikirim ke TV!");
+                                                } else {
+                                                    showToast("Gagal: " + (json.message || "Unknown error"));
+                                                }
+                                            } catch (e) {
+                                                showToast("Gagal menghubungi server");
                                             }
                                         }}
-                                    >
-                                        <input type="hidden" name="device_id" value={item.id} />
-                                        <button
-                                            type="submit"
-                                            class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors"
-                                            title="TV akan dimuat ulang pada siklus update berikutnya (maks 15 detik)"
-                                        >🔄 Reload TV</button>
-                                    </form>
+                                        class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors"
+                                        title="TV akan dimuat ulang pada siklus update berikutnya (maks 15 detik)"
+                                    >🔄 Reload TV</button>
 
                                     <button
                                         type="button"

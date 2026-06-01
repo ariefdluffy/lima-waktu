@@ -110,6 +110,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
   // Jika ada permintaan reload dari admin, konsumsi flag tersebut.
   if (device.forceReload === 1) {
+    console.log(`[display] API sending forceReload=1 and resetting DB flag for device: ${device.id}`);
     await db
       .update(devices)
       .set({ forceReload: 0 })

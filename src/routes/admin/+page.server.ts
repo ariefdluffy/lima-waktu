@@ -524,12 +524,16 @@ export const actions: Actions = {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
     const id = String(form.get("device_id") ?? "").trim();
+    console.log("[admin] reloadDevice called for device:", id);
     if (id) {
       // Ambil deviceCode sebelum update
       const [dev] = await db.select({ deviceCode: devices.deviceCode }).from(devices).where(eq(devices.id, id)).limit(1);
       await db.update(devices).set({ forceReload: 1 }).where(eq(devices.id, id));
       // Invalidate cache supaya request berikutnya langsung baca dari DB
-      if (dev) invalidateDisplayCacheByDevice(dev.deviceCode);
+      if (dev) {
+        console.log("[admin] forceReload set to 1 for deviceCode:", dev.deviceCode);
+        invalidateDisplayCacheByDevice(dev.deviceCode);
+      }
     }
   },
 
