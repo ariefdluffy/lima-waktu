@@ -33,20 +33,28 @@ export const GET: RequestHandler = async ({ params }) => {
   }
 
   // ── Fast path: cache hit ──────────────────────────────────────
-  // Heartbeat dilakukan secara fire-and-forget supaya client tidak perlu
-  // menunggu UPDATE selesai. Cache TTL 15 detik selaras dengan interval
-  // polling, jadi data yang ditampilkan tetap segar.
   const cached = getCachedDisplayPayload(deviceCode);
   if (cached) {
-    void heartbeatByDeviceCode(deviceCode);
-    return json(
-      { ok: true, watermark: cached.watermark, data: cached.data },
-      {
-        headers: {
-          "Cache-Control": "private, max-age=5, stale-while-revalidate=10",
+    // Cek apakah ada permintaan reload dari admin (bypass cache)
+    const [reloadCheck] = await db
+      .select({ forceReload: devices.forceReload })
+      .from(devices)
+      .where(eq(devices.deviceCode, deviceCode))
+      .limit(1);
+
+    if (reloadCheck?.forceReload === 1) {
+      console.log(`[display] reload requested for ${deviceCode}, bypassing cache`);
+    } else {
+      void heartbeatByDeviceCode(deviceCode);
+      return json(
+        { ok: true, watermark: cached.watermark, data: cached.data },
+        {
+          headers: {
+            "Cache-Control": "private, max-age=5, stale-while-revalidate=10",
+          },
         },
-      },
-    );
+      );
+    }
   }
 
   // ── Slow path: bangun ulang payload dan simpan ke cache ───────
