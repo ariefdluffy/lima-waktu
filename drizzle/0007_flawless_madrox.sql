@@ -1,0 +1,1 @@
+ALTER TABLE `devices` ADD `force_reload` int DEFAULT 0 NOT NULL;

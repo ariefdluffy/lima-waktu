@@ -50,6 +50,13 @@
       "when": 1779681228926,
       "tag": "0006_cool_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1780318928162,
+      "tag": "0007_flawless_madrox",
+      "breakpoints": true
     }
   ]
 }

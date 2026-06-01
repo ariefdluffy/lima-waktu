@@ -217,6 +217,7 @@ export const devices = mysqlTable(
       () => themes.id,
       { onDelete: "set null" },
     ),
+    forceReload: int("force_reload").default(0).notNull(),
     ...timestamps,
   },
   (table) => [uniqueIndex("devices_code_uq").on(table.deviceCode)],

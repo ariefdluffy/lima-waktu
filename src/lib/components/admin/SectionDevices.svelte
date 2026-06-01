@@ -251,12 +251,32 @@
                                     >Simpan</button>
                                 </form>
 
-                                <!-- Hapus -->
-                                <button
-                                    type="button"
-                                    onclick={() => askDeleteDevice(item.id, item.name)}
-                                    class="rounded-lg border border-red-200 px-4 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
-                                >Hapus Device</button>
+                                <!-- Aksi Lain -->
+                                <div class="flex items-center gap-3 border-t border-slate-100 pt-3">
+                                    <form
+                                        method="POST"
+                                        action="?/reloadDevice"
+                                        use:enhance={() => async ({ result }) => {
+                                            if (result.type === "success" || result.type === "redirect") {
+                                                showToast("🔄 Perintah reload dikirim ke TV!");
+                                                await invalidate("app:admin");
+                                            }
+                                        }}
+                                    >
+                                        <input type="hidden" name="device_id" value={item.id} />
+                                        <button
+                                            type="submit"
+                                            class="rounded-lg border border-blue-200 bg-blue-50 px-4 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 transition-colors"
+                                            title="TV akan dimuat ulang pada siklus update berikutnya (maks 15 detik)"
+                                        >🔄 Reload TV</button>
+                                    </form>
+
+                                    <button
+                                        type="button"
+                                        onclick={() => askDeleteDevice(item.id, item.name)}
+                                        class="rounded-lg border border-red-200 px-4 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
+                                    >Hapus Device</button>
+                                </div>
                             </div>
                         </details>
                     </div>

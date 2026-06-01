@@ -100,6 +100,14 @@ export const GET: RequestHandler = async ({ params }) => {
   // Pakai NOW() biar konsisten dengan MySQL server time.
   void heartbeatById(device.id);
 
+  // Jika ada permintaan reload dari admin, konsumsi flag tersebut.
+  if (device.forceReload === 1) {
+    await db
+      .update(devices)
+      .set({ forceReload: 0 })
+      .where(eq(devices.id, device.id));
+  }
+
   const today = todayYmdInTimezone(masjid.timezone ?? "Asia/Makassar");
   const todayDate = new Date(`${today}T00:00:00.000Z`);
 
@@ -232,6 +240,7 @@ export const GET: RequestHandler = async ({ params }) => {
       name: device.name,
       orientation: device.orientation,
       layoutMode: device.layoutMode,
+      forceReload: device.forceReload,
     },
     theme: themeData,
     masjid: {

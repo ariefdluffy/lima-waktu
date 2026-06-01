@@ -28,6 +28,7 @@ import {
   todayYmdInTimezone,
 } from "$lib/server/prayer/resolver";
 import { invalidateCache } from "$lib/server/prayer/cache";
+import { invalidateDisplayCacheByDevice } from "$lib/server/display/cache";
 import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
@@ -517,6 +518,19 @@ export const actions: Actions = {
     const form = await request.formData();
     const id = String(form.get("device_id") ?? "").trim();
     if (id) await db.delete(devices).where(eq(devices.id, id));
+  },
+
+  reloadDevice: async ({ locals, request }) => {
+    if (!locals.user) throw redirect(302, "/auth/login");
+    const form = await request.formData();
+    const id = String(form.get("device_id") ?? "").trim();
+    if (id) {
+      // Ambil deviceCode sebelum update
+      const [dev] = await db.select({ deviceCode: devices.deviceCode }).from(devices).where(eq(devices.id, id)).limit(1);
+      await db.update(devices).set({ forceReload: 1 }).where(eq(devices.id, id));
+      // Invalidate cache supaya request berikutnya langsung baca dari DB
+      if (dev) invalidateDisplayCacheByDevice(dev.deviceCode);
+    }
   },
 
   editYoutube: async ({ locals, request }) => {

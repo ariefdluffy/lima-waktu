@@ -144,6 +144,12 @@
                 payload = json.data;
                 resetBeepTriggers();
                 error = null; // sukses → bersihkan flag error
+                // Admin meminta reload → refresh halaman
+                if (json.data?.device?.forceReload === 1) {
+                    console.log("[display] forceReload requested, reloading...");
+                    window.location.reload();
+                    return;
+                }
             } else if (!payload) {
                 error = json.message ?? "Gagal mengambil data";
             } else {
