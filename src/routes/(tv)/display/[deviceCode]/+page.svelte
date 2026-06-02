@@ -562,6 +562,7 @@
                         {hijriyahDate}
                         {currentJumbotron}
                         isJumat={getWIBParts(now, tz).day === 5}
+                        mood={prayer.mood}
                     />
                 {:else}
                     <!-- VERTICAL DEFAULT LAYOUT -->
@@ -598,6 +599,7 @@
                     {liveDate}
                     {hijriyahDate}
                     isJumat={getWIBParts(now, tz).day === 5}
+                    mood={prayer.mood}
                 />
             {:else}
                 <!-- DEFAULT LAYOUT -->

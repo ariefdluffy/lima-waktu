@@ -21,6 +21,7 @@
         hijriyahDate: string;
         currentJumbotron?: number;
         isJumat?: boolean;
+        mood?: "normal" | "adzan" | "iqamah" | "khusuk";
     }
 
     let {
@@ -36,6 +37,7 @@
         hijriyahDate,
         currentJumbotron = 0,
         isJumat = false,
+        mood = "normal" as "normal" | "adzan" | "iqamah" | "khusuk",
     }: Props = $props();
 
     let currentYoutubeIndex = $state(0);
@@ -138,6 +140,17 @@
                 ytPlayerReady = false;
             }
         };
+    });
+
+    // ── Pause/Resume YouTube saat mood overlay ─────────────────
+    $effect(() => {
+        const currentMood = mood;
+        if (!ytPlayer || !ytPlayerReady) return;
+        if (currentMood !== "normal") {
+            ytPlayer.pauseVideo();
+        } else {
+            ytPlayer.playVideo();
+        }
     });
 </script>
 

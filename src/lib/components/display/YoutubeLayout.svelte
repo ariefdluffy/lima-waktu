@@ -154,6 +154,17 @@
             }
         };
     });
+
+    // ── Pause/Resume YouTube saat mood overlay ─────────────────
+    $effect(() => {
+        const currentMood = mood;
+        if (!ytPlayer || !ytPlayerReady) return;
+        if (currentMood !== "normal") {
+            ytPlayer.pauseVideo();
+        } else {
+            ytPlayer.playVideo();
+        }
+    });
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════

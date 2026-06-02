@@ -43,7 +43,9 @@ export const GET: RequestHandler = async ({ params }) => {
       .limit(1);
 
     if (reloadCheck?.forceReload === 1) {
-      console.log(`[display] reload requested for ${deviceCode}, bypassing cache`);
+      // Force reload: invalidate cache agar payload baru dibangun dengan forceReload=1
+      console.log(`[display] reload requested for ${deviceCode}, invalidating cache`);
+      // Jatuhkan ke slow path untuk membangun payload fresh dengan forceReload=1
     } else {
       void heartbeatByDeviceCode(deviceCode);
       return json(
@@ -109,7 +111,8 @@ export const GET: RequestHandler = async ({ params }) => {
   void heartbeatById(device.id);
 
   // Jika ada permintaan reload dari admin, konsumsi flag tersebut.
-  if (device.forceReload === 1) {
+  let forceReloadFlag = device.forceReload === 1;
+  if (forceReloadFlag) {
     console.log(`[display] API sending forceReload=1 and resetting DB flag for device: ${device.id}`);
     await db
       .update(devices)
@@ -249,7 +252,7 @@ export const GET: RequestHandler = async ({ params }) => {
       name: device.name,
       orientation: device.orientation,
       layoutMode: device.layoutMode,
-      forceReload: device.forceReload,
+      forceReload: forceReloadFlag ? 1 : 0,
     },
     theme: themeData,
     masjid: {
@@ -308,7 +311,14 @@ export const GET: RequestHandler = async ({ params }) => {
     })),
   };
 
-  setCachedDisplayPayload(deviceCode, payload, watermark);
+  // Simpan ke cache dengan forceReload=0 agar cached payload tidak
+  // memicu reload lagi. Force reload adalah sinyal sekali-kirim, bukan
+  // state persisten.
+  const cachedPayload = {
+    ...payload,
+    device: { ...payload.device, forceReload: 0 },
+  };
+  setCachedDisplayPayload(deviceCode, cachedPayload, watermark);
 
   return json(
     { ok: true, watermark, data: payload },
