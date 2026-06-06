@@ -20,6 +20,9 @@ export const prayer = $state({
   tahajudMode: false,
   flash: false,
   flashType: "adzan" as "adzan" | "iqamah",
+  // Pre-adzan animated countdown (0 = nonaktif, 60..1 = detik tersisa)
+  preAdzanRemaining: 0,
+  preAdzanName: "",
 });
 
 // Internal: trigger only once per prayer/iqamah
@@ -148,10 +151,28 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
     if (diff < 0) diff += 86400;
     prayer.countdown = formatCountdown(diff);
 
+    // ── Pre-adzan animated countdown (60→0) ────────────────
+    if (diff > 0 && diff <= 60 && lastTriggeredPrayer !== activePrayer) {
+      // hitung mundur dari ceil supaya 59.5→60, 0.5→1
+      const remaining = Math.min(60, Math.max(1, Math.ceil(diff)));
+      if (prayer.preAdzanRemaining !== remaining) {
+        prayer.preAdzanRemaining = remaining;
+        prayer.preAdzanName = activePrayer === "dzuhur" && isJumat
+          ? "JUM'AT"
+          : PRAYER_LABELS[activePrayer];
+      }
+    }
+
     if (diff <= 1 && lastTriggeredPrayer !== activePrayer) {
+      prayer.preAdzanRemaining = 0;
       lastTriggeredPrayer = activePrayer;
       playAdzanBeep();
       triggerFlash("adzan");
+    }
+
+    // Reset preAdzan kalo masih di luar jendela 60 detik
+    if (diff > 60 && prayer.preAdzanRemaining > 0) {
+      prayer.preAdzanRemaining = 0;
     }
     prayer.countdownProgress = calcCountdownProgress(
       currentMinutes,
@@ -316,7 +337,8 @@ export function updatePrayerState(payload: DisplayPayload, now: Date) {
 // Reset beep tracker (call when payload changes)
 // Skip reset for active mood to prevent beep/flash re-triggering during fetch polling
 export function resetBeepTriggers() {
-  if (prayer.mood !== "adzan") {
+  // Jangan reset lastTriggeredPrayer saat pre-adzan countdown aktif
+  if (prayer.mood !== "adzan" && prayer.preAdzanRemaining <= 0) {
     lastTriggeredPrayer = "";
   }
   if (prayer.mood !== "khusuk") {

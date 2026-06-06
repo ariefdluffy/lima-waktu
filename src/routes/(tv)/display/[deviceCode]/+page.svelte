@@ -10,6 +10,7 @@
     import VerticalLayout from "$lib/components/display/VerticalLayout.svelte";
     import VerticalYoutubeLayout from "$lib/components/display/VerticalYoutubeLayout.svelte";
     import MoodOverlay from "$lib/components/display/MoodOverlay.svelte";
+import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte";
     import "$lib/styles/display-fullhd.css";
     import "$lib/styles/display-layout-fix.css";
     import "$lib/styles/display-responsive-1366.css";
@@ -648,21 +649,8 @@
                 />
             {/if}
 
-            <!-- MOOD OVERLAY — aktif di semua mode layout, sembunyi saat flash -->
-            {#if !prayer.flash}
-                <MoodOverlay
-                    mood={prayer.mood}
-                    moodPrayerName={prayer.moodPrayerName}
-                    moodPrayerKey={prayer.moodPrayerKey}
-                    countdown={prayer.moodCountdown}
-                    countdownLabel={prayer.moodCountdownLabel}
-                    isJumat={getWIBParts(now, tz).day === 5}
-                    orientation={payload.device.orientation}
-                />
-            {/if}
-
-            <!-- FLASH OVERLAY -->
             {#if prayer.flash}
+                <!-- FLASH OVERLAY (prioritas tertinggi) -->
                 <div class="flash-overlay flash-overlay--{prayer.flashType}">
                     {#if prayer.flashType === "adzan"}
                         <div class="flash-title">ALLAHU AKBAR</div>
@@ -674,6 +662,24 @@
                         <div class="flash-arabic">قَدْ قَامَتِ الصَّلَاة</div>
                     {/if}
                 </div>
+            {:else if prayer.preAdzanRemaining > 0}
+                <!-- PRE-ADZAN COUNTDOWN (animasi 60→0) -->
+                <PreAdzanCountdown
+                    remaining={prayer.preAdzanRemaining}
+                    prayerName={prayer.preAdzanName}
+                    orientation={payload.device.orientation}
+                />
+            {:else}
+                <!-- MOOD OVERLAY — aktif di semua mode layout, sembunyi saat flash/pre-adzan -->
+                <MoodOverlay
+                    mood={prayer.mood}
+                    moodPrayerName={prayer.moodPrayerName}
+                    moodPrayerKey={prayer.moodPrayerKey}
+                    countdown={prayer.moodCountdown}
+                    countdownLabel={prayer.moodCountdownLabel}
+                    isJumat={getWIBParts(now, tz).day === 5}
+                    orientation={payload.device.orientation}
+                />
             {/if}
         </div>
     {/if}
