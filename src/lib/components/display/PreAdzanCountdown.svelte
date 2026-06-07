@@ -5,11 +5,7 @@
         orientation?: "horizontal" | "vertical";
     }
 
-    let {
-        remaining,
-        prayerName,
-        orientation = "horizontal",
-    }: Props = $props();
+    let { remaining, prayerName, orientation = "horizontal" }: Props = $props();
 
     // Progress 0..1 (60→0 → 0→1)
     const progress = $derived(1 - (remaining - 1) / 59);
@@ -75,7 +71,13 @@
                     style="transition: stroke-dashoffset 1s linear;"
                 />
                 <defs>
-                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient
+                        id="ringGrad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
+                    >
                         <stop offset="0%" stop-color="#fbbf24" />
                         <stop offset="50%" stop-color="#f59e0b" />
                         <stop offset="100%" stop-color="#d97706" />
@@ -88,7 +90,6 @@
                         {String(remaining).padStart(2, "0")}
                     </span>
                 {/key}
-                <span class="pre-adzan-unit">DETIK</span>
             </div>
         </div>
 
@@ -148,9 +149,18 @@
         animation: beamSweep 4s ease-in-out infinite;
     }
 
-    .beam-1 { left: 20%; animation-delay: 0s; }
-    .beam-2 { left: 50%; animation-delay: 1.3s; }
-    .beam-3 { left: 75%; animation-delay: 2.6s; }
+    .beam-1 {
+        left: 20%;
+        animation-delay: 0s;
+    }
+    .beam-2 {
+        left: 50%;
+        animation-delay: 1.3s;
+    }
+    .beam-3 {
+        left: 75%;
+        animation-delay: 2.6s;
+    }
 
     /* ── Inner content ── */
     .pre-adzan-inner {
@@ -262,7 +272,9 @@
         height: clamp(4px, 0.5vw, 8px);
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.1);
-        transition: background 0.3s ease, transform 0.3s ease;
+        transition:
+            background 0.3s ease,
+            transform 0.3s ease;
     }
 
     .pre-adzan-dot--active {
@@ -291,30 +303,62 @@
 
     /* ── Animations ── */
     @keyframes preAdzanFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 
     @keyframes preAdzanContentRise {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @keyframes beamSweep {
-        0% { transform: rotate(15deg) translateX(-40vw); opacity: 0; }
-        20% { opacity: 1; }
-        80% { opacity: 1; }
-        100% { transform: rotate(25deg) translateX(40vw); opacity: 0; }
+        0% {
+            transform: rotate(15deg) translateX(-40vw);
+            opacity: 0;
+        }
+        20% {
+            opacity: 1;
+        }
+        80% {
+            opacity: 1;
+        }
+        100% {
+            transform: rotate(25deg) translateX(40vw);
+            opacity: 0;
+        }
     }
 
     @keyframes digitPulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.04); }
-        100% { transform: scale(1); }
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.04);
+        }
+        100% {
+            transform: scale(1);
+        }
     }
 
     @keyframes arabicFadeIn {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>

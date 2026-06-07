@@ -78,6 +78,103 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     // TZ label
     let tzLabel = $derived.by(() => getTZLabelText(tz, payload?.masjid?.city));
 
+    // ── Debug Mode (URL Parameter) ────────────────────────────────────
+    // Parse ?debug=mood:adzan,flash:iqamah,preAdzan:45,screensaver,tahajud
+    // Berguna untuk testing tampilan tanpa menunggu waktu sholat
+    type DebugOverrides = {
+        active: boolean;
+        mood?: "normal" | "adzan" | "iqamah" | "khusuk";
+        flash?: "adzan" | "iqamah";
+        flashTriggered?: boolean; // flag supaya flash cuma trigger sekali
+        preAdzan?: number;
+        screensaver?: boolean;
+        tahajud?: boolean;
+    };
+
+    function parseDebugParam(): DebugOverrides {
+        const params = new URLSearchParams(window.location.search);
+        const debug = params.get("debug");
+        if (!debug) return { active: false };
+
+        const overrides: DebugOverrides = { active: true };
+        const pairs = debug.split(",");
+
+        for (const pair of pairs) {
+            const [key, value] = pair.split(":");
+            switch (key) {
+                case "mood":
+                    if (value === "adzan" || value === "iqamah" || value === "khusuk" || value === "normal") {
+                        overrides.mood = value;
+                    }
+                    break;
+                case "flash":
+                    if (value === "adzan" || value === "iqamah") {
+                        overrides.flash = value;
+                    }
+                    break;
+                case "preAdzan":
+                    const num = parseInt(value ?? "60");
+                    if (num >= 1 && num <= 60) {
+                        overrides.preAdzan = num;
+                    }
+                    break;
+                case "screensaver":
+                    overrides.screensaver = true;
+                    break;
+                case "tahajud":
+                    overrides.tahajud = true;
+                    break;
+            }
+        }
+
+        console.log("[debug] Overrides applied:", overrides);
+        return overrides;
+    }
+
+    function applyDebugOverrides(debug: DebugOverrides) {
+        if (!debug.active) return;
+
+        // Priority: screensaver > tahajud > flash > preAdzan > mood
+        if (debug.screensaver) {
+            prayer.screensaver = true;
+            prayer.tahajudMode = false;
+            return;
+        }
+        if (debug.tahajud) {
+            prayer.tahajudMode = true;
+            prayer.screensaver = false;
+            return;
+        }
+
+        prayer.screensaver = false;
+        prayer.tahajudMode = false;
+
+        if (debug.flash && !debug.flashTriggered) {
+            prayer.flash = true;
+            prayer.flashType = debug.flash;
+            debug.flashTriggered = true; // flag supaya tidak trigger berulang
+        }
+
+        if (debug.preAdzan) {
+            prayer.preAdzanRemaining = debug.preAdzan;
+            prayer.preAdzanName = "DZUHUR";
+        }
+
+        if (debug.mood) {
+            prayer.mood = debug.mood;
+            if (debug.mood !== "normal") {
+                prayer.moodPrayerName = "DZUHUR";
+                prayer.moodPrayerKey = "dzuhur";
+                prayer.moodCountdown = "02:30";
+                prayer.moodCountdownLabel = debug.mood === "adzan" ? "ADZAN BERAKHIR DALAM" :
+                                           debug.mood === "iqamah" ? "MENUJU IQAMAH" :
+                                           "WAKTU KHUSYUK TERSISA";
+            }
+        }
+    }
+
+    let debugOverrides: DebugOverrides = { active: false };
+
     // ── Named Handlers ──────────────────────────────────────────────
     function handleRefresh() {
         window.location.reload();
@@ -177,7 +274,17 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
 
     onMount(() => {
         initAudio();
+        
+        // Parse debug parameter dari URL
+        debugOverrides = parseDebugParam();
+        
         fetchData();
+        
+        // Apply debug overrides setelah data dimuat
+        // (fetchData async, jadi pakai setTimeout kecil)
+        if (debugOverrides.active) {
+            setTimeout(() => applyDebugOverrides(debugOverrides), 500);
+        }
 
         // ── Heartbeat watchdog ─────────────────────────────────
         // Deteksi otomatis jika halaman "membeku" (clock tidak update / paint
@@ -213,6 +320,11 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
 
         const prayerInterval = setInterval(() => {
             if (payload) updatePrayerState(payload, now);
+            // Apply debug overrides setelah normal update
+            // supaya state debug tidak ke-reset oleh updatePrayerState
+            if (debugOverrides.active) {
+                applyDebugOverrides(debugOverrides);
+            }
         }, 1000);
 
         // Slide & jumbotron tidak dirender saat screensaver → skip kerjanya
