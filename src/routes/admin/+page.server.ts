@@ -134,6 +134,7 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
       subscription: null,
       maxDevices: 1,
       prayerProviderInfo: { providerKey: "myquran", providerName: "MyQuran API", supportsSearch: true },
+      isExpired: false,
     };
   }
 
@@ -392,6 +393,11 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     subscription: subscriptionRow ?? null,
     maxDevices: subscriptionRow?.maxDevices ?? 1,
     prayerProviderInfo,
+    isExpired: subscriptionRow
+      ? subscriptionRow.status === "expired" ||
+        ((subscriptionRow.status === "trial" || subscriptionRow.status === "grace") &&
+          new Date(subscriptionRow.endDate) < new Date())
+      : false,
   };
 };
 

@@ -46,13 +46,11 @@ export const load = async ({
     masjidId = membership?.masjidId ?? null;
   }
 
-  // Subscription guard — redirect expired to main page with section param
+  // Subscription check — load for all requests
   let subscription = null;
-  if (
-    masjidId &&
-    url.pathname === "/admin" &&
-    !url.searchParams.has("section")
-  ) {
+  let isExpired = false;
+  
+  if (masjidId) {
     const [sub] = await db
       .select()
       .from(subscriptions)
@@ -64,11 +62,16 @@ export const load = async ({
       subscription = sub;
       const now = new Date();
       const endDate = new Date(sub.endDate);
-      const isExpired =
+      isExpired =
         sub.status === "expired" ||
         ((sub.status === "trial" || sub.status === "grace") && endDate < now);
 
-      if (isExpired) {
+      // Redirect to langganan section only on root /admin without section param
+      if (
+        isExpired &&
+        url.pathname === "/admin" &&
+        !url.searchParams.has("section")
+      ) {
         throw redirect(302, "/admin?section=langganan");
       }
     }
@@ -99,5 +102,6 @@ export const load = async ({
   return {
     announcements,
     subscription,
+    isExpired,
   };
 };

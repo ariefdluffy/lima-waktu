@@ -2,7 +2,7 @@
     import { enhance } from "$app/forms";
     import { invalidate } from "$app/navigation";
 
-    let { data }: { data: any } = $props();
+    let { data, isExpired = false }: { data: any; isExpired?: boolean } = $props();
 
     function refresh() {
         return async ({ result }: { result: any }) => {
@@ -59,7 +59,8 @@
                     </div>
                     <button
                         type="submit"
-                        class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-all"
+                        disabled={isExpired}
+                        class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-all {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                     >
                         Simpan
                     </button>

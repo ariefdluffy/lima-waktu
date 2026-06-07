@@ -49,6 +49,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     let { data }: { data: PageData } = $props();
 
     let payload: DisplayPayload | null = $state(null);
+    let watermarkText = $state<string | null>(null);
     let theme = $derived.by(() => payload?.theme ?? null);
     let loading = $state(true);
     let error: string | null = $state(null);
@@ -240,6 +241,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
             const json = await res.json();
             if (json.ok) {
                 payload = json.data;
+                watermarkText = json.watermark ?? null;
                 resetBeepTriggers();
                 error = null; // sukses → bersihkan flag error
                 // Admin meminta reload → refresh halaman
@@ -801,6 +803,12 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
                     orientation={payload.device.orientation}
                 />
             {/if}
+        </div>
+    {/if}
+
+    {#if watermarkText}
+        <div class="watermark-overlay">
+            {watermarkText}
         </div>
     {/if}
 {/if}
@@ -1793,5 +1801,26 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         .main-body {
             flex-direction: column;
         }
+    }
+
+    .watermark-overlay {
+        position: fixed;
+        bottom: 12px;
+        right: 12px;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: clamp(10px, 1.2vw, 14px);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        pointer-events: none;
+        animation: watermarkFadeIn 0.5s ease-out;
+    }
+
+    @keyframes watermarkFadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>

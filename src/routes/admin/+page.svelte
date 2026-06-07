@@ -1039,6 +1039,24 @@
         <!-- Content Area -->
         <div class="flex-1 px-4 py-4 sm:px-6 lg:px-8 pb-[calc(0.375rem+var(--safe-bottom,0px)+56px)] xl:pb-4" onfocusin={onInputFocus}>
             <div class="mx-auto w-full max-w-7xl space-y-6">
+                <!-- Subscription Expired Banner -->
+                {#if data.isExpired}
+                    <div class="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm">
+                        <svg class="h-5 w-5 shrink-0 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                        <p class="flex-1 font-medium text-red-800">
+                            Langganan Anda telah berakhir. Perpanjang langganan untuk melanjutkan penggunaan fitur.
+                        </p>
+                        <button 
+                            onclick={() => navigateTo('langganan')}
+                            class="shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
+                        >
+                            Perpanjang Sekarang
+                        </button>
+                    </div>
+                {/if}
+
                 <!-- Announcement Banners -->
                 {#if announcements.length > 0}
                     <div class="space-y-1">
@@ -1208,7 +1226,7 @@
                     {/if}
 
                     {#if activeSection === "runningtext"}
-                        <SectionRunningText {data} />
+                        <SectionRunningText {data} isExpired={data.isExpired} />
                     {/if}
 
                     {#if activeSection === "devices"}
@@ -1217,6 +1235,7 @@
                             {generatedDeviceCode}
                             {showToast}
                             {askDeleteDevice}
+                            isExpired={data.isExpired}
                         />
                     {/if}
 
@@ -1264,15 +1283,15 @@
                     {/if}
 
                     {#if activeSection === "jumbotron"}
-                        <SectionJumbotron {data} {askDeleteJumbotron} />
+                        <SectionJumbotron {data} {askDeleteJumbotron} isExpired={data.isExpired} />
                     {/if}
 
                     {#if activeSection === "youtube"}
-                        <SectionYoutube {data} {askDeleteYoutube} {showToast} />
+                        <SectionYoutube {data} {askDeleteYoutube} {showToast} isExpired={data.isExpired} />
                     {/if}
 
                     {#if activeSection === "events"}
-                        <SectionEvents {data} {askDeleteEvent} />
+                        <SectionEvents {data} {askDeleteEvent} isExpired={data.isExpired} />
                     {/if}
 
                     {#if activeSection === "slides"}
@@ -1285,6 +1304,7 @@
                             {slideUploadSuccess}
                             {uploadSlide}
                             {getSlideUrl}
+                            isExpired={data.isExpired}
                         />
                     {/if}
 
@@ -1296,6 +1316,7 @@
                             {scheduleActionLoading}
                             {scheduleActionSuccess}
                             {scheduleActionError}
+                            isExpired={data.isExpired}
                         />
                     {/if}
 
@@ -1312,7 +1333,7 @@
                     {/if}
 
                     {#if activeSection === "tema"}
-                        <SectionTema {data} />
+                        <SectionTema {data} isExpired={data.isExpired} />
                     {/if}
                 {/if}
 

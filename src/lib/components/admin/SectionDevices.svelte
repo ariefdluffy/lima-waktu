@@ -8,11 +8,13 @@
         generatedDeviceCode,
         showToast,
         askDeleteDevice,
+        isExpired = false,
     }: {
         data: any;
         generatedDeviceCode: string;
         showToast: (msg: string) => void;
         askDeleteDevice: (id: string, name: string) => void;
+        isExpired?: boolean;
     } = $props();
 
     function copyLink(deviceCode: string) {
@@ -99,7 +101,11 @@
                     </div>
                 </div>
 
-                {#if data.deviceTotal >= data.maxDevices}
+                {#if isExpired}
+                    <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-medium text-red-600">
+                        🔒 Langganan berakhir. Perpanjang untuk menambah device.
+                    </div>
+                {:else if data.deviceTotal >= data.maxDevices}
                     <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-600">
                         🔒 Batas maksimal device tercapai. Hapus device yang ada atau upgrade langganan.
                     </div>
@@ -279,7 +285,8 @@
                                     <button
                                         type="button"
                                         onclick={() => askDeleteDevice(item.id, item.name)}
-                                        class="rounded-lg border border-red-200 px-4 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
+                                        disabled={isExpired}
+                                        class="rounded-lg border border-red-200 px-4 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                                     >Hapus Device</button>
                                 </div>
                             </div>

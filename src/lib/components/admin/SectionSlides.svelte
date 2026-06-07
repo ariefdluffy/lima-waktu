@@ -10,6 +10,7 @@
         slideUploadSuccess,
         uploadSlide,
         getSlideUrl,
+        isExpired = false,
     }: {
         data: any;
         slideTitle: string;
@@ -19,6 +20,7 @@
         slideUploadSuccess: boolean;
         uploadSlide: () => void;
         getSlideUrl: (slide: any) => string | null;
+        isExpired?: boolean;
     } = $props();
 </script>
 
@@ -56,8 +58,8 @@
             </div>
             <button
                 onclick={uploadSlide}
-                disabled={slideUploading}
-                class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                disabled={slideUploading || isExpired}
+                class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50 {isExpired ? 'cursor-not-allowed' : ''}"
             >
                 {#if slideUploading}Mengupload...{:else}⬆️ Upload{/if}
             </button>
@@ -118,8 +120,9 @@
                             <input type="hidden" name="slide_id" value={slide.id} />
                             <button
                                 type="submit"
+                                disabled={isExpired}
                                 onclick={(e) => { if (!confirm("Hapus slide ini?")) e.preventDefault(); }}
-                                class="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white shadow hover:bg-red-600"
+                                class="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500 text-white shadow hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                 title="Hapus slide"
                             >
                                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"

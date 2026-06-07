@@ -4,7 +4,7 @@
     import Pagination from "$lib/components/Pagination.svelte";
     import { DEFAULT_RUNNING_TEXT } from "$lib/display/helpers";
 
-    let { data }: { data: any } = $props();
+    let { data, isExpired = false }: { data: any; isExpired?: boolean } = $props();
 
     function refresh() {
         return async ({ result }: { result: any }) => {
@@ -66,7 +66,8 @@
                     </div>
                     <button
                         type="submit"
-                        class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 active:scale-95 transition-all"
+                        disabled={isExpired}
+                        class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 active:scale-95 transition-all {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                     >
                         + Tambah
                     </button>
@@ -144,7 +145,8 @@
                                         </div>
                                         <button
                                             type="submit"
-                                            class="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                            disabled={isExpired}
+                                            class="rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                                         >Simpan</button>
                                     </div>
                                 </form>
@@ -161,7 +163,8 @@
                                     <input type="hidden" name="id" value={item.id} />
                                     <button
                                         type="submit"
-                                        class="rounded-lg border border-red-200 px-4 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
+                                        disabled={isExpired}
+                                        class="rounded-lg border border-red-200 px-4 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                                     >Hapus</button>
                                 </form>
                             </div>

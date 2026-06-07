@@ -25,6 +25,7 @@
         scheduleActionLoading,
         scheduleActionSuccess,
         scheduleActionError,
+        isExpired = false,
     }: {
         data: any;
         askDeleteSchedule: (id: number, date: string) => void;
@@ -32,6 +33,7 @@
         scheduleActionLoading: boolean;
         scheduleActionSuccess: string;
         scheduleActionError: string;
+        isExpired?: boolean;
     } = $props();
 
     let activeTab = $state<Tab>("bulk");
@@ -322,8 +324,8 @@
                         <button
                             type="button"
                             onclick={() => askDeleteSchedule(s.id, String(s.scheduleDate))}
-                            disabled={scheduleActionLoading}
-                            class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                            disabled={scheduleActionLoading || isExpired}
+                            class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40 {isExpired ? 'cursor-not-allowed' : ''}"
                             title="Hapus jadwal ini"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -384,8 +386,8 @@
                                 <button
                                     type="button"
                                     onclick={() => askDeleteSchedule(s.id, String(s.scheduleDate))}
-                                    disabled={scheduleActionLoading}
-                                    class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                                    disabled={scheduleActionLoading || isExpired}
+                                    class="rounded p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-40 {isExpired ? 'cursor-not-allowed' : ''}"
                                     title="Hapus jadwal ini"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
@@ -1159,7 +1161,8 @@
                     </p>
                     <button
                         type="submit"
-                        class="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                        disabled={isExpired}
+                        class="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"

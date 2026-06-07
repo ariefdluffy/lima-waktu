@@ -7,10 +7,12 @@
         data,
         askDeleteYoutube,
         showToast,
+        isExpired = false,
     }: {
         data: any;
         askDeleteYoutube: (id: number, title: string | null) => void;
         showToast: (msg: string) => void;
+        isExpired?: boolean;
     } = $props();
 
     let addFormEl = $state<HTMLFormElement | null>(null);
@@ -227,7 +229,8 @@
                 </div>
                 <button
                     type="submit"
-                    class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 active:scale-95 transition-all"
+                    disabled={isExpired}
+                    class="shrink-0 rounded-xl bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 active:scale-95 transition-all {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                 >
                     + Tambah
                 </button>
@@ -306,7 +309,7 @@
                                     <input type="hidden" name="direction" value="up" />
                                     <button
                                         type="submit"
-                                        disabled={idx === 0 && data.youtubePage === 1}
+                                        disabled={idx === 0 && data.youtubePage === 1 || isExpired}
                                         title="Naik"
                                         class="flex h-7 w-7 items-center justify-center rounded bg-white text-slate-400 shadow-sm hover:bg-emerald-100 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-30 transition-colors"
                                     >▲</button>
@@ -321,7 +324,7 @@
                                     <input type="hidden" name="direction" value="down" />
                                     <button
                                         type="submit"
-                                        disabled={idx === items.length - 1 && data.youtubePage === data.youtubeTotalPages}
+                                        disabled={idx === items.length - 1 && data.youtubePage === data.youtubeTotalPages || isExpired}
                                         title="Turun"
                                         class="flex h-7 w-7 items-center justify-center rounded bg-white text-slate-400 shadow-sm hover:bg-emerald-100 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-30 transition-colors"
                                     >▼</button>
@@ -366,12 +369,14 @@
                                     <div class="flex shrink-0 items-center gap-2">
                                         <button
                                             type="submit"
-                                            class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors"
+                                            disabled={isExpired}
+                                            class="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white hover:bg-emerald-700 transition-colors {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                                         >Simpan</button>
                                         <button
                                             type="button"
+                                            disabled={isExpired}
                                             onclick={() => askDeleteYoutube(item.id, item.title)}
-                                            class="rounded-lg border border-red-200 px-4 py-2 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
+                                            class="rounded-lg border border-red-200 px-4 py-2 text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                                         >Hapus</button>
                                     </div>
                                 </form>

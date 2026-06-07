@@ -6,9 +6,11 @@
     let {
         data,
         askDeleteEvent,
+        isExpired = false,
     }: {
         data: any;
         askDeleteEvent: (id: number, title: string) => void;
+        isExpired?: boolean;
     } = $props();
 
     function refresh() {
@@ -79,7 +81,8 @@
                 </label>
                 <button
                     type="submit"
-                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                    disabled={isExpired}
+                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                     >Tambah Acara</button
                 >
             </form>
@@ -104,7 +107,8 @@
                     </p>
                     <button
                         type="button"
-                        class="mt-2 text-xs font-medium text-red-500 hover:text-red-700"
+                        disabled={isExpired}
+                        class="mt-2 text-xs font-medium text-red-500 hover:text-red-700 {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                         onclick={() =>
                             askDeleteEvent(item.id, item.title ?? "Acara")}
                         >Hapus</button

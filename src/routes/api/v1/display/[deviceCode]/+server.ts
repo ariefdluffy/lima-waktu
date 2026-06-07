@@ -44,7 +44,9 @@ export const GET: RequestHandler = async ({ params }) => {
 
     if (reloadCheck?.forceReload === 1) {
       // Force reload: invalidate cache agar payload baru dibangun dengan forceReload=1
-      console.log(`[display] reload requested for ${deviceCode}, invalidating cache`);
+      console.log(
+        `[display] reload requested for ${deviceCode}, invalidating cache`,
+      );
       // Jatuhkan ke slow path untuk membangun payload fresh dengan forceReload=1
     } else {
       void heartbeatByDeviceCode(deviceCode);
@@ -102,7 +104,7 @@ export const GET: RequestHandler = async ({ params }) => {
       sub.status === "expired" ||
       ((sub.status === "trial" || sub.status === "grace") && endDate < now);
     if (isExpired) {
-      watermark = "LIMAWAKU.MY.ID — Aktifkan langganan di menu Admin";
+      watermark = "LIMAWAKTU.MY.ID — Aktifkan langganan di menu Admin";
     }
   }
 
@@ -113,7 +115,9 @@ export const GET: RequestHandler = async ({ params }) => {
   // Jika ada permintaan reload dari admin, konsumsi flag tersebut.
   let forceReloadFlag = device.forceReload === 1;
   if (forceReloadFlag) {
-    console.log(`[display] API sending forceReload=1 and resetting DB flag for device: ${device.id}`);
+    console.log(
+      `[display] API sending forceReload=1 and resetting DB flag for device: ${device.id}`,
+    );
     await db
       .update(devices)
       .set({ forceReload: 0 })

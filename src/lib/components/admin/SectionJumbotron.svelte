@@ -6,9 +6,11 @@
     let {
         data,
         askDeleteJumbotron,
+        isExpired = false,
     }: {
         data: any;
         askDeleteJumbotron: (id: number, title: string) => void;
+        isExpired?: boolean;
     } = $props();
 
     function refresh() {
@@ -51,7 +53,8 @@
                 />
                 <button
                     type="submit"
-                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                    disabled={isExpired}
+                    class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                     >Tambah Jumbotron</button>
             </form>
         </div>
@@ -65,7 +68,8 @@
                     {/if}
                     <button
                         type="button"
-                        class="mt-2 text-xs font-medium text-red-500 hover:text-red-700"
+                        disabled={isExpired}
+                        class="mt-2 text-xs font-medium text-red-500 hover:text-red-700 {isExpired ? 'opacity-50 cursor-not-allowed' : ''}"
                         onclick={() => askDeleteJumbotron(item.id, item.title ?? "Jumbotron")}
                         >Hapus</button>
                 </div>
