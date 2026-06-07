@@ -468,28 +468,36 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         >
             <div class="tahajud-bg"></div>
             <div class="tahajud-body">
-                <div class="tahajud-badge">★ QIYAMUL LAIL ★</div>
-                <div class="tahajud-ayat">
-                    "Sesungguhnya orang-orang yang bertakwa berada di dalam
-                    taman-taman (surga) dan mata air, mereka mengambil apa yang
-                    diberikan Tuhan kepada mereka. Sesungguhnya mereka sebelum
-                    itu di dunia adalah orang-orang yang berbuat baik; mereka
-                    sedikit sekali tidur di waktu malam."
-                </div>
-                <div class="tahajud-ayat-src">QS. Adz-Dzariyat: 15-17</div>
-                <div class="tahajud-time-wrap">
+                <!-- Kolom Kiri: identitas + waktu -->
+                <div class="tahajud-col-left">
+                    <div class="tahajud-badge">★ QIYAMUL LAIL ★</div>
                     <div class="tahajud-time">{liveClock}</div>
                     <div class="tahajud-sub">
                         {liveDate} • {hijriyahDate || "—"}
                     </div>
+                    <div class="tahajud-masjid">{payload.masjid.name}</div>
                 </div>
-                <div class="tahajud-countdown">
-                    <div class="tahajud-countdown-label">
-                        MENUJU SHOLAT SUBUH
+
+                <!-- Divider -->
+                <div class="tahajud-divider"></div>
+
+                <!-- Kolom Kanan: ayat + countdown -->
+                <div class="tahajud-col-right">
+                    <div class="tahajud-ayat">
+                        "Sesungguhnya orang-orang yang bertakwa berada di dalam
+                        taman-taman (surga) dan mata air, mereka mengambil apa yang
+                        diberikan Tuhan kepada mereka. Sesungguhnya mereka sebelum
+                        itu di dunia adalah orang-orang yang berbuat baik; mereka
+                        sedikit sekali tidur di waktu malam."
                     </div>
-                    <div class="tahajud-countdown-val">{prayer.countdown}</div>
+                    <div class="tahajud-ayat-src">QS. Adz-Dzariyat: 15-17</div>
+                    <div class="tahajud-countdown">
+                        <div class="tahajud-countdown-label">
+                            MENUJU SHOLAT SUBUH
+                        </div>
+                        <div class="tahajud-countdown-val">{prayer.countdown}</div>
+                    </div>
                 </div>
-                <div class="tahajud-masjid">{payload.masjid.name}</div>
             </div>
         </div>
     {:else}
@@ -866,13 +874,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(
-            135deg,
-            var(--bg-primary) 0%,
-            var(--bg-primary) 30%,
-            var(--bg-overlay) 60%,
-            var(--bg-primary) 100%
-        );
+        background: #0a0f1e;
         font-family: var(--font-body);
         color: var(--text-primary);
         position: relative;
@@ -882,7 +884,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     .screensaver-bg {
         position: absolute;
         inset: 0;
-        background: var(--screensaver-bg);
+        background: var(--screensaver-bg, radial-gradient(ellipse at center, rgba(0, 30, 20, 0.95) 0%, rgba(0, 10, 5, 0.98) 100%));
         pointer-events: none;
     }
 
@@ -1182,13 +1184,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(
-            135deg,
-            var(--bg-primary) 0%,
-            var(--bg-primary) 40%,
-            var(--bg-overlay) 70%,
-            var(--bg-primary) 100%
-        );
+        background: #060618;
         font-family: var(--font-body);
         color: var(--text-primary);
         position: relative;
@@ -1198,64 +1194,54 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     .tahajud-bg {
         position: absolute;
         inset: 0;
-        background: var(--tahajud-bg);
+        background: var(--tahajud-bg, radial-gradient(ellipse at center, rgba(5, 5, 30, 0.97) 0%, rgba(0, 0, 10, 0.99) 100%));
         pointer-events: none;
     }
 
     .tahajud-body {
         position: relative;
         z-index: 1;
-        text-align: center;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        gap: 16px;
-        max-width: 700px;
-        padding: 0 24px;
+        justify-content: center;
+        gap: 0;
+        width: 100%;
+        max-width: 1200px;
+        padding: 0 48px;
         animation: screensaverFade 2s ease-out;
     }
 
-    /* ── Penyesuaian Vertikal untuk Layar Tahajud ── */
-    .tahajud--vertical .tahajud-body {
-        max-width: 90vw;
-        padding: 0 4vw;
-        gap: 3.5vh;
+    .tahajud-col-left {
+        flex: 1.2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 12px;
     }
 
-    .tahajud--vertical .tahajud-badge {
-        font-size: clamp(14px, 3.5vw, 24px);
-        letter-spacing: 0.2em;
+    .tahajud-divider {
+        width: 1px;
+        height: 400px;
+        background: linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0) 0%,
+            var(--accent-secondary, rgba(200, 168, 75, 0.4)) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        margin: 0 60px;
     }
 
-    .tahajud--vertical .tahajud-ayat {
-        font-size: clamp(13px, 3vw, 22px);
-        line-height: 1.6;
-        max-width: 100%;
-    }
-
-    .tahajud--vertical .tahajud-ayat-src {
-        font-size: clamp(10px, 2vw, 15px);
-        margin-top: -1.5vh;
-    }
-
-    .tahajud--vertical .tahajud-time {
-        font-size: clamp(56px, 14vw, 120px);
-    }
-
-    .tahajud--vertical .tahajud-sub {
-        font-size: clamp(12px, 2.5vw, 20px);
-    }
-
-    .tahajud--vertical .tahajud-countdown-label {
-        font-size: clamp(11px, 2.2vw, 18px);
-    }
-
-    .tahajud--vertical .tahajud-countdown-val {
-        font-size: clamp(24px, 5vw, 48px);
-    }
-
-    .tahajud--vertical .tahajud-masjid {
-        font-size: clamp(11px, 2.2vw, 20px);
+    .tahajud-col-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        width: 100%;
     }
 
     .tahajud-badge {
@@ -1272,18 +1258,14 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         color: var(--text-secondary);
         line-height: 1.8;
         font-style: italic;
-        max-width: 600px;
+        max-width: 500px;
+        text-align: center;
     }
 
     .tahajud-ayat-src {
         font-size: clamp(10px, 0.9vw, 14px);
         color: var(--accent-muted);
         margin-top: -8px;
-    }
-
-    .tahajud-time-wrap {
-        margin-top: 16px;
-        text-align: center;
     }
 
     .tahajud-time {
@@ -1293,6 +1275,8 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         letter-spacing: 0.03em;
         color: var(--text-primary);
         text-shadow: 0 0 20px var(--accent-muted);
+        font-variant-numeric: tabular-nums;
+        contain: layout paint style;
     }
 
     .tahajud-sub {
@@ -1302,11 +1286,12 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     }
 
     .tahajud-countdown {
-        margin-top: 12px;
+        margin-top: 8px;
         background: var(--card-bg);
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--border-accent, rgba(200, 168, 75, 0.25));
         border-radius: var(--border-radius);
-        padding: 16px 32px;
+        padding: 20px 40px;
+        text-align: center;
     }
 
     .tahajud-countdown-label {
@@ -1326,7 +1311,72 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     .tahajud-masjid {
         font-size: clamp(12px, 1.1vw, 17px);
         color: var(--text-muted);
-        margin-top: 8px;
+        margin-top: 4px;
+    }
+
+    /* ── Penyesuaian Vertikal untuk Layar Tahajud ── */
+    .tahajud--vertical .tahajud-body {
+        flex-direction: column;
+        gap: 4vh;
+        max-width: 90vw;
+        padding: 0 4vw;
+    }
+
+    .tahajud--vertical .tahajud-divider {
+        width: 80%;
+        height: 1px;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            var(--accent-secondary, rgba(200, 168, 75, 0.4)) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        margin: 0;
+    }
+
+    .tahajud--vertical .tahajud-col-left {
+        gap: 2vh;
+    }
+
+    .tahajud--vertical .tahajud-badge {
+        font-size: clamp(14px, 3.5vw, 24px);
+        letter-spacing: 0.2em;
+    }
+
+    .tahajud--vertical .tahajud-ayat {
+        font-size: clamp(13px, 3vw, 22px);
+        line-height: 1.6;
+        max-width: 100%;
+    }
+
+    .tahajud--vertical .tahajud-ayat-src {
+        font-size: clamp(10px, 2vw, 15px);
+        margin-top: -1vh;
+    }
+
+    .tahajud--vertical .tahajud-time {
+        font-size: clamp(56px, 14vw, 120px);
+    }
+
+    .tahajud--vertical .tahajud-sub {
+        font-size: clamp(12px, 2.5vw, 20px);
+    }
+
+    .tahajud--vertical .tahajud-masjid {
+        font-size: clamp(11px, 2.2vw, 20px);
+    }
+
+    .tahajud--vertical .tahajud-countdown {
+        padding: 3vh 6vw;
+        max-width: 85vw;
+    }
+
+    .tahajud--vertical .tahajud-countdown-label {
+        font-size: clamp(11px, 2.2vw, 18px);
+    }
+
+    .tahajud--vertical .tahajud-countdown-val {
+        font-size: clamp(24px, 5vw, 48px);
     }
 
     .tv-wrap {
@@ -1350,7 +1400,6 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         align-items: center;
         justify-content: center;
         gap: clamp(8px, 1.5vh, 24px);
-        animation: flashFade 0.6s ease-out forwards;
     }
 
     /* Adzan — flash kuning keemasan */
@@ -1360,7 +1409,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
             rgba(255, 200, 50, 0.97) 0%,
             rgba(200, 130, 10, 0.95) 100%
         );
-        animation: flashFadeAdzan 0.6s ease-out forwards;
+        animation: flashFadeAdzan 3s ease-out forwards;
     }
 
     /* Iqamah — flash hijau */
@@ -1370,7 +1419,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
             rgba(30, 180, 100, 0.97) 0%,
             rgba(10, 100, 50, 0.95) 100%
         );
-        animation: flashFadeIqamah 0.6s ease-out forwards;
+        animation: flashFadeIqamah 3s ease-out forwards;
     }
 
     .flash-title {
@@ -1407,7 +1456,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
             opacity: 1;
             transform: scale(1);
         }
-        70% {
+        80% {
             opacity: 1;
             transform: scale(1.02);
         }
@@ -1422,7 +1471,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
             opacity: 1;
             transform: scale(1);
         }
-        70% {
+        80% {
             opacity: 1;
             transform: scale(1.02);
         }

@@ -34,9 +34,6 @@
 </script>
 
 <div class="pre-adzan-overlay {vClass}">
-    <!-- Background animated gradient -->
-    <div class="pre-adzan-bg"></div>
-
     <!-- Decorative light beams -->
     <div class="pre-adzan-beams">
         <div class="beam beam-1"></div>
@@ -124,19 +121,8 @@
         justify-content: center;
         overflow: hidden;
         font-family: var(--font-body);
+        background: #000;
         animation: preAdzanFadeIn 0.8s ease-out;
-    }
-
-    .pre-adzan-bg {
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(
-            ellipse at 50% 40%,
-            rgba(255, 200, 50, 0.25) 0%,
-            rgba(20, 15, 5, 1) 50%,
-            rgba(5, 3, 1, 1) 100%
-        );
-        animation: preAdzanBgPulse 3s ease-in-out infinite;
     }
 
     /* ── Light beams ── */
@@ -307,11 +293,6 @@
     @keyframes preAdzanFadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
-    }
-
-    @keyframes preAdzanBgPulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.85; transform: scale(1.02); }
     }
 
     @keyframes preAdzanContentRise {

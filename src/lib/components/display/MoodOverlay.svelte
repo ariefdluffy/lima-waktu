@@ -117,11 +117,12 @@
         gap: clamp(2px, 0.6vh, 10px);
         overflow: hidden;
         padding: 2vh 0;
+        background: #000;
         animation: moodFadeIn 0.6s ease-out;
     }
 
     .mood-overlay--jumat {
-        background: var(
+        background-image: var(
             --mood-jumat-bg,
             radial-gradient(
                 ellipse at center,
@@ -144,7 +145,7 @@
     }
 
     .mood-overlay--adzan {
-        background: var(
+        background-image: var(
             --mood-adzan-bg,
             radial-gradient(
                 ellipse at center,
@@ -155,7 +156,7 @@
     }
 
     .mood-overlay--iqamah {
-        background: var(
+        background-image: var(
             --mood-iqamah-bg,
             radial-gradient(
                 ellipse at center,
@@ -166,7 +167,7 @@
     }
 
     .mood-overlay--khusuk {
-        background: var(
+        background-image: var(
             --mood-khusuk-bg,
             radial-gradient(
                 ellipse at center,
