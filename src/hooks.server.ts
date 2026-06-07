@@ -68,6 +68,7 @@ const securityHandle: Handle = async ({ event, resolve }) => {
         "img-src 'self' data: blob: https:",
         "font-src 'self' https://fonts.gstatic.com",
         "connect-src 'self' https://api.open-meteo.com https://www.youtube.com https://i.ytimg.com",
+        "media-src 'self' https://server8.mp3quran.net",
         "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
         "frame-ancestors 'self'",
         isProduction ? "report-uri /api/csp-report" : undefined,

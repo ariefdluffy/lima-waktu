@@ -25,9 +25,16 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     } from "$lib/display/prayer.svelte";
     import {
         audio,
-        handleUnlockAudio,
+        handleUnlockAudio as origHandleUnlockAudio,
         initAudio,
     } from "$lib/display/audio.svelte";
+
+    // Bungkus unlock handler — juga retry screensaver audio
+    function handleUnlockWithScreensaver() {
+        origHandleUnlockAudio();
+        const a = screensaverAudio;
+        if (a && prayer.screensaver) a.play().catch(() => {});
+    }
     import {
         weather,
         fetchWeather,
@@ -72,6 +79,27 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
 
     // Jumbotron rotate
     let currentJumbotron = $state(0);
+
+    // Screensaver audio — auto-play playlist Quran via mp3quran.net
+    const SCREENSAVER_SURAH = Array.from({length: 114}, (_, i) => String(i+1).padStart(3, '0'));
+    let screensaverSurahIndex = $state(0);
+    let screensaverAudio: HTMLAudioElement | undefined | null = $state(null);
+    let screensaverAudioReciter = "afs"; // afs=Al-Afasy
+
+    // Play/pause saat screensaver state berubah, retry tiap 1dtk jika gagal
+    $effect(() => {
+        const a = screensaverAudio;
+        if (!a) return;
+        if (prayer.screensaver) {
+            const tries = setInterval(() => {
+                if (a.paused) a.play().catch(() => {});
+                else clearInterval(tries);
+            }, 1000);
+            return () => clearInterval(tries);
+        } else {
+            a.pause();
+        }
+    });
 
     // Timezone derived (reused in template & functions)
     let tz = $derived.by(() => payload?.masjid?.timezone ?? "Asia/Makassar");
@@ -276,6 +304,21 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
 
     onMount(() => {
         initAudio();
+
+        // Init screensaver audio — playlist Quran auto-next
+        const ssAudio = new Audio();
+        ssAudio.volume = 0.5;
+        screensaverAudio = ssAudio;
+        function loadSurah(idx: number) {
+            const surah = SCREENSAVER_SURAH[idx];
+            ssAudio.src = `https://server8.mp3quran.net/${screensaverAudioReciter}/${surah}.mp3`;
+        }
+        loadSurah(screensaverSurahIndex);
+        ssAudio.addEventListener("ended", () => {
+            screensaverSurahIndex = (screensaverSurahIndex + 1) % SCREENSAVER_SURAH.length;
+            loadSurah(screensaverSurahIndex);
+            if (prayer.screensaver) ssAudio.play().catch(() => {});
+        });
         
         // Parse debug parameter dari URL
         debugOverrides = parseDebugParam();
@@ -350,6 +393,14 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
             if (prayer.screensaver && dataTickCounter % 4 !== 0) return;
             fetchData();
         }, 15000);
+
+        // Capture any click to retry screensaver audio (autoplay policy bypass)
+        function retryScreensaverAudio() {
+            const a = screensaverAudio;
+            if (!a || !prayer.screensaver) return;
+            a.play().catch(() => {});
+        }
+        document.addEventListener("pointerdown", retryScreensaverAudio, { once: false });
 
         // Safety net reload tiap 6 jam.
         // Memori JS sudah ditangani, tapi GPU/compositor memory di TV/Smart
@@ -573,6 +624,8 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
                     </div>
                 </div>
             </div>
+            <!-- Audio indicator -->
+            <div class="screensaver-audio-indicator">♪ Al-Quran</div>
         </div>
     {:else if prayer.tahajudMode}
         <div
@@ -626,7 +679,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
             <button
                 class="sound-unlock-btn"
                 class:sound-unlock-btn--blocked={audio.blocked}
-                onclick={handleUnlockAudio}
+                onclick={handleUnlockWithScreensaver}
                 title="Aktifkan suara adzan"
             >
                 {#if audio.blocked}
@@ -1164,6 +1217,18 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         font-size: clamp(12px, 3vw, 54px);
         color: var(--accent-muted);
         margin-top: 4px;
+    }
+
+    .screensaver-audio-indicator {
+        position: absolute;
+        bottom: 24px;
+        left: 24px;
+        color: rgba(255, 255, 255, 0.35);
+        font-size: clamp(11px, 1vw, 14px);
+        font-weight: 400;
+        letter-spacing: 0.05em;
+        pointer-events: none;
+        animation: screensaverFade 2s ease-out;
     }
 
     .screensaver-sub {
