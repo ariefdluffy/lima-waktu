@@ -22,6 +22,7 @@
         currentJumbotron?: number;
         isJumat?: boolean;
         mood?: "normal" | "adzan" | "iqamah" | "khusuk";
+        preAdzanRemaining?: number;
     }
 
     let {
@@ -38,6 +39,7 @@
         currentJumbotron = 0,
         isJumat = false,
         mood = "normal" as "normal" | "adzan" | "iqamah" | "khusuk",
+        preAdzanRemaining = 0,
     }: Props = $props();
 
     let currentYoutubeIndex = $state(0);
@@ -142,11 +144,12 @@
         };
     });
 
-    // ── Pause/Resume YouTube saat mood overlay ─────────────────
+    // ── Pause/Resume YouTube saat mood overlay / pre-adzan ─────
     $effect(() => {
         const currentMood = mood;
+        const isPreAdzan = preAdzanRemaining > 0;
         if (!ytPlayer || !ytPlayerReady) return;
-        if (currentMood !== "normal") {
+        if (currentMood !== "normal" || isPreAdzan) {
             ytPlayer.pauseVideo();
         } else {
             ytPlayer.playVideo();

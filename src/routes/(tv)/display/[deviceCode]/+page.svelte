@@ -81,10 +81,21 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     let currentJumbotron = $state(0);
 
     // Screensaver audio — auto-play playlist Quran via mp3quran.net
-    const SCREENSAVER_SURAH = Array.from({length: 114}, (_, i) => String(i+1).padStart(3, '0'));
+    const SURAH_ALL = Array.from({length: 114}, (_, i) => String(i+1).padStart(3, '0'));
     let screensaverSurahIndex = $state(0);
     let screensaverAudio: HTMLAudioElement | undefined | null = $state(null);
     let screensaverAudioReciter = "afs"; // afs=Al-Afasy
+
+    // Fisher-Yates shuffle
+    function shuffleSurahList(): string[] {
+        const arr = [...SURAH_ALL];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+    let SCREENSAVER_SURAH = $state(shuffleSurahList());
 
     // Play/pause saat screensaver state berubah, retry tiap 1dtk jika gagal
     $effect(() => {
@@ -305,7 +316,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     onMount(() => {
         initAudio();
 
-        // Init screensaver audio — playlist Quran auto-next
+        // Init screensaver audio — playlist Quran auto-next, shuffle tiap loop
         const ssAudio = new Audio();
         ssAudio.volume = 0.5;
         screensaverAudio = ssAudio;
@@ -315,7 +326,14 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         }
         loadSurah(screensaverSurahIndex);
         ssAudio.addEventListener("ended", () => {
-            screensaverSurahIndex = (screensaverSurahIndex + 1) % SCREENSAVER_SURAH.length;
+            const next = screensaverSurahIndex + 1;
+            if (next >= SCREENSAVER_SURAH.length) {
+                // Re-shuffle setelah semua surah habis
+                SCREENSAVER_SURAH = shuffleSurahList();
+                screensaverSurahIndex = 0;
+            } else {
+                screensaverSurahIndex = next;
+            }
             loadSurah(screensaverSurahIndex);
             if (prayer.screensaver) ssAudio.play().catch(() => {});
         });
@@ -739,6 +757,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
                         {currentJumbotron}
                         isJumat={getWIBParts(now, tz).day === 5}
                         mood={prayer.mood}
+                        preAdzanRemaining={prayer.preAdzanRemaining}
                     />
                 {:else}
                     <!-- VERTICAL DEFAULT LAYOUT -->
@@ -776,6 +795,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
                     {hijriyahDate}
                     isJumat={getWIBParts(now, tz).day === 5}
                     mood={prayer.mood}
+                    preAdzanRemaining={prayer.preAdzanRemaining}
                 />
             {:else}
                 <!-- DEFAULT LAYOUT -->

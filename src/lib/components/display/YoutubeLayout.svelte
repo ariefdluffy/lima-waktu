@@ -21,6 +21,7 @@
         isJumatCardVisible?: boolean;
         mood?: "normal" | "adzan" | "iqamah" | "khusuk";
         moodPrayerKey?: string;
+        preAdzanRemaining?: number;
     }
 
     let {
@@ -37,6 +38,7 @@
         isJumatCardVisible = false,
         mood = "normal" as "normal" | "adzan" | "iqamah" | "khusuk",
         moodPrayerKey = "",
+        preAdzanRemaining = 0,
     }: Props = $props();
 
     // Card SHOLAT JUM'AT: hari Jumat + sebelum adzan Dzuhur
@@ -155,11 +157,12 @@
         };
     });
 
-    // ── Pause/Resume YouTube saat mood overlay ─────────────────
+    // ── Pause/Resume YouTube saat mood overlay / pre-adzan ─────
     $effect(() => {
         const currentMood = mood;
+        const isPreAdzan = preAdzanRemaining > 0;
         if (!ytPlayer || !ytPlayerReady) return;
-        if (currentMood !== "normal") {
+        if (currentMood !== "normal" || isPreAdzan) {
             ytPlayer.pauseVideo();
         } else {
             ytPlayer.playVideo();
