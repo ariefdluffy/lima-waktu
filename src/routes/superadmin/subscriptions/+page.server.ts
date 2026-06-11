@@ -2,6 +2,7 @@ import { desc, eq, sql, count, like } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { subscriptions, masjids, pricingPlans } from "$lib/server/db/schema";
+import { writeAuditLog } from "$lib/server/audit";
 
 export const load = async ({
   locals,
@@ -113,7 +114,7 @@ export const load = async ({
 };
 
 export const actions = {
-  updateSubscription: async ({ request }) => {
+  updateSubscription: async ({ request, locals }) => {
     const form = await request.formData();
     const id = String(form.get("id") ?? "").trim();
     const status = String(form.get("status") ?? "").trim();
@@ -121,6 +122,12 @@ export const actions = {
     const autoRenew = form.get("auto_renew") === "1" ? 1 : 0;
 
     if (!id) return;
+
+    const [sub] = await db
+      .select({ masjidId: subscriptions.masjidId })
+      .from(subscriptions)
+      .where(eq(subscriptions.id, Number(id)))
+      .limit(1);
 
     const updateData: Record<string, unknown> = { autoRenew };
     if (status)
@@ -137,14 +144,36 @@ export const actions = {
       .set(updateData)
       .where(eq(subscriptions.id, Number(id)));
 
+    await writeAuditLog({
+        masjidId: sub?.masjidId,
+        userId: locals.user?.id,
+        action: "update",
+        entity: "subscription",
+        entityId: id,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+
     return { saved: true };
   },
 
-  deleteSubscription: async ({ request }) => {
+  deleteSubscription: async ({ request, locals }) => {
     const form = await request.formData();
     const id = String(form.get("id") ?? "").trim();
     if (id) {
+      const [sub] = await db
+        .select({ masjidId: subscriptions.masjidId })
+        .from(subscriptions)
+        .where(eq(subscriptions.id, Number(id)))
+        .limit(1);
       await db.delete(subscriptions).where(eq(subscriptions.id, Number(id)));
+      await writeAuditLog({
+        masjidId: sub?.masjidId,
+        userId: locals.user?.id,
+        action: "delete",
+        entity: "subscription",
+        entityId: id,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
     return { deleted: true };
   },

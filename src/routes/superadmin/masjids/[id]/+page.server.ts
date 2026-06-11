@@ -9,6 +9,7 @@ import {
   subscriptions,
   auditLogs,
 } from "$lib/server/db/schema";
+import { writeAuditLog } from "$lib/server/audit";
 
 export const load = async ({
   locals,
@@ -66,7 +67,7 @@ export const load = async ({
 };
 
 export const actions = {
-  updateMasjid: async ({ request, params }) => {
+  updateMasjid: async ({ request, locals, params }) => {
     const form = await request.formData();
     const name = String(form.get("name") ?? "").trim();
     const city = String(form.get("city") ?? "").trim();
@@ -119,10 +120,18 @@ export const actions = {
       })
       .where(eq(masjids.id, params.id));
 
+    await writeAuditLog({
+        masjidId: params.id,
+        userId: locals.user?.id,
+        action: "update",
+        entity: "masjid",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+
     return { saved: true };
   },
 
-  toggleSuspend: async ({ params }) => {
+  toggleSuspend: async ({ request, locals, params }) => {
     const [m] = await db
       .select({ isActive: masjids.isActive })
       .from(masjids)
@@ -133,26 +142,48 @@ export const actions = {
         .update(masjids)
         .set({ isActive: m.isActive ? 0 : 1 })
         .where(eq(masjids.id, params.id));
+      await writeAuditLog({
+        masjidId: params.id,
+        userId: locals.user?.id,
+        action: "update",
+        entity: "masjid_suspend",
+        entityId: String(m.isActive),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
 
     return { saved: true };
   },
 
-  deleteMasjid: async ({ params }) => {
+  deleteMasjid: async ({ request, locals, params }) => {
     await db.delete(masjids).where(eq(masjids.id, params.id));
+    await writeAuditLog({
+        masjidId: params.id,
+        userId: locals.user?.id,
+        action: "delete",
+        entity: "masjid",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     throw redirect(302, "/superadmin/masjids?deleted=1");
   },
 
-  resetDevices: async ({ params }) => {
+  resetDevices: async ({ request, locals, params }) => {
     await db
       .update(devices)
       .set({ pairedAt: null, lastSeenAt: null, status: "unknown", isActive: 0 })
       .where(eq(devices.masjidId, params.id));
+    await writeAuditLog({
+        masjidId: params.id,
+        userId: locals.user?.id,
+        action: "update",
+        entity: "device_reset",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
 
     return { saved: true };
   },
 
-  removeAdmin: async ({ request }) => {
+  removeAdmin: async ({ request, locals }) => {
     const form = await request.formData();
     const userId = String(form.get("user_id") ?? "").trim();
     const masjidId = String(form.get("masjid_id") ?? "").trim();
@@ -162,6 +193,14 @@ export const actions = {
         .where(
           sql`${masjidUsers.masjidId} = ${masjidId} AND ${masjidUsers.userId} = ${userId}`,
         );
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user?.id,
+        action: "delete",
+        entity: "masjid_admin",
+        entityId: userId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
 
     return { saved: true };

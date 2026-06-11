@@ -23,6 +23,7 @@ import {
   prayerCalculationMethods,
 } from "$lib/server/db/schema";
 import { fail } from "@sveltejs/kit";
+import { writeAuditLog } from "$lib/server/audit";
 import {
   resolvePrayerScheduleForMasjid,
   todayYmdInTimezone,
@@ -418,6 +419,13 @@ export const actions: Actions = {
         speed: Number.isFinite(speed) ? speed : 60,
         isActive: 1,
       });
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "running_text",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
   addDevice: async ({ locals, request }) => {
@@ -468,6 +476,14 @@ export const actions: Actions = {
         isActive: 1,
         pairedAt: new Date(),
       });
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "device",
+        entityId: id,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
   updateDeviceLayout: async ({ locals, request }) => {
@@ -485,13 +501,31 @@ export const actions: Actions = {
       .update(devices)
       .set({ layoutMode: layoutMode as "default" | "youtube" })
       .where(eq(devices.id, deviceId));
+    await writeAuditLog({
+        userId: locals.user.id,
+        action: "update",
+        entity: "device_layout",
+        entityId: deviceId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
   },
 
   deleteRunningText: async ({ locals, request }) => {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
     const id = Number(form.get("id") ?? 0);
-    if (id) await db.delete(runningTexts).where(eq(runningTexts.id, id));
+    const masjidId = String(form.get("masjid_id") ?? "");
+    if (id) {
+      await db.delete(runningTexts).where(eq(runningTexts.id, id));
+      await writeAuditLog({
+        masjidId: masjidId || null,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "running_text",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+    }
   },
 
   editRunningText: async ({ locals, request }) => {
@@ -500,11 +534,20 @@ export const actions: Actions = {
     const id = Number(form.get("id") ?? 0);
     const content = String(form.get("content") ?? "").trim();
     const speed = Number(form.get("speed") ?? 60);
+    const masjidId = String(form.get("masjid_id") ?? "");
     if (id && content) {
       await db
         .update(runningTexts)
         .set({ content, speed: Number.isFinite(speed) ? speed : 60 })
         .where(eq(runningTexts.id, id));
+      await writeAuditLog({
+        masjidId: masjidId || null,
+        userId: locals.user.id,
+        action: "update",
+        entity: "running_text",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
 
@@ -516,6 +559,13 @@ export const actions: Actions = {
     const orientation = String(form.get("orientation") ?? "horizontal") === "vertical" ? "vertical" : "horizontal";
     if (id && name) {
       await db.update(devices).set({ name, orientation }).where(eq(devices.id, id));
+      await writeAuditLog({
+        userId: locals.user.id,
+        action: "update",
+        entity: "device",
+        entityId: id,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
 
@@ -523,7 +573,16 @@ export const actions: Actions = {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
     const id = String(form.get("device_id") ?? "").trim();
-    if (id) await db.delete(devices).where(eq(devices.id, id));
+    if (id) {
+      await db.delete(devices).where(eq(devices.id, id));
+      await writeAuditLog({
+        userId: locals.user.id,
+        action: "delete",
+        entity: "device",
+        entityId: id,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+    }
   },
 
   reloadDevice: async ({ locals, request }) => {
@@ -540,6 +599,13 @@ export const actions: Actions = {
         console.log("[admin] forceReload set to 1 for deviceCode:", dev.deviceCode);
         invalidateDisplayCacheByDevice(dev.deviceCode);
       }
+      await writeAuditLog({
+        userId: locals.user.id,
+        action: "update",
+        entity: "device",
+        entityId: id,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
 
@@ -549,11 +615,20 @@ export const actions: Actions = {
     const id = Number(form.get("id") ?? 0);
     const youtubeUrl = String(form.get("youtube_url") ?? "").trim();
     const title = String(form.get("title") ?? "").trim();
+    const masjidId = String(form.get("masjid_id") ?? "");
     if (id && youtubeUrl) {
       await db
         .update(youtubeItems)
         .set({ youtubeUrl, title: title || null })
         .where(eq(youtubeItems.id, id));
+      await writeAuditLog({
+        masjidId: masjidId || null,
+        userId: locals.user.id,
+        action: "update",
+        entity: "youtube_item",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
 
@@ -561,7 +636,18 @@ export const actions: Actions = {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
     const id = Number(form.get("id") ?? 0);
-    if (id) await db.delete(youtubeItems).where(eq(youtubeItems.id, id));
+    const masjidId = String(form.get("masjid_id") ?? "");
+    if (id) {
+      await db.delete(youtubeItems).where(eq(youtubeItems.id, id));
+      await writeAuditLog({
+        masjidId: masjidId || null,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "youtube_item",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+    }
   },
 
   dragReorderYoutube: async ({ locals, request }) => {
@@ -585,6 +671,13 @@ export const actions: Actions = {
           .where(and(eq(youtubeItems.id, id), eq(youtubeItems.masjidId, masjidId)))
       )
     );
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "update",
+        entity: "youtube_reorder",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
   },
 
   reorderYoutube: async ({ locals, request }) => {
@@ -620,6 +713,14 @@ export const actions: Actions = {
       .update(youtubeItems)
       .set({ orderIndex: currentOrder })
       .where(eq(youtubeItems.id, items[swapIdx].id));
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "update",
+        entity: "youtube_reorder",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
   },
 
   addEvent: async ({ locals, request }) => {
@@ -642,6 +743,13 @@ export const actions: Actions = {
         eventTime: eventTime || null,
         countdownEnabled: countdownEnabled ? 1 : 0,
       });
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "event",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
 
@@ -649,8 +757,18 @@ export const actions: Actions = {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
     const id = Number(form.get("id") ?? 0);
-    if (id)
+    const masjidId = String(form.get("masjid_id") ?? "");
+    if (id) {
       await db.update(events).set({ isActive: 0 }).where(eq(events.id, id));
+      await writeAuditLog({
+        masjidId: masjidId || null,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "event",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+    }
   },
 
   addJumbotron: async ({ locals, request }) => {
@@ -668,6 +786,13 @@ export const actions: Actions = {
         backgroundUrl: backgroundUrl || null,
         isActive: 1,
       });
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "jumbotron",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
 
@@ -675,7 +800,18 @@ export const actions: Actions = {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
     const id = Number(form.get("id") ?? 0);
-    if (id) await db.delete(jumbotrons).where(eq(jumbotrons.id, id));
+    const masjidId = String(form.get("masjid_id") ?? "");
+    if (id) {
+      await db.delete(jumbotrons).where(eq(jumbotrons.id, id));
+      await writeAuditLog({
+        masjidId: masjidId || null,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "jumbotron",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+    }
   },
 
   addYoutube: async ({ locals, request }) => {
@@ -699,6 +835,13 @@ export const actions: Actions = {
         title: title || null,
         orderIndex: Number(total),
         isActive: 1,
+      });
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "youtube_item",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
       });
     }
   },
@@ -855,6 +998,13 @@ export const actions: Actions = {
       invalidateCache(masjidId, s.date);
     }
 
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "prayer_schedule",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     return { bulkSuccess: true, saved };
   },
 
@@ -862,8 +1012,17 @@ export const actions: Actions = {
     if (!locals.user) throw redirect(302, "/auth/login");
     const form = await request.formData();
     const slideId = Number(form.get("slide_id") ?? 0);
+    const masjidId = String(form.get("masjid_id") ?? "");
     if (slideId) {
       await db.delete(slides).where(eq(slides.id, slideId));
+      await writeAuditLog({
+        masjidId: masjidId || null,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "slide",
+        entityId: String(slideId),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
   },
 
@@ -884,6 +1043,14 @@ export const actions: Actions = {
         ),
       );
     invalidateCache(masjidId, "*");
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "prayer_schedule",
+        entityId: String(scheduleId),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     return { deleteSuccess: true };
   },
 
@@ -898,6 +1065,13 @@ export const actions: Actions = {
       .delete(prayerSchedules)
       .where(eq(prayerSchedules.masjidId, masjidId));
     invalidateCache(masjidId, "*");
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "delete_all",
+        entity: "prayer_schedule",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     return { resetSuccess: true };
   },
 
@@ -1000,6 +1174,14 @@ export const actions: Actions = {
           sql`${prayerSchedules.scheduleDate} < ${cutoffStr}`,
         ),
       );
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: existing ? "update" : "create",
+        entity: "prayer_schedule",
+        entityId: existing ? String(existing.id) : undefined,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
   },
 
   createMasjid: async ({ locals, request }) => {
@@ -1077,10 +1259,18 @@ export const actions: Actions = {
       autoRenew: 0,
     });
 
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "masjid",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+
     return { success: true };
   },
 
-  updateDeviceTheme: async ({ request }) => {
+  updateDeviceTheme: async ({ request, locals }) => {
     const form = await request.formData();
     const deviceId = form.get("device_id")?.toString() ?? "";
     const themeIdRaw = form.get("theme_id")?.toString() ?? "";
@@ -1104,6 +1294,22 @@ export const actions: Actions = {
     }
 
     await db.update(devices).set({ themeId }).where(eq(devices.id, deviceId));
+
+    // Lookup masjidId from device
+    const [device] = await db
+      .select({ masjidId: devices.masjidId })
+      .from(devices)
+      .where(eq(devices.id, deviceId))
+      .limit(1);
+
+    await writeAuditLog({
+        masjidId: device?.masjidId,
+        userId: locals.user?.id,
+        action: "update",
+        entity: "device_theme",
+        entityId: deviceId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
 
     return { success: true };
   },
@@ -1141,6 +1347,14 @@ export const actions: Actions = {
     await db.delete(masjids).where(eq(masjids.id, masjidId));
 
     invalidateCache(masjidId, "*");
+
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "masjid",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
 
     throw redirect(302, "/admin");
   },
@@ -1191,6 +1405,13 @@ export const actions: Actions = {
       });
 
       invalidateCache(masjidId, "*");
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "create",
+        entity: "prayer_correction",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
       return { success: true };
     } catch (error) {
       console.error("Error saving prayer correction:", error);
@@ -1247,6 +1468,14 @@ export const actions: Actions = {
         .where(eq(prayerCorrections.id, id));
 
       invalidateCache(masjidId, "*");
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user.id,
+        action: "update",
+        entity: "prayer_correction",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
       return { success: true };
     } catch (error) {
       console.error("Error updating prayer correction:", error);
@@ -1298,6 +1527,14 @@ export const actions: Actions = {
       await db.delete(prayerCorrections).where(eq(prayerCorrections.id, id));
 
       invalidateCache(correction.masjidId, "*");
+      await writeAuditLog({
+        masjidId: correction.masjidId,
+        userId: locals.user.id,
+        action: "delete",
+        entity: "prayer_correction",
+        entityId: String(id),
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
       return { success: true };
     } catch (error) {
       console.error("Error deleting prayer correction:", error);

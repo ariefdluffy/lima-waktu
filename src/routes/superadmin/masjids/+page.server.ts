@@ -9,6 +9,7 @@ import {
   subscriptions,
   devices,
 } from "$lib/server/db/schema";
+import { writeAuditLog } from "$lib/server/audit";
 
 export const load = async ({
   locals,
@@ -137,7 +138,7 @@ export const load = async ({
 };
 
 export const actions = {
-  createMasjid: async ({ request }) => {
+  createMasjid: async ({ request, locals }) => {
     const form = await request.formData();
     const name = String(form.get("name") ?? "").trim();
     const city = String(form.get("city") ?? "").trim();
@@ -170,10 +171,17 @@ export const actions = {
       });
     }
 
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user?.id,
+        action: "create",
+        entity: "masjid",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     throw redirect(302, "/superadmin/masjids?created=1");
   },
 
-  toggleSuspend: async ({ request }) => {
+  toggleSuspend: async ({ request, locals }) => {
     const form = await request.formData();
     const masjidId = String(form.get("masjid_id") ?? "").trim();
     const currentActive = Number(form.get("is_active") ?? 1);
@@ -184,15 +192,31 @@ export const actions = {
       .set({ isActive: currentActive ? 0 : 1 })
       .where(eq(masjids.id, masjidId));
 
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user?.id,
+        action: "update",
+        entity: "masjid_suspend",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+
     return { saved: true };
   },
 
-  deleteMasjid: async ({ request }) => {
+  deleteMasjid: async ({ request, locals }) => {
     const form = await request.formData();
     const masjidId = String(form.get("masjid_id") ?? "").trim();
     if (!masjidId) return;
 
     await db.delete(masjids).where(eq(masjids.id, masjidId));
+
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user?.id,
+        action: "delete",
+        entity: "masjid",
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
 
     return { deleted: true };
   },

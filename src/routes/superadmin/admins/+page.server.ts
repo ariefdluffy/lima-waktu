@@ -12,6 +12,7 @@ import {
   auditLogs,
 } from "$lib/server/db/schema";
 import { hashPassword } from "$lib/server/auth/password";
+import { writeAuditLog } from "$lib/server/audit";
 
 export const load = async ({
   locals,
@@ -143,7 +144,7 @@ export const load = async ({
 };
 
 export const actions = {
-  createAdmin: async ({ request }) => {
+  createAdmin: async ({ request, locals }) => {
     const form = await request.formData();
     const fullName = String(form.get("fullName") ?? "").trim();
     const email = String(form.get("email") ?? "")
@@ -202,10 +203,17 @@ export const actions = {
       });
     }
 
+    await writeAuditLog({
+        userId: locals.user?.id,
+        action: "create",
+        entity: "admin",
+        entityId: userId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     throw redirect(302, "/superadmin/admins?success=created");
   },
 
-  updateAdmin: async ({ request }) => {
+  updateAdmin: async ({ request, locals }) => {
     const form = await request.formData();
     const userId = String(form.get("user_id") ?? "").trim();
     const fullName = String(form.get("fullName") ?? "").trim();
@@ -220,6 +228,14 @@ export const actions = {
       .update(users)
       .set({ fullName, email, phone: phone || null })
       .where(eq(users.id, userId));
+
+    await writeAuditLog({
+        userId: locals.user?.id,
+        action: "update",
+        entity: "admin",
+        entityId: userId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
 
     return { saved: true };
   },
@@ -239,7 +255,7 @@ export const actions = {
     return { newPassword };
   },
 
-  toggleActive: async ({ request }) => {
+  toggleActive: async ({ request, locals }) => {
     const form = await request.formData();
     const userId = String(form.get("user_id") ?? "").trim();
     const currentActive = Number(form.get("is_active") ?? 1);
@@ -250,10 +266,18 @@ export const actions = {
       .set({ isActive: currentActive ? 0 : 1 })
       .where(eq(users.id, userId));
 
+    await writeAuditLog({
+        userId: locals.user?.id,
+        action: "update",
+        entity: "admin_active",
+        entityId: userId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+
     return { saved: true };
   },
 
-  assignMasjid: async ({ request }) => {
+  assignMasjid: async ({ request, locals }) => {
     const form = await request.formData();
     const userId = String(form.get("user_id") ?? "").trim();
     const masjidId = String(form.get("masjid_id") ?? "").trim();
@@ -278,10 +302,19 @@ export const actions = {
       isActive: 1,
     });
 
+    await writeAuditLog({
+        masjidId,
+        userId: locals.user?.id,
+        action: "create",
+        entity: "masjid_admin",
+        entityId: userId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
+
     return { saved: true };
   },
 
-  removeMasjid: async ({ request }) => {
+  removeMasjid: async ({ request, locals }) => {
     const form = await request.formData();
     const userId = String(form.get("user_id") ?? "").trim();
     const masjidId = String(form.get("masjid_id") ?? "").trim();
@@ -292,6 +325,14 @@ export const actions = {
         .where(
           sql`${masjidUsers.userId} = ${userId} AND ${masjidUsers.masjidId} = ${masjidId}`,
         );
+      await writeAuditLog({
+        masjidId,
+        userId: locals.user?.id,
+        action: "delete",
+        entity: "masjid_admin",
+        entityId: userId,
+        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+      });
     }
 
     return { deleted: true };
