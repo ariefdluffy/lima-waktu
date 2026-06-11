@@ -33,7 +33,7 @@ import { invalidateDisplayCacheByDevice } from "$lib/server/display/cache";
 import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
-const YOUTUBE_PAGE_SIZE = 15;
+const YOUTUBE_PAGE_SIZE = 20;
 
 // Helper: get provider info dari DB
 async function getProviderInfo(providerId: number | null) {

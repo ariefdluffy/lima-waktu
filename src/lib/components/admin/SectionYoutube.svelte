@@ -2,7 +2,6 @@
     import { enhance } from "$app/forms";
     import { invalidate } from "$app/navigation";
     import Pagination from "$lib/components/Pagination.svelte";
-
     let {
         data,
         askDeleteYoutube,
@@ -16,6 +15,7 @@
     } = $props();
 
     let addFormEl = $state<HTMLFormElement | null>(null);
+    let pendingReorder = $state(false);
 
     // ----------------------------------------------------------------
     // Local copy untuk drag & drop (reactive terhadap data.youtubeItems)
@@ -24,6 +24,71 @@
     $effect(() => {
         items = [...data.youtubeItems];
     });
+
+    // ----------------------------------------------------------------
+    // Drag & Drop — Native HTML5 DnD
+    // ----------------------------------------------------------------
+    let dragIdx = $state<number | null>(null);
+    let dragOverIdx = $state<number | null>(null);
+
+    function handleDragStart(e: DragEvent) {
+        const el = e.currentTarget as HTMLElement;
+        const idx = Number(el.dataset.itemIndex);
+        if (isNaN(idx)) { e.preventDefault(); return; }
+        dragIdx = idx;
+        if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/plain", String(idx));
+        }
+    }
+
+    function handleDragOver(e: DragEvent) {
+        // WAJIB: preventDefault biar drop diizinkan (hilangin logo 🚫)
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+        const el = e.currentTarget as HTMLElement;
+        const idx = Number(el.dataset.itemIndex);
+        if (!isNaN(idx)) dragOverIdx = idx;
+    }
+
+    function handleDragEnter(e: DragEvent) {
+        e.preventDefault();
+    }
+
+    function handleDragLeave(e: DragEvent) {
+        const el = e.currentTarget as HTMLElement;
+        // Only reset if truly leaving this item (not entering a child)
+        const related = e.relatedTarget as HTMLElement | null;
+        if (related && el.contains(related)) return;
+        dragOverIdx = null;
+    }
+
+    function handleDrop(e: DragEvent) {
+        e.preventDefault();
+        const el = e.currentTarget as HTMLElement;
+        const dropIdx = Number(el.dataset.itemIndex);
+        if (dragIdx === null || isNaN(dropIdx) || dragIdx === dropIdx) {
+            dragIdx = null;
+            dragOverIdx = null;
+            return;
+        }
+
+        // Reorder lokal
+        const newItems = [...items];
+        const [moved] = newItems.splice(dragIdx, 1);
+        newItems.splice(dropIdx, 0, moved);
+        items = newItems;
+
+        dragIdx = null;
+        dragOverIdx = null;
+
+        submitDragReorder();
+    }
+
+    function handleDragEnd() {
+        dragIdx = null;
+        dragOverIdx = null;
+    }
 
     function refreshYoutube(action: "add" | "edit" | "reorder" = "edit") {
         return () =>
@@ -44,131 +109,37 @@
             };
     }
 
-    // ----------------------------------------------------------------
-    // Drag & Drop
-    // ----------------------------------------------------------------
-    let dragIndex = $state<number | null>(null);
-    let dragOverIndex = $state<number | null>(null);
-    let isDragging = $state(false);
-    let dragReorderFormEl = $state<HTMLFormElement | null>(null);
-
-    function onDragStart(e: DragEvent, idx: number) {
-        dragIndex = idx;
-        isDragging = true;
-        if (e.dataTransfer) {
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", String(idx));
-        }
-    }
-
-    function onDragOver(e: DragEvent, idx: number) {
-        e.preventDefault();
-        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-        dragOverIndex = idx;
-    }
-
-    function onDragLeave() {
-        dragOverIndex = null;
-    }
-
-    function onDrop(e: DragEvent, dropIdx: number) {
-        e.preventDefault();
-        if (dragIndex === null || dragIndex === dropIdx) {
-            dragIndex = null;
-            dragOverIndex = null;
-            isDragging = false;
-            return;
-        }
-
-        // Reorder local array
-        const newItems = [...items];
-        const [moved] = newItems.splice(dragIndex, 1);
-        newItems.splice(dropIdx, 0, moved);
-        items = newItems;
-
-        dragIndex = null;
-        dragOverIndex = null;
-        isDragging = false;
-
-        // Submit ke server
-        submitDragReorder();
-    }
-
-    function onDragEnd() {
-        dragIndex = null;
-        dragOverIndex = null;
-        isDragging = false;
-    }
-
-    // Touch drag support
-    let touchDragIndex = $state<number | null>(null);
-    let touchDragActive = $state(false);
-
-    function onTouchStart(e: TouchEvent, idx: number) {
-        touchDragIndex = idx;
-    }
-
-    function onTouchEnd(e: TouchEvent) {
-        if (
-            touchDragIndex !== null &&
-            dragOverIndex !== null &&
-            touchDragIndex !== dragOverIndex
-        ) {
-            const newItems = [...items];
-            const [moved] = newItems.splice(touchDragIndex, 1);
-            newItems.splice(dragOverIndex, 0, moved);
-            items = newItems;
-            submitDragReorder();
-        }
-        touchDragIndex = null;
-        dragOverIndex = null;
-        touchDragActive = false;
-    }
-
-    // Svelte use: action — pasang touchmove dengan passive:false agar preventDefault bisa dipanggil
-    function touchMoveAction(node: HTMLElement, idx: number) {
-        function handleTouchMove(e: TouchEvent) {
-            if (touchDragIndex === null) return;
-            e.preventDefault(); // cegah scroll saat drag
-            touchDragActive = true;
-            const touch = e.touches[0];
-            const el = document.elementFromPoint(touch.clientX, touch.clientY);
-            const row = el?.closest("[data-drag-idx]");
-            if (row) {
-                dragOverIndex = Number(row.getAttribute("data-drag-idx"));
-            }
-        }
-        node.addEventListener("touchmove", handleTouchMove, { passive: false });
-        return {
-            destroy() {
-                node.removeEventListener("touchmove", handleTouchMove);
-            },
-        };
-    }
-
     async function submitDragReorder() {
+        if (pendingReorder) return;
+        pendingReorder = true;
+
         const orderedIds = items.map((i) => i.id).join(",");
-        // Hitung offset berdasarkan halaman aktif
-        // PAGE_SIZE = 15 (sama dengan server), halaman dari URL param pageYT
         const pageYT = Math.max(1, Number(new URLSearchParams(window.location.search).get("pageYT") ?? 1));
-        const pageOffset = (pageYT - 1) * 15;
+        const pageOffset = (pageYT - 1) * 20;
 
         const formData = new FormData();
         formData.set("masjid_id", data.masjid.id);
         formData.set("ordered_ids", orderedIds);
         formData.set("page_offset", String(pageOffset));
 
-        const res = await fetch("?/dragReorderYoutube", {
-            method: "POST",
-            body: formData,
-        });
-        if (res.ok) {
-            await invalidate("app:admin");
-            showToast("✓ Urutan YouTube berubah!");
-        } else {
+        try {
+            const res = await fetch("?/dragReorderYoutube", {
+                method: "POST",
+                body: formData,
+            });
+            if (res.ok) {
+                await invalidate("app:admin");
+                showToast("✓ Urutan YouTube berubah!");
+            } else {
+                const err = await res.json().catch(() => ({}));
+                showToast("✗ Gagal menyimpan urutan: " + (err.message ?? "Server error"));
+                items = [...data.youtubeItems];
+            }
+        } catch {
             showToast("✗ Gagal menyimpan urutan.");
-            // Rollback ke data asli
             items = [...data.youtubeItems];
+        } finally {
+            pendingReorder = false;
         }
     }
 </script>
@@ -256,27 +227,25 @@
                 {#each items as item, idx (item.id)}
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <div
-                        data-drag-idx={idx}
+                        data-item-index={idx}
                         draggable="true"
-                        ondragstart={(e) => onDragStart(e, idx)}
-                        ondragover={(e) => onDragOver(e, idx)}
-                        ondragleave={onDragLeave}
-                        ondrop={(e) => onDrop(e, idx)}
-                        ondragend={onDragEnd}
-                        ontouchstart={(e) => onTouchStart(e, idx)}
-                        ontouchend={(e) => onTouchEnd(e)}
-                        use:touchMoveAction={idx}
+                        ondragstart={handleDragStart}
+                        ondragover={handleDragOver}
+                        ondragenter={handleDragEnter}
+                        ondragleave={handleDragLeave}
+                        ondrop={handleDrop}
+                        ondragend={handleDragEnd}
                         class="rounded-xl border transition-all duration-150
-                            {dragOverIndex === idx && dragIndex !== idx
+                            {dragOverIdx === idx && dragIdx !== null && dragIdx !== idx
                                 ? 'border-emerald-400 bg-emerald-50 scale-[1.01] shadow-md'
-                                : dragIndex === idx
+                                : dragIdx === idx
                                   ? 'border-emerald-300 bg-emerald-50/60 opacity-60'
                                   : 'border-emerald-100 bg-white hover:border-emerald-200 hover:shadow-sm'}"
                     >
                         <div class="flex items-start gap-2 px-3 py-3 sm:items-center sm:gap-3 sm:px-4">
                             <!-- Drag handle -->
                             <div
-                                class="mt-0.5 flex shrink-0 cursor-grab touch-none active:cursor-grabbing sm:mt-0"
+                                class="flex shrink-0 cursor-grab sm:mt-0"
                                 title="Seret untuk mengubah urutan"
                             >
                                 <span class="text-lg leading-none text-slate-300 select-none hover:text-slate-500">☰</span>
@@ -395,3 +364,9 @@
         />
     </div>
 </section>
+
+<style>
+    .drag-handle:active {
+        cursor: grabbing;
+    }
+</style>
