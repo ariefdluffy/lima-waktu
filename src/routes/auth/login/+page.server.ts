@@ -1,7 +1,10 @@
 import { fail, redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
+import { eq } from "drizzle-orm";
 import { createSession } from "$lib/server/auth/session";
 import { findAuthUserByCredentials } from "$lib/server/auth/basic";
+import { db } from "$lib/server/db";
+import { users } from "$lib/server/db/schema";
 import { writeAuditLog } from "$lib/server/audit";
 
 // Simple in-memory rate limiter (reset on server restart)
@@ -75,6 +78,9 @@ export const actions: Actions = {
 
     await createSession(event, user.id);
     resetRateLimit(ip);
+
+    // Update last login timestamp
+    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
 
     await writeAuditLog({
       userId: user.id,
