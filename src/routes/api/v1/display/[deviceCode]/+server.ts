@@ -24,6 +24,19 @@ import {
 } from "$lib/server/display/cache";
 
 export const GET: RequestHandler = async ({ params }) => {
+  try {
+    return await handleGet(params);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[display] GET handler error:", msg);
+    return json(
+      { ok: false, message: "Gagal memproses request. Coba beberapa saat lagi." },
+      { status: 500 },
+    );
+  }
+};
+
+async function handleGet(params: Record<string, string | undefined>) {
   const deviceCode = params.deviceCode?.trim();
   if (!deviceCode) {
     return json(
@@ -278,6 +291,7 @@ export const GET: RequestHandler = async ({ params }) => {
         masjid.screensaverMorningDelayMinutes ?? 60,
       screensaverMorningWakeMinutes:
         masjid.screensaverMorningWakeMinutes ?? 120,
+      screensaverAudioEnabled: masjid.screensaverAudioEnabled ?? 1,
       logoUrl: masjid.logoUrl ?? null,
     },
     schedule,
@@ -332,7 +346,7 @@ export const GET: RequestHandler = async ({ params }) => {
       },
     },
   );
-};
+}
 
 // ── Helpers ────────────────────────────────────────────────────────
 async function heartbeatByDeviceCode(deviceCode: string): Promise<void> {

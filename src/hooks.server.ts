@@ -12,7 +12,11 @@ import { getAuthenticatedUserFromSession } from "$lib/server/auth/session";
 // }
 
 const authHandle: Handle = async ({ event, resolve }) => {
-  event.locals.user = await getAuthenticatedUserFromSession(event);
+  // Skip auth untuk display TV — halaman publik.
+  const isDisplayRoute = event.url.pathname.startsWith("/display");
+  if (!isDisplayRoute) {
+    event.locals.user = await getAuthenticatedUserFromSession(event);
+  }
   return resolve(event);
 };
 

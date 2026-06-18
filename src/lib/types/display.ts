@@ -111,6 +111,7 @@ export type DisplayPayload = {
     screensaverWakeMinutes: number;
     screensaverMorningDelayMinutes: number;
     screensaverMorningWakeMinutes: number;
+    screensaverAudioEnabled: number;
     logoUrl: string | null;
   };
   schedule: {

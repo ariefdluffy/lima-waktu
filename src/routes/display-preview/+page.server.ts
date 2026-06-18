@@ -93,6 +93,7 @@ function makeMockPayload(): DisplayPayload {
       screensaverWakeMinutes: 60,
       screensaverMorningDelayMinutes: 60,
       screensaverMorningWakeMinutes: 120,
+      screensaverAudioEnabled: 1,
       logoUrl: null,
     },
     schedule: {

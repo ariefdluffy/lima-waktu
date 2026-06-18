@@ -602,6 +602,12 @@
             return v ?? 120;
         })(),
     );
+    let screensaverAudioEnabled = $state(
+        (() => {
+            const v = data.masjid?.screensaverAudioEnabled;
+            return v ?? 1;
+        })(),
+    );
     let screensaverSaving = $state(false);
     let screensaverSuccess = $state(false);
 
@@ -617,6 +623,7 @@
                     screensaverWakeMinutes: Number(screensaverWake),
                     screensaverMorningDelayMinutes: Number(morningDelay),
                     screensaverMorningWakeMinutes: Number(morningWake),
+                    screensaverAudioEnabled: Number(screensaverAudioEnabled),
                 }),
             });
             const json = await res.json();
@@ -1276,6 +1283,7 @@
                             bind:screensaverWake
                             bind:morningDelay
                             bind:morningWake
+                            bind:screensaverAudioEnabled
                             {screensaverSaving}
                             {screensaverSuccess}
                             {saveScreensaver}

@@ -19,6 +19,7 @@
         screensaverWake = $bindable(),
         morningDelay = $bindable(),
         morningWake = $bindable(),
+        screensaverAudioEnabled = $bindable(),
         screensaverSaving,
         screensaverSuccess,
         saveScreensaver,
@@ -42,6 +43,7 @@
         screensaverWake: number;
         morningDelay: number;
         morningWake: number;
+        screensaverAudioEnabled: number;
         screensaverSaving: boolean;
         screensaverSuccess: boolean;
         saveScreensaver: () => void;
@@ -398,6 +400,37 @@
             </div>
             {#if morningWake > 160}
                 <p class="mt-1 text-[11px] font-medium text-red-500">Maksimal 160 menit</p>
+            {/if}
+        </div>
+
+        <!-- Audio Screensaver -->
+        <div class="rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-500">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M9.59 4.59A2 2 0 0011 8h2m0 0V6.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V8m-6 0h6m-6 0v10a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2m0 0l-2 2m2-2l2-2m10 0l2 2m-2-2l2-2M5 12h14" />
+                    </svg>
+                </span>
+                <div>
+                    <p class="text-xs font-bold text-slate-700">Audio Quran</p>
+                    <p class="text-[10px] text-slate-400">Putar audio saat mode hemat</p>
+                </div>
+            </div>
+            <p class="mb-1.5 text-[11px] font-medium text-slate-400 uppercase tracking-wide">Aktif (1) / Nonaktif (0)</p>
+            <div class="flex items-center gap-2">
+                <input
+                    id="screensaver-audio"
+                    type="number"
+                    min="0"
+                    max="1"
+                    bind:value={screensaverAudioEnabled}
+                    class="w-20 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-center text-sm font-bold text-violet-700 shadow-inner focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-100"
+                />
+                <span class="text-xs text-slate-400">{screensaverAudioEnabled === 1 ? "Nyala" : "Mati"}</span>
+            </div>
+            {#if screensaverAudioEnabled !== 0 && screensaverAudioEnabled !== 1}
+                <p class="mt-1 text-[11px] font-medium text-red-500">Isi 0 atau 1</p>
             {/if}
         </div>
     </div>

@@ -22,6 +22,7 @@ type UpdateProfileBody = {
   screensaverWakeMinutes?: number;
   screensaverMorningDelayMinutes?: number;
   screensaverMorningWakeMinutes?: number;
+  screensaverAudioEnabled?: number;
   logoUrl?: string;
   isActive?: boolean;
 };
@@ -112,6 +113,10 @@ export const PUT: RequestHandler = async (event) => {
       screensaverMorningWakeMinutes:
         body.screensaverMorningWakeMinutes !== undefined
           ? body.screensaverMorningWakeMinutes
+          : undefined,
+      screensaverAudioEnabled:
+        body.screensaverAudioEnabled !== undefined
+          ? body.screensaverAudioEnabled
           : undefined,
       logoUrl: body.logoUrl !== undefined ? body.logoUrl : undefined,
       isActive:

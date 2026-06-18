@@ -98,9 +98,11 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     let SCREENSAVER_SURAH = $state(shuffleSurahList());
 
     // Play/pause saat screensaver state berubah, retry tiap 1dtk jika gagal
+    // Cek screensaverAudioEnabled dari payload — 0 = nonaktif
     $effect(() => {
+        const enabled = payload?.masjid?.screensaverAudioEnabled ?? 1;
         const a = screensaverAudio;
-        if (!a) return;
+        if (!a || !enabled) return;
         if (prayer.screensaver) {
             const tries = setInterval(() => {
                 if (a.paused) a.play().catch(() => {});
@@ -326,6 +328,8 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         }
         loadSurah(screensaverSurahIndex);
         ssAudio.addEventListener("ended", () => {
+            const enabled = payload?.masjid?.screensaverAudioEnabled ?? 1;
+            if (!enabled) return;
             const next = screensaverSurahIndex + 1;
             if (next >= SCREENSAVER_SURAH.length) {
                 // Re-shuffle setelah semua surah habis
@@ -341,7 +345,8 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         // Parse debug parameter dari URL
         debugOverrides = parseDebugParam();
         
-        fetchData();
+        // Jitter 0-5s agar tidak semua TV request bareng (thundering herd).
+        setTimeout(fetchData, Math.random() * 5000);
         
         // Apply debug overrides setelah data dimuat
         // (fetchData async, jadi pakai setTimeout kecil)
