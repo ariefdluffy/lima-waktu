@@ -19,13 +19,14 @@ const client = mysql.createPool({
   uri: env.DATABASE_URL,
   connectionLimit: 50,
   waitForConnections: true,
-  acquireTimeout: 5000,
   queueLimit: 0,
   connectTimeout: 8000,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10_000,
   idleTimeout: 60_000,
   maxIdle: 10,
-} as mysql.PoolOptions & { acquireTimeout: number });
+  // @ts-expect-error — acquireTimeout valid di runtime walau tidak ada di tipe mysql2
+  acquireTimeout: 5000,
+} as mysql.PoolOptions);
 
 export const db = drizzle(client, { schema, mode: "default" });
