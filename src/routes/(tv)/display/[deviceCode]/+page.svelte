@@ -102,7 +102,11 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     $effect(() => {
         const enabled = payload?.masjid?.screensaverAudioEnabled ?? 1;
         const a = screensaverAudio;
-        if (!a || !enabled) return;
+        if (!a) return;
+        if (!enabled) {
+            a.pause();
+            return;
+        }
         if (prayer.screensaver) {
             const tries = setInterval(() => {
                 if (a.paused) a.play().catch(() => {});
@@ -648,7 +652,9 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
                 </div>
             </div>
             <!-- Audio indicator -->
-            <div class="screensaver-audio-indicator">♪ Al-Quran</div>
+            {#if (payload?.masjid?.screensaverAudioEnabled ?? 1) === 1}
+                <div class="screensaver-audio-indicator">♪ Al-Quran {SCREENSAVER_SURAH[screensaverSurahIndex]}</div>
+            {/if}
         </div>
     {:else if prayer.tahajudMode}
         <div
