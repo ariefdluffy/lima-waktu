@@ -13,7 +13,7 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
   if (!locals.user) throw redirect(302, "/auth/login");
   if (!locals.user.roles.includes("superadmin")) throw redirect(302, "/admin");
 
-  const [deviceRows, deviceTotal, deviceCount, providerLogs, syncJobs] = await Promise.all([
+  const [deviceRows, deviceTotal, onlineCount, offlineCount, unknownCount, providerLogs, syncJobs] = await Promise.all([
     // All devices with masjid name
     db
       .select({
@@ -35,14 +35,24 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .select({ val: count() })
       .from(devices)
       .then((r) => Number(r[0].val)),
-    // Device stats
+    // Online: lastSeenAt within 5 min
     db
-      .select({
-        status: devices.status,
-        val: count(),
-      })
+      .select({ val: count() })
       .from(devices)
-      .groupBy(devices.status),
+      .where(sql`last_seen_at >= NOW() - INTERVAL 5 MINUTE`)
+      .then((r) => Number(r[0].val)),
+    // Offline: lastSeenAt exists but older than 5 min
+    db
+      .select({ val: count() })
+      .from(devices)
+      .where(sql`last_seen_at IS NOT NULL AND last_seen_at < NOW() - INTERVAL 5 MINUTE`)
+      .then((r) => Number(r[0].val)),
+    // Unknown: never polled (null)
+    db
+      .select({ val: count() })
+      .from(devices)
+      .where(sql`last_seen_at IS NULL`)
+      .then((r) => Number(r[0].val)),
     // Provider logs last 20
     db
       .select()
@@ -57,21 +67,14 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .limit(20),
   ]);
 
-  const devStats: Record<string, number> = {
-    online: 0,
-    offline: 0,
-    unknown: 0,
-  };
-  for (const d of deviceCount) {
-    devStats[d.status] = Number(d.val);
-  }
+  const devStats = { online: onlineCount, offline: offlineCount, unknown: unknownCount };
 
   return {
     devices: deviceRows,
     deviceStats: devStats,
     totalDevices: deviceTotal,
-    onlineCount: devStats["online"] ?? 0,
-    offlineCount: devStats["offline"] ?? 0,
+    onlineCount,
+    offlineCount,
     providerLogs,
     syncJobs,
     serverHealth: {
