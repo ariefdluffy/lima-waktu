@@ -11,10 +11,13 @@ import { getAuthenticatedUserFromSession } from "$lib/server/auth/session";
 //   console.error("[Hooks] Failed to start prayer scheduler:", msg);
 // }
 
+const PUBLIC_PATHS = ["/_app/", "/display", "/api/v1/display", "/uploads", "/auth/login"];
+
 const authHandle: Handle = async ({ event, resolve }) => {
-  // Skip auth untuk display TV — halaman publik.
-  const isDisplayRoute = event.url.pathname.startsWith("/display");
-  if (!isDisplayRoute) {
+  const url = event.url.pathname;
+  // Skip auth untuk aset statis & halaman publik — pool tidak habis oleh query sesi.
+  const isPublic = PUBLIC_PATHS.some((p) => url.startsWith(p));
+  if (!isPublic) {
     event.locals.user = await getAuthenticatedUserFromSession(event);
   }
   return resolve(event);
