@@ -18,7 +18,13 @@ const authHandle: Handle = async ({ event, resolve }) => {
   // Skip auth untuk aset statis & halaman publik — pool tidak habis oleh query sesi.
   const isPublic = PUBLIC_PATHS.some((p) => url.startsWith(p));
   if (!isPublic) {
-    event.locals.user = await getAuthenticatedUserFromSession(event);
+    try {
+      event.locals.user = await getAuthenticatedUserFromSession(event);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("[auth] skip — DB gagal:", msg);
+      event.locals.user = null; // guest → redirect ke login, bukan 500
+    }
   }
   return resolve(event);
 };

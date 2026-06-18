@@ -8,25 +8,24 @@ if (!env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
 // Pool dikonfigurasi eksplisit supaya tidak memakai default mysql2 yang
 // rawan menyumbat saat banyak Display TV polling bersamaan.
 //
-// - connectionLimit dinaikkan dari 20 → 50 untuk menyangga spike traffic.
-// - waitForConnections=true: query baru ngantri rapi alih-alih error.
-// - acquireTimeout 5s: gagal cepat jika pool habis, tidak nunggu 10s default.
-// - connectTimeout 8s: hindari TCP handshake menggantung berjam-jam.
+// - connectionLimit dinaikkan 20 → 50 → 200: mysql2 v3 tidak support acquireTimeout,
+//   jadi pool besar sebagai ganti — TV polling tidak habiskan semua koneksi.
+// - waitForConnections=true: query ngantri rapi kalau semua koneksi kepakai.
+// - queueLimit=0: antrean unlimited (default mysql2).
+// - connectTimeout 8s: gagal cepat daripada TCP handshake gantung.
 // - enableKeepAlive + keepAliveInitialDelay: cegah firewall/MySQL `wait_timeout`
-//   memutus koneksi idle secara diam-diam (penyebab slow query "pertama" tiap pagi).
+//   memutus koneksi idle (penyebab slow query "pertama" tiap pagi).
 // - idleTimeout + maxIdle: koneksi idle dipulihkan secara berkala.
 const client = mysql.createPool({
   uri: env.DATABASE_URL,
-  connectionLimit: 50,
+  connectionLimit: 200,
   waitForConnections: true,
   queueLimit: 0,
   connectTimeout: 8000,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10_000,
   idleTimeout: 60_000,
-  maxIdle: 10,
-  // @ts-expect-error — acquireTimeout valid di runtime walau tidak ada di tipe mysql2
-  acquireTimeout: 5000,
+  maxIdle: 50,
 } as mysql.PoolOptions);
 
 export const db = drizzle(client, { schema, mode: "default" });
