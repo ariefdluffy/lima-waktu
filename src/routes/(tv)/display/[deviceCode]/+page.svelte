@@ -1769,9 +1769,10 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         left: 0;
         right: 0;
         height: 13%;
+        box-sizing: border-box;
         display: flex;
         align-items: center;
-        padding: 1.5% 2.5% 2% 2%;
+        padding: 0.4% 2.5%;
         background: var(--header-bg);
     }
 
@@ -1783,7 +1784,9 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     }
 
     .masjid-logo {
-        width: 8%;
+        width: 6%;
+        max-width: 80px;
+        max-height: 80px;
         aspect-ratio: 1;
         background: var(--border-accent);
         border: 1.5px solid var(--prayer-active-border);
@@ -1791,8 +1794,8 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: clamp(24px, 3vw, 82px);
-        margin-top: 3%;
+        font-size: clamp(16px, 2.5vw, 48px);
+        margin-top: 0;
     }
 
     .masjid-logo-img {
@@ -1803,12 +1806,12 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     }
 
     .masjid-name-block {
-        margin-top: 2%;
+        margin-top: 0.3%;
     }
 
     .masjid-name {
         font-family: var(--font-heading, "Cinzel"), serif;
-        font-size: clamp(12px, 3.2vw, 36px);
+        font-size: clamp(10px, 2.8vw, 30px);
         font-weight: 700;
         color: var(--accent-primary);
         letter-spacing: 0.05em;
@@ -1827,7 +1830,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     }
 
     .header-time {
-        font-size: clamp(28px, 6.5vw, 144px);
+        font-size: clamp(22px, 6vw, 100px);
         font-weight: 700;
         color: var(--accent-primary);
         font-variant-numeric: tabular-nums;
