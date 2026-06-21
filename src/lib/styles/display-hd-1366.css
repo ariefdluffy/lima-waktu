@@ -19,7 +19,6 @@
 
     .header {
         padding: 0.6% 1.5%;
-        height: var(--header-height);
     }
 
     .masjid-logo-area {
@@ -299,9 +298,7 @@
      RUNNING BAR - Reduced font
      ============================================================ */
 
-    .running-bar {
-        height: var(--running-bar-height);
-    }
+
 
     .running-icon {
         width: 6.5%;

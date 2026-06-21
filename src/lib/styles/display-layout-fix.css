@@ -21,8 +21,6 @@
   position: relative;
   overflow: hidden;
   color: var(--text-primary);
-  display: flex;
-  flex-direction: column;
 }
 
 /* ============================================================
@@ -30,15 +28,12 @@
    ============================================================ */
 
 .header {
-  position: relative;
-  height: var(--header-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1% 2.5%;
   background: var(--header-bg);
   border-bottom: 1px solid var(--border-accent);
-  flex-shrink: 0;
   z-index: 10;
 }
 
@@ -200,14 +195,11 @@
    ============================================================ */
 
 .running-bar {
-  position: relative;
-  height: var(--running-bar-height);
   background: var(--running-bar-bg);
   border-top: 1px solid var(--running-bar-border);
   display: flex;
   align-items: center;
   overflow: hidden;
-  flex-shrink: 0;
   z-index: 5;
 }
 
