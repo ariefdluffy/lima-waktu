@@ -474,6 +474,7 @@
         text-align: center;
         margin-bottom: 3%;
         width: 100%;
+        flex-shrink: 0;
     }
 
     .yt-info-date-masehi {
@@ -498,6 +499,7 @@
         align-items: center;
         width: 100%;
         margin-bottom: 3%;
+        flex-shrink: 0;
     }
 
     .yt-info-next__label {
@@ -510,7 +512,7 @@
 
     .yt-info-next__name {
         font-family: var(--font-heading, "Cinzel"), serif;
-        font-size: clamp(18px, 3.8vw, 52px);
+        font-size: clamp(16px, 3.2vw, 44px);
         font-weight: 700;
         color: #fbbf24;
         line-height: 1.15;
@@ -519,7 +521,7 @@
     }
 
     .yt-info-next__time {
-        font-size: clamp(28px, 5vw, 82px);
+        font-size: clamp(24px, 4.2vw, 72px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;
@@ -538,6 +540,7 @@
         text-align: center;
         margin-bottom: 2%;
         box-sizing: border-box;
+        flex-shrink: 0;
     }
 
     .yt-info-countdown__label {
@@ -548,7 +551,7 @@
     }
 
     .yt-info-countdown__val {
-        font-size: clamp(16px, 2.5vw, 46px);
+        font-size: clamp(14px, 2.2vw, 40px);
         font-weight: 700;
         color: #34d399;
         font-variant-numeric: tabular-nums;
@@ -584,6 +587,7 @@
         width: 100%;
         box-sizing: border-box;
         margin-bottom: 2%;
+        flex-shrink: 0;
     }
 
     .yt-info-iqamah__label {
@@ -618,21 +622,23 @@
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 1.5%;
+        gap: 1%;
         flex: 1;
         min-height: 0;
-        justify-content: center;
+        justify-content: flex-start;
+        overflow: hidden;
     }
 
     .yt-info-prayer-row {
         display: flex;
         align-items: center;
         gap: 4%;
-        padding: 1.5% 4%;
+        padding: 1% 4%;
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid rgba(255, 255, 255, 0.05);
         transition: background 0.3s;
+        flex-shrink: 0;
     }
 
     .yt-info-prayer-row--active {
@@ -649,7 +655,7 @@
 
     .yt-info-prayer-row__name {
         flex: 1;
-        font-size: clamp(10px, 1.5vw, 24px);
+        font-size: clamp(10px, 1.3vw, 20px);
         color: rgba(255, 255, 255, 0.8);
         letter-spacing: 0.05em;
         line-height: 1.3;
@@ -661,7 +667,7 @@
     }
 
     .yt-info-prayer-row__time {
-        font-size: clamp(11px, 1.8vw, 32px);
+        font-size: clamp(11px, 1.5vw, 26px);
         font-weight: 700;
         color: #fff;
         font-variant-numeric: tabular-nums;
