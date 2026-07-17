@@ -6,8 +6,8 @@
      */
     let {
         text,
-        visibleDurationMs = 8000,
-        hiddenDurationMs = 52000,
+        visibleDurationMs = 14000,
+        hiddenDurationMs = 46000,
     }: {
         text: string;
         visibleDurationMs?: number;
@@ -79,32 +79,41 @@
     .expired-watermark__text {
         display: inline-block;
         font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
-        font-size: clamp(14px, 2.4vw, 32px);
-        font-weight: 600;
-        letter-spacing: 0.18em;
-        color: rgba(255, 255, 255, 0.55);
-        text-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+        font-size: clamp(28px, 5.5vw, 72px);
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        color: rgba(255, 255, 255, 0.7);
+        text-shadow:
+            0 0 18px rgba(0, 0, 0, 0.85),
+            0 2px 4px rgba(0, 0, 0, 0.6);
         padding: 0.5em 1.2em;
-        /* Slide across: dari kiri ke kanan layar */
+        white-space: nowrap;
+        /* Slide horizontal: masuk pelan, diam di tengah, keluar pelan (total 14s)
+           Pulse opacity terpisah, loop 3s untuk efek samar berdenyut. */
         animation:
-            watermarkSlide 7s linear forwards,
-            watermarkPulse 2.4s ease-in-out infinite;
+            watermarkSlide 14s linear forwards,
+            watermarkPulse 3s ease-in-out infinite;
     }
 
-    /* Slide horizontal dari kiri ke kanan, sekali per cycle */
+    /* Slide horizontal:
+       - 0–18%: masuk dari kiri (pelan)
+       - 18–82%: diam di tengah, drift pelan ke kanan
+       - 82–100%: keluar ke kanan (pelan) */
     @keyframes watermarkSlide {
         0% {
-            transform: translateX(-100vw);
+            transform: translateX(-60vw);
             opacity: 0;
         }
-        8% {
-            opacity: 0.55;
+        18% {
+            transform: translateX(0);
+            opacity: 0.7;
         }
-        92% {
-            opacity: 0.55;
+        82% {
+            transform: translateX(0);
+            opacity: 0.7;
         }
         100% {
-            transform: translateX(100vw);
+            transform: translateX(60vw);
             opacity: 0;
         }
     }
@@ -113,10 +122,10 @@
     @keyframes watermarkPulse {
         0%,
         100% {
-            opacity: 0.35;
+            opacity: 0.55;
         }
         50% {
-            opacity: 0.65;
+            opacity: 0.85;
         }
     }
 

@@ -25,14 +25,25 @@
 <style>
     .animate-marquee {
         display: inline-block;
-        animation: marqueeSlide 4s linear infinite;
+        font-size: clamp(20px, 4vw, 56px);
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        animation: marqueeSlide 8s linear infinite;
     }
     @keyframes marqueeSlide {
         0% {
-            transform: translateX(-50%);
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        15% {
+            opacity: 0.7;
+        }
+        85% {
+            opacity: 0.7;
         }
         100% {
-            transform: translateX(50%);
+            transform: translateX(100%);
+            opacity: 0;
         }
     }
 </style>
