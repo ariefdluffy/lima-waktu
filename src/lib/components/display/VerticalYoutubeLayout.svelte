@@ -48,7 +48,11 @@
     // Fisher-Yates sekali per cycle, regenerate saat habis.
     let playOrder = $state<number[]>([]);
     let ytPlayer: any = null;
-    let ytPlayerReady = false;
+    let ytPlayerReady = $state(false);
+
+    const shouldPauseYoutube = $derived(
+        mood !== "normal" || preAdzanRemaining > 0,
+    );
 
     // Fisher-Yates shuffle, return array baru (immutable)
     function fisherYatesShuffle(n: number): number[] {
@@ -91,6 +95,8 @@
     let lastShuffleMode = $state<number | null>(null);
 
     function playNextVideo() {
+        // Jangan pindah/load video baru saat adzan, iqamah, khusuk, atau pre-adzan.
+        if (shouldPauseYoutube) return;
         if (!payload.youtubeItems || payload.youtubeItems.length === 0) return;
         const currentShuffle = payload.masjid?.youtubeShuffle ?? 0;
         const shuffleChanged = lastShuffleMode !== null && lastShuffleMode !== currentShuffle;
@@ -154,7 +160,11 @@
                     onReady: (event: any) => {
                         ytPlayerReady = true;
                         event.target.setVolume(30);
-                        event.target.playVideo();
+                        if (shouldPauseYoutube) {
+                            event.target.pauseVideo();
+                        } else {
+                            event.target.playVideo();
+                        }
                     },
                     onStateChange: (event: any) => {
                         if (event.data === 1) {
@@ -198,10 +208,8 @@
 
     // ── Pause/Resume YouTube saat mood overlay / pre-adzan ─────
     $effect(() => {
-        const currentMood = mood;
-        const isPreAdzan = preAdzanRemaining > 0;
         if (!ytPlayer || !ytPlayerReady) return;
-        if (currentMood !== "normal" || isPreAdzan) {
+        if (shouldPauseYoutube) {
             ytPlayer.pauseVideo();
         } else {
             ytPlayer.playVideo();

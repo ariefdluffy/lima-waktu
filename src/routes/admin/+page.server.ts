@@ -439,10 +439,30 @@ export const actions: Actions = {
         : "horizontal";
 
     if (masjidId && deviceCode && name) {
+      // Form data is untrusted. Admin masjid may only manage own masjid.
+      if (!locals.user.roles.includes("superadmin")) {
+        const [membership] = await db
+          .select({ masjidId: masjidUsers.masjidId })
+          .from(masjidUsers)
+          .where(
+            and(
+              eq(masjidUsers.userId, locals.user.id),
+              eq(masjidUsers.masjidId, masjidId),
+              eq(masjidUsers.isActive, 1),
+            ),
+          )
+          .limit(1);
+
+        if (!membership) {
+          return fail(403, { error: "Tidak punya akses ke masjid ini." });
+        }
+      }
+
       // Enforce max_devices limit based on subscription
       const [sub] = await db
         .select({
           status: subscriptions.status,
+          endDate: subscriptions.endDate,
           maxDevices: subscriptions.maxDevices,
         })
         .from(subscriptions)
@@ -450,11 +470,17 @@ export const actions: Actions = {
         .orderBy(desc(subscriptions.createdAt))
         .limit(1);
 
-      const maxDevices = sub?.maxDevices ?? 1;
+      if (!sub || isSubscriptionExpired(sub)) {
+        return fail(403, {
+          error: "Langganan sudah berakhir atau dibatalkan. Perpanjang langganan untuk menambah device.",
+        });
+      }
+
+      const maxDevices = sub.maxDevices ?? 1;
       const [{ total }] = await db
         .select({ total: count() })
         .from(devices)
-        .where(eq(devices.masjidId, masjidId));
+        .where(and(eq(devices.masjidId, masjidId), eq(devices.isActive, 1)));
 
       if (total >= maxDevices) {
         return fail(403, {
@@ -463,16 +489,24 @@ export const actions: Actions = {
       }
 
       const id = randomUUID();
-      await db.insert(devices).values({
-        id,
-        masjidId,
-        deviceCode,
-        name,
-        orientation,
-        status: "unknown",
-        isActive: 1,
-        pairedAt: new Date(),
-      });
+      try {
+        await db.insert(devices).values({
+          id,
+          masjidId,
+          deviceCode,
+          name,
+          orientation,
+          status: "unknown",
+          isActive: 1,
+          pairedAt: new Date(),
+        });
+      } catch (err: any) {
+        // Handle race condition: deviceCode unique constraint violation
+        if (err.code === "ER_DUP_ENTRY" || err.errno === 1062) {
+          return fail(400, { error: "Kode device sudah digunakan. Coba lagi." });
+        }
+        throw err;
+      }
       await writeAuditLog({
         masjidId,
         userId: locals.user.id,

@@ -1,5 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import { and, desc, eq, lte, gte, or, isNull } from "drizzle-orm";
+import { isSubscriptionExpired } from "$lib/utils/subscription";
 import { db } from "$lib/server/db";
 import {
   platformAnnouncements,
@@ -60,11 +61,7 @@ export const load = async ({
 
     if (sub) {
       subscription = sub;
-      const now = new Date();
-      const endDate = new Date(sub.endDate);
-      isExpired =
-        sub.status === "expired" ||
-        ((sub.status === "trial" || sub.status === "grace") && endDate < now);
+      isExpired = isSubscriptionExpired(sub);
 
       // Redirect to langganan section only on root /admin without section param
       if (

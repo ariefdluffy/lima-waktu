@@ -1,7 +1,8 @@
-import { desc, eq, sql, count } from "drizzle-orm";
+import { desc, eq, sql, count, and } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { invoices, subscriptions, masjids } from "$lib/server/db/schema";
+import { isSubscriptionExpired } from "$lib/utils/subscription";
 
 export const load = async ({
   locals,
@@ -118,11 +119,64 @@ export const actions = {
   updateStatus: async ({ request }) => {
     const form = await request.formData();
     const id = Number(form.get("id") ?? 0);
-    const status = String(form.get("status") ?? "").trim();
-    if (id && status) {
-      const updateData: Record<string, unknown> = { status };
-      if (status === "paid") updateData.paidAt = new Date();
-      await db.update(invoices).set(updateData).where(eq(invoices.id, id));
+    const status = String(form.get("status") ?? "").trim() as
+      | "draft"
+      | "pending"
+      | "paid"
+      | "failed"
+      | "cancelled";
+
+    if (!id || !status) return { error: "Data tidak lengkap." };
+
+    // Ambil info invoice + subscription terkait
+    const [inv] = await db
+      .select({
+        id: invoices.id,
+        subscriptionId: invoices.subscriptionId,
+        status: invoices.status,
+        amount: invoices.amount,
+      })
+      .from(invoices)
+      .where(eq(invoices.id, id))
+      .limit(1);
+
+    if (!inv) return { error: "Invoice tidak ditemukan." };
+
+    const updateData: Record<string, unknown> = { status };
+    if (status === "paid") updateData.paidAt = new Date();
+
+    await db.update(invoices).set(updateData).where(eq(invoices.id, id));
+
+    // Jika invoice dibayar, perpanjang/aktifkan subscription
+    if (status === "paid" && inv.subscriptionId) {
+      const [sub] = await db
+        .select()
+        .from(subscriptions)
+        .where(eq(subscriptions.id, inv.subscriptionId))
+        .limit(1);
+
+      if (sub) {
+        const now = new Date();
+        const amountNum = Number(inv.amount);
+        // Hitung penambahan hari: default 30 hari per pembayaran
+        // TODO: sesuaikan dengan billingCycle jika disimpan di invoice
+        const addDays = amountNum > 0 ? 30 : 0;
+
+        // Jika subscription masih aktif, perpanjang dari endDate
+        // Jika sudah expired, mulai dari hari ini
+        const currentEnd = new Date(sub.endDate);
+        const newStart = isSubscriptionExpired(sub) ? now : currentEnd;
+        const newEnd = new Date(newStart);
+        newEnd.setDate(newEnd.getDate() + addDays);
+
+        await db
+          .update(subscriptions)
+          .set({
+            status: "active",
+            endDate: newEnd,
+          })
+          .where(eq(subscriptions.id, sub.id));
+      }
     }
 
     return { saved: true };
@@ -131,25 +185,50 @@ export const actions = {
   generateInvoice: async ({ request }) => {
     const form = await request.formData();
     const subscriptionId = Number(form.get("subscriptionId") ?? 0);
-    const amount = String(form.get("amount") ?? "0");
-    const dueDate = String(form.get("dueDate") ?? "");
+    const amountRaw = String(form.get("amount") ?? "0");
+    const dueDateRaw = String(form.get("dueDate") ?? "");
     const paymentMethod =
       String(form.get("paymentMethod") ?? "").trim() || null;
 
-    if (!subscriptionId || !amount || !dueDate) {
+    if (!subscriptionId || !amountRaw || !dueDateRaw) {
       return { error: "Semua field wajib diisi." };
     }
 
-    // Get masjidId from subscription
-    const sub = await db
-      .select({ masjidId: subscriptions.masjidId })
+    const amountNum = Number(amountRaw);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      return { error: "Amount harus berupa angka positif." };
+    }
+
+    const dueDate = new Date(dueDateRaw);
+    if (isNaN(dueDate.getTime())) {
+      return { error: "Tanggal jatuh tempo tidak valid." };
+    }
+
+    // Get subscription details
+    const [sub] = await db
+      .select()
       .from(subscriptions)
       .where(eq(subscriptions.id, subscriptionId))
-      .limit(1)
-      .then((r) => r[0] ?? null);
+      .limit(1);
 
     if (!sub) {
       return { error: "Subskripsi tidak ditemukan." };
+    }
+
+    // Cek apakah ada invoice draft/pending untuk subscription yang sama
+    const [existingInvoice] = await db
+      .select({ id: invoices.id })
+      .from(invoices)
+      .where(
+        and(
+          eq(invoices.subscriptionId, subscriptionId),
+          sql`${invoices.status} IN ('draft', 'pending')`,
+        ),
+      )
+      .limit(1);
+
+    if (existingInvoice) {
+      return { error: "Sudah ada invoice draft/pending untuk subscription ini." };
     }
 
     const now = new Date();
@@ -163,8 +242,8 @@ export const actions = {
       subscriptionId,
       masjidId: sub.masjidId,
       invoiceNo,
-      amount,
-      dueDate: dueDate ? new Date(dueDate) : null,
+      amount: amountRaw,
+      dueDate,
       paymentMethod,
       status: "draft",
     });

@@ -1,4 +1,4 @@
-import { desc, eq, sql, count } from "drizzle-orm";
+import { desc, eq, sql, count, and } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 
 import { db } from "$lib/server/db";
@@ -9,6 +9,7 @@ import {
   subscriptions,
   invoices,
 } from "$lib/server/db/schema";
+import { isSubscriptionExpired } from "$lib/utils/subscription";
 
 export const load = async ({ locals }: { locals: App.Locals }) => {
   if (!locals.user) throw redirect(302, "/auth/login");
@@ -64,14 +65,15 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .where(sql`${devices.lastSeenAt} > NOW() - INTERVAL 5 MINUTE`)
       .then((r) => Number(r[0].val)),
 
-    // Subscription counts by status
+    // Subscription counts by status (includes expired based on date)
     db
       .select({
         status: subscriptions.status,
+        endDate: subscriptions.endDate,
         val: count(),
       })
       .from(subscriptions)
-      .groupBy(subscriptions.status),
+      .groupBy(subscriptions.status, subscriptions.endDate),
 
     // Revenue this month
     db
@@ -142,15 +144,24 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .then((r) => Number(r[0].val)),
   ]);
 
-  const subMap: Record<string, number> = {
+  // Calculate subscription counts: DB status + date-based expiry
+  const subCounts = {
     active: 0,
     expired: 0,
     trial: 0,
     grace: 0,
     cancelled: 0,
   };
+
   for (const s of subscriptionCounts) {
-    subMap[s.status] = Number(s.val);
+    const statusStr = String(s.status ?? "");
+    const endDateVal = s.endDate instanceof Date ? s.endDate : new Date(String(s.endDate));
+    const effectiveExpired = statusStr === "cancelled" || statusStr === "expired" || (!isNaN(endDateVal.getTime()) && isSubscriptionExpired({ status: statusStr, endDate: endDateVal }));
+    const effectiveStatus = effectiveExpired ? "expired" : statusStr;
+    const key = effectiveStatus as keyof typeof subCounts;
+    if (subCounts[key] !== undefined) {
+      subCounts[key] += Number(s.val);
+    }
   }
 
   const deviceStatusCounts = {
@@ -172,10 +183,10 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       totalDevices,
       onlineDevices: Number(onlineDevices),
       offlineDevices: totalDevices - Number(onlineDevices) - unknownDevicesCount,
-      subscriptionActive: subMap["active"] ?? 0,
-      subscriptionExpired: subMap["expired"] ?? 0,
-      subscriptionTrial: subMap["trial"] ?? 0,
-      subscriptionGrace: subMap["grace"] ?? 0,
+      subscriptionActive: subCounts["active"] ?? 0,
+      subscriptionExpired: subCounts["expired"] ?? 0,
+      subscriptionTrial: subCounts["trial"] ?? 0,
+      subscriptionGrace: subCounts["grace"] ?? 0,
       revenueMonthly: Number(revenueMonthly),
       revenueYearly: Number(revenueYearly),
     },

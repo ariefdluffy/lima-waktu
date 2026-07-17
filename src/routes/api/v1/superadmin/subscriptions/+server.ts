@@ -100,6 +100,13 @@ export const POST: RequestHandler = async (event) => {
     );
   }
 
+  if (endDate.getTime() < startDate.getTime()) {
+    return json(
+      { ok: false, message: "endDate harus lebih besar atau sama dengan startDate" },
+      { status: 400 },
+    );
+  }
+
   await db.insert(subscriptions).values({
     masjidId: body.masjidId,
     packageName: body.packageName,

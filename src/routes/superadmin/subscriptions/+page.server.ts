@@ -3,6 +3,7 @@ import { redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { subscriptions, masjids, pricingPlans } from "$lib/server/db/schema";
 import { writeAuditLog } from "$lib/server/audit";
+import { isSubscriptionExpired } from "$lib/utils/subscription";
 
 export const load = async ({
   locals,
@@ -117,27 +118,54 @@ export const actions = {
   updateSubscription: async ({ request, locals }) => {
     const form = await request.formData();
     const id = String(form.get("id") ?? "").trim();
-    const status = String(form.get("status") ?? "").trim();
-    const endDate = String(form.get("end_date") ?? "").trim();
+    const status = String(form.get("status") ?? "").trim() as
+      | "trial"
+      | "active"
+      | "grace"
+      | "expired"
+      | "cancelled"
+      | "";
+    const endDateRaw = String(form.get("end_date") ?? "").trim();
     const autoRenew = form.get("auto_renew") === "1" ? 1 : 0;
 
-    if (!id) return;
+    if (!id) return { error: "ID subscription wajib diisi." };
 
-    const [sub] = await db
-      .select({ masjidId: subscriptions.masjidId })
+    const [existing] = await db
+      .select({ id: subscriptions.id, masjidId: subscriptions.masjidId, endDate: subscriptions.endDate, status: subscriptions.status })
       .from(subscriptions)
       .where(eq(subscriptions.id, Number(id)))
       .limit(1);
 
+    if (!existing) return { error: "Subscription tidak ditemukan." };
+
     const updateData: Record<string, unknown> = { autoRenew };
-    if (status)
-      updateData.status = status as
-        | "trial"
-        | "active"
-        | "grace"
-        | "expired"
-        | "cancelled";
-    if (endDate) updateData.endDate = new Date(endDate);
+
+    if (endDateRaw) {
+      const endDate = new Date(endDateRaw);
+      if (isNaN(endDate.getTime())) {
+        return { error: "Tanggal berakhir tidak valid." };
+      }
+      updateData.endDate = endDate;
+    }
+
+    if (status) {
+      updateData.status = status;
+    }
+
+    // Cek konsistensi tanggal vs status: jika status aktif tapi tanggal sudah lewat, reset ke expired
+    const effectiveEndDateRaw = updateData.endDate ?? existing.endDate;
+    const effectiveEndDate = effectiveEndDateRaw instanceof Date ? effectiveEndDateRaw : new Date(String(effectiveEndDateRaw));
+    const effectiveStatus = String(updateData.status ?? existing.status);
+    const testSub = { status: effectiveStatus, endDate: effectiveEndDate };
+    if (!isSubscriptionExpired(testSub) && effectiveStatus === "expired") {
+      // Admin set expired tapi tanggal masih valid → reject
+      return { error: "Masih dalam masa aktif. Jika ingin expired, ubah tanggal atau tunggu hingga lewat." };
+    }
+    if (isSubscriptionExpired(testSub) && ["active", "trial", "grace"].includes(effectiveStatus)) {
+      // Admin set aktif tapi tanggal sudah lewat → auto-correct atau reject
+      // Pilih auto-correct ke expired untuk keamanan
+      updateData.status = "expired";
+    }
 
     await db
       .update(subscriptions)
@@ -145,7 +173,7 @@ export const actions = {
       .where(eq(subscriptions.id, Number(id)));
 
     await writeAuditLog({
-        masjidId: sub?.masjidId,
+        masjidId: existing?.masjidId,
         userId: locals.user?.id,
         action: "update",
         entity: "subscription",

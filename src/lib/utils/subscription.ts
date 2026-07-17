@@ -18,7 +18,7 @@ export type SubscriptionLike = {
  * - null / undefined → false (anggap belum pernah langganan, bukan expired).
  *   Catatan: TV API tetap skip watermark kalau null (lihat display endpoint).
  * - status = "expired" atau "cancelled" → true.
- * - status = "trial" / "grace" / "active" tapi endDate < now → true.
+ * - status = "trial" / "grace" / "active" → expired setelah seluruh endDate lewat.
  */
 export function isSubscriptionExpired(
   sub: SubscriptionLike | null | undefined,
@@ -27,14 +27,22 @@ export function isSubscriptionExpired(
   if (!sub) return false;
   const status = sub.status as SubscriptionStatus;
   if (status === "expired" || status === "cancelled") return true;
-  const end = sub.endDate instanceof Date ? sub.endDate : new Date(sub.endDate);
+
+  const end = sub.endDate instanceof Date
+    ? new Date(sub.endDate.getTime())
+    : new Date(sub.endDate);
   if (isNaN(end.getTime())) return false;
+
+  // subscriptions.end_date bertipe DATE. Tanggal akhir bersifat inklusif:
+  // endDate 10 April baru expired mulai 11 April.
+  end.setDate(end.getDate() + 1);
+
   if (
     status === "trial" ||
     status === "grace" ||
     status === "active"
   ) {
-    return end.getTime() < now.getTime();
+    return now.getTime() >= end.getTime();
   }
   return false;
 }

@@ -115,6 +115,11 @@ async function handleGet(params: Record<string, string | undefined>) {
     watermark = EXPIRED_WATERMARK;
   }
 
+  // Watermark/Display policy check
+  // Saat ini policy: "expired masih tampil dengan watermark"
+  // Jika ingin blok total, ganti dengan:
+  // return json({ ok: false, message: "Subscription expired" }, { status: 403 });
+
   // Heartbeat update — fire-and-forget supaya tidak menahan respons.
   // Pakai NOW() biar konsisten dengan MySQL server time.
   void heartbeatById(device.id);
