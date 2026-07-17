@@ -26,7 +26,7 @@
 <style>
     .animate-marquee {
         display: inline-block;
-        font-size: clamp(18px, 3vw, 44px);
+        font-size: clamp(14px, 2.3vw, 38px);
         font-weight: 700;
         letter-spacing: 0.16em;
         animation: marqueePulse 4s ease-in-out infinite;

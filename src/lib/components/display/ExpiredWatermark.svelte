@@ -79,17 +79,19 @@
     .expired-watermark__text {
         display: inline-block;
         font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
-        /* font-size di-batasi supaya text ~53 char pas 1 layar
-           di TV HD (1280px) sampai FHD (1920px).
-           3vw di 1920px = 57.6 → capped 44. Di 1280px = 38.4. */
-        font-size: clamp(18px, 3vw, 44px);
+        /* font-size diformula supaya 50 char pas dalam 96vw di SEMUA TV.
+           monospace 700 + letter-spacing 0.16em ≈ 0.76em per char.
+           50 char × 0.76 = 38em + padding 1.6em = 39.6em total.
+           Supaya ≤ 0.92 × viewport: font-size ≤ 2.32vw.
+           Pakai 2.3vw (aman, margin ~5%). min 14px, max 38px. */
+        font-size: clamp(14px, 2.3vw, 38px);
         font-weight: 700;
         letter-spacing: 0.16em;
         color: rgba(255, 255, 255, 0.72);
         text-shadow:
             0 0 18px rgba(0, 0, 0, 0.85),
             0 2px 4px rgba(0, 0, 0, 0.6);
-        padding: 0.4em 1em;
+        padding: 0.4em 0.8em;
         max-width: 96vw;
         white-space: nowrap;
         overflow: hidden;
