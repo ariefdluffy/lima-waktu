@@ -94,45 +94,27 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: clip;
-        /* Fade in/out di tengah + pulse opacity. Tidak ada slide horizontal
-           supaya text tidak terpotong ke kanan. */
-        animation:
-            watermarkFade 10s ease-in-out forwards,
-            watermarkPulse 3s ease-in-out infinite;
+        /* Tidak ada fade/slide: text langsung muncul penuh dan diam.
+           Hanya pulse halus supaya tidak terlalu statis. */
+        animation: watermarkPulse 4s ease-in-out infinite;
     }
 
-    /* Fade in/out: muncul pelan, diam 8s, hilang pelan.
-       Diam di tengah (translateX 0), tidak melintas. */
-    @keyframes watermarkFade {
-        0% {
-            opacity: 0;
-        }
-        15% {
-            opacity: 0.75;
-        }
-        85% {
-            opacity: 0.75;
-        }
-        100% {
-            opacity: 0;
-        }
-    }
-
-    /* Pulse opacity: samar, tidak ganggu konten */
+    /* Pulse opacity: samar, halus, hampir tak terasa */
     @keyframes watermarkPulse {
         0%,
         100% {
-            opacity: 0.6;
+            opacity: 0.68;
         }
         50% {
-            opacity: 0.9;
+            opacity: 0.82;
         }
     }
 
     /* Reduce motion: hormati preferensi user */
     @media (prefers-reduced-motion: reduce) {
         .expired-watermark__text {
-            animation: watermarkPulse 3s ease-in-out infinite;
+            animation: none;
+            opacity: 0.75;
         }
     }
 </style>

@@ -18,8 +18,8 @@
         </div>
     </div>
     <p class="mt-2 text-xs text-slate-400">
-        Animasi: fade in/out di tengah layar + pulse opacity (samar).
-        Interval: 5 menit, tampil 10 detik.
+        Text langsung muncul penuh di tengah (tanpa animasi masuk/keluar),
+        denyut halus pelan. Interval: 5 menit, tampil 10 detik.
     </p>
 </div>
 
@@ -29,20 +29,15 @@
         font-size: clamp(18px, 3vw, 44px);
         font-weight: 700;
         letter-spacing: 0.16em;
-        animation: marqueeFade 6s ease-in-out infinite;
+        animation: marqueePulse 4s ease-in-out infinite;
     }
-    @keyframes marqueeFade {
-        0% {
-            opacity: 0;
-        }
-        20% {
-            opacity: 0.75;
-        }
-        80% {
-            opacity: 0.75;
-        }
+    @keyframes marqueePulse {
+        0%,
         100% {
-            opacity: 0;
+            opacity: 0.7;
+        }
+        50% {
+            opacity: 0.85;
         }
     }
 </style>
