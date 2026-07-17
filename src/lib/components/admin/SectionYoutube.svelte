@@ -16,6 +16,7 @@
 
     let addFormEl = $state<HTMLFormElement | null>(null);
     let pendingReorder = $state(false);
+    let shufflePending = $state(false);
 
     // ----------------------------------------------------------------
     // Local copy untuk drag & drop (reactive terhadap data.youtubeItems)
@@ -109,6 +110,36 @@
             };
     }
 
+    function handleToggleShuffle() {
+        shufflePending = true;
+        return async ({ result }: { result: any }) => {
+            shufflePending = false;
+            if (result.type === "success" || result.type === "redirect") {
+                // Ambil status shuffle baru dari server response (fallback: toggle current)
+                const respData = result.data as { shuffle?: number } | undefined;
+                const newShuffle =
+                    typeof respData?.shuffle === "number"
+                        ? respData.shuffle
+                        : data.masjid?.youtubeShuffle
+                          ? 0
+                          : 1;
+                await invalidate("app:admin");
+                showToast(
+                    newShuffle
+                        ? "✓ Shuffle diaktifkan — video diputar acak di TV."
+                        : "✓ Shuffle dimatikan — video diputar sesuai urutan.",
+                );
+            } else if (result.type === "error") {
+                showToast(
+                    "✗ Gagal mengubah shuffle: " +
+                        (result.data?.error ?? result.message ?? "Server error"),
+                );
+            } else {
+                await invalidate("app:admin");
+            }
+        };
+    }
+
     async function submitDragReorder() {
         if (pendingReorder) return;
         pendingReorder = true;
@@ -153,12 +184,55 @@
                     📺 YouTube Playlist
                 </h2>
                 <p class="mt-0.5 text-xs text-slate-500">
-                    Video diputar sesuai urutan. Seret ☰ untuk mengubah urutan.
+                    {#if data.masjid?.youtubeShuffle}
+                        Urutan diputar secara acak (shuffle). Seret ☰ untuk mengatur daftar.
+                    {:else}
+                        Video diputar sesuai urutan. Seret ☰ untuk mengubah urutan.
+                    {/if}
                 </p>
             </div>
             <span class="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                 {data.youtubeItems.length} video
             </span>
+        </div>
+
+        <!-- Shuffle toggle -->
+        <div class="mt-4 flex items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+            <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-slate-700">
+                    🔀 Acak urutan putar (shuffle)
+                </p>
+                <p class="mt-0.5 text-xs text-slate-500">
+                    Jika aktif, video diputar secara acak. Urutan di daftar hanya menentukan kumpulan video.
+                </p>
+            </div>
+            <form
+                method="POST"
+                action="?/toggleYoutubeShuffle"
+                use:enhance={handleToggleShuffle}
+                class="shrink-0"
+            >
+                <input type="hidden" name="masjid_id" value={data.masjid.id} />
+                <input
+                    type="hidden"
+                    name="shuffle"
+                    value={data.masjid?.youtubeShuffle ? "0" : "1"}
+                />
+                <button
+                    type="submit"
+                    disabled={isExpired || shufflePending}
+                    aria-pressed={data.masjid?.youtubeShuffle ? "true" : "false"}
+                    title={data.masjid?.youtubeShuffle ? "Matikan shuffle" : "Aktifkan shuffle"}
+                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                        {data.masjid?.youtubeShuffle ? 'bg-emerald-500' : 'bg-slate-300'}
+                        {isExpired || shufflePending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"
+                >
+                    <span
+                        class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform
+                            {data.masjid?.youtubeShuffle ? 'translate-x-5' : 'translate-x-0.5'}"
+                    ></span>
+                </button>
+            </form>
         </div>
 
         <!-- Form Tambah -->

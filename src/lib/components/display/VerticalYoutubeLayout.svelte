@@ -43,8 +43,32 @@
     }: Props = $props();
 
     let currentYoutubeIndex = $state(0);
+    // playOrder: urutan index ke payload.youtubeItems sesuai mode shuffle/non-shuffle.
+    // playOrder[displayIndex] → index asli di payload.youtubeItems.
+    // Fisher-Yates sekali per cycle, regenerate saat habis.
+    let playOrder = $state<number[]>([]);
     let ytPlayer: any = null;
     let ytPlayerReady = false;
+
+    // Fisher-Yates shuffle, return array baru (immutable)
+    function fisherYatesShuffle(n: number): number[] {
+        const arr = Array.from({ length: n }, (_, i) => i);
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Bangun playOrder berdasarkan mode shuffle
+    function buildPlayOrder(): number[] {
+        const n = payload.youtubeItems?.length ?? 0;
+        if (n <= 1) return Array.from({ length: n }, (_, i) => i);
+        if (payload.masjid?.youtubeShuffle) {
+            return fisherYatesShuffle(n);
+        }
+        return Array.from({ length: n }, (_, i) => i);
+    }
 
     function getVideoId(url: string): string {
         let videoId = "";
@@ -64,22 +88,50 @@
         return videoId;
     }
 
+    let lastShuffleMode = $state<number | null>(null);
+
     function playNextVideo() {
         if (!payload.youtubeItems || payload.youtubeItems.length === 0) return;
-        const nextIndex =
-            (currentYoutubeIndex + 1) % payload.youtubeItems.length;
-        currentYoutubeIndex = nextIndex;
+        const currentShuffle = payload.masjid?.youtubeShuffle ?? 0;
+        const shuffleChanged = lastShuffleMode !== null && lastShuffleMode !== currentShuffle;
+        if (playOrder.length !== payload.youtubeItems.length || shuffleChanged) {
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+            lastShuffleMode = currentShuffle;
+            if (ytPlayer && ytPlayerReady) {
+                const realIndex = playOrder[0];
+                const nextId = getVideoId(
+                    payload.youtubeItems[realIndex].youtubeUrl,
+                );
+                if (nextId) ytPlayer.loadVideoById(nextId);
+            }
+            return;
+        }
+        if (lastShuffleMode === null) lastShuffleMode = currentShuffle;
+        const nextSlot = currentYoutubeIndex + 1;
+        if (nextSlot >= playOrder.length) {
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+        } else {
+            currentYoutubeIndex = nextSlot;
+        }
         if (ytPlayer && ytPlayerReady) {
+            const realIndex = playOrder[currentYoutubeIndex];
             const nextId = getVideoId(
-                payload.youtubeItems[nextIndex].youtubeUrl,
+                payload.youtubeItems[realIndex].youtubeUrl,
             );
             if (nextId) ytPlayer.loadVideoById(nextId);
         }
     }
 
     onMount(() => {
+        if (playOrder.length !== (payload.youtubeItems?.length ?? 0)) {
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+        }
+        const firstRealIndex = playOrder[0] ?? 0;
         const firstVideoId = getVideoId(
-            payload.youtubeItems?.[0]?.youtubeUrl ?? "",
+            payload.youtubeItems?.[firstRealIndex]?.youtubeUrl ?? "",
         );
         if (!firstVideoId) return;
 
@@ -155,6 +207,28 @@
             ytPlayer.playVideo();
         }
     });
+
+    // ── Rebuild playOrder saat playlist / setting shuffle berubah ──
+    $effect(() => {
+        const itemsLen = payload.youtubeItems?.length ?? 0;
+        if (itemsLen === 0) {
+            if (playOrder.length !== 0) playOrder = [];
+            currentYoutubeIndex = 0;
+            return;
+        }
+        if (!ytPlayerReady) {
+            if (playOrder.length !== itemsLen) {
+                playOrder = buildPlayOrder();
+                currentYoutubeIndex = 0;
+                lastShuffleMode = payload.masjid?.youtubeShuffle ?? 0;
+            }
+            return;
+        }
+        if (playOrder.length !== itemsLen) {
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+        }
+    });
 </script>
 
 <div class="v-yt-layout">
@@ -170,9 +244,9 @@
             {/if}
         </div>
         <div id="v-yt-player" class="v-yt-iframe"></div>
-        {#if payload.youtubeItems[currentYoutubeIndex]?.title}
+        {#if payload.youtubeItems[playOrder[currentYoutubeIndex] ?? 0]?.title}
             <div class="v-yt-title">
-                {payload.youtubeItems[currentYoutubeIndex].title}
+                {payload.youtubeItems[playOrder[currentYoutubeIndex] ?? 0].title}
             </div>
         {/if}
     </div>

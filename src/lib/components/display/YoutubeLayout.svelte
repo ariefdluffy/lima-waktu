@@ -49,8 +49,35 @@
     );
 
     let currentYoutubeIndex = $state(0);
+    // playOrder: urutan index ke payload.youtubeItems sesuai mode shuffle/non-shuffle.
+    // playOrder[displayIndex] → index asli di payload.youtubeItems.
+    // Fisher-Yates sekali per cycle, regenerate saat habis.
+    let playOrder = $state<number[]>([]);
     let ytPlayer: any = null;
     let ytPlayerReady = false;
+
+    // Fisher-Yates shuffle, return array baru (immutable)
+    function fisherYatesShuffle(n: number): number[] {
+        const arr = Array.from({ length: n }, (_, i) => i);
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // Bangun playOrder berdasarkan mode shuffle
+    function buildPlayOrder(): number[] {
+        const n = payload.youtubeItems?.length ?? 0;
+        if (n <= 1) return Array.from({ length: n }, (_, i) => i);
+        if (payload.masjid?.youtubeShuffle) {
+            const shuffled = fisherYatesShuffle(n);
+            // Jaga agar video pertama tidak sama dengan yang sedang berjalan
+            // (jika cycle lanjut setelah loop habis)
+            return shuffled;
+        }
+        return Array.from({ length: n }, (_, i) => i);
+    }
 
     // Ekstrak video ID dari berbagai format URL YouTube
     function getVideoId(url: string): string {
@@ -71,23 +98,57 @@
         return videoId;
     }
 
+    // Track last applied shuffle mode agar detect perubahan mid-play
+    let lastShuffleMode = $state<number | null>(null);
+
     function playNextVideo() {
         if (!payload.youtubeItems || payload.youtubeItems.length === 0) return;
-        const nextIndex =
-            (currentYoutubeIndex + 1) % payload.youtubeItems.length;
-        currentYoutubeIndex = nextIndex;
+        const currentShuffle = payload.masjid?.youtubeShuffle ?? 0;
+        // Detect perubahan shuffle mode (admin toggle saat TV sedang jalan)
+        const shuffleChanged = lastShuffleMode !== null && lastShuffleMode !== currentShuffle;
+        // Bangun playOrder kalau belum ada atau shuffle baru saja berubah
+        if (playOrder.length !== payload.youtubeItems.length || shuffleChanged) {
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+            lastShuffleMode = currentShuffle;
+            if (ytPlayer && ytPlayerReady) {
+                const realIndex = playOrder[0];
+                const nextId = getVideoId(
+                    payload.youtubeItems[realIndex].youtubeUrl,
+                );
+                if (nextId) ytPlayer.loadVideoById(nextId);
+            }
+            return;
+        }
+        if (lastShuffleMode === null) lastShuffleMode = currentShuffle;
+        // Maju ke slot berikutnya
+        const nextSlot = currentYoutubeIndex + 1;
+        if (nextSlot >= playOrder.length) {
+            // Cycle habis → regenerate (kalau shuffle, urutan baru)
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+        } else {
+            currentYoutubeIndex = nextSlot;
+        }
         // Gunakan API untuk load video berikutnya tanpa recreate iframe
         if (ytPlayer && ytPlayerReady) {
+            const realIndex = playOrder[currentYoutubeIndex];
             const nextId = getVideoId(
-                payload.youtubeItems[nextIndex].youtubeUrl,
+                payload.youtubeItems[realIndex].youtubeUrl,
             );
             if (nextId) ytPlayer.loadVideoById(nextId);
         }
     }
 
     onMount(() => {
+        // Inisialisasi playOrder berdasarkan mode shuffle
+        if (playOrder.length !== (payload.youtubeItems?.length ?? 0)) {
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+        }
+        const firstRealIndex = playOrder[0] ?? 0;
         const firstVideoId = getVideoId(
-            payload.youtubeItems?.[0]?.youtubeUrl ?? "",
+            payload.youtubeItems?.[firstRealIndex]?.youtubeUrl ?? "",
         );
         if (!firstVideoId) return;
 
@@ -168,6 +229,37 @@
             ytPlayer.playVideo();
         }
     });
+
+    // ── Rebuild playOrder saat playlist / setting shuffle berubah ──
+    // Aturan aman agar tidak ganggu video yang sedang jalan:
+    // 1. Kalau jumlah item berubah → rebuild, reset ke awal.
+    // 2. Kalau shuffle flag berubah tapi player sudah ready → defer
+    //    rebuild sampai cycle habis (lihat playNextVideo).
+    // 3. Kalau player BELUM ready (initial) → rebuild kapan saja.
+    $effect(() => {
+        const itemsLen = payload.youtubeItems?.length ?? 0;
+        if (itemsLen === 0) {
+            if (playOrder.length !== 0) playOrder = [];
+            currentYoutubeIndex = 0;
+            return;
+        }
+        if (!ytPlayerReady) {
+            // Initial state — selalu sync
+            if (playOrder.length !== itemsLen) {
+                playOrder = buildPlayOrder();
+                currentYoutubeIndex = 0;
+                lastShuffleMode = payload.masjid?.youtubeShuffle ?? 0;
+            }
+            return;
+        }
+        // Player ready: hanya rebuild kalau jumlah item berubah
+        // (item ditambah/dihapus). Perubahan shuffle flag di-defer.
+        if (playOrder.length !== itemsLen) {
+            // Bangun ulang dengan mode shuffle sesuai setting saat ini
+            playOrder = buildPlayOrder();
+            currentYoutubeIndex = 0;
+        }
+    });
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -192,9 +284,9 @@
             <div id="yt-player" class="yt-iframe"></div>
 
             <!-- Judul video (bottom overlay) -->
-            {#if payload.youtubeItems[currentYoutubeIndex].title}
+            {#if payload.youtubeItems[playOrder[currentYoutubeIndex] ?? 0]?.title}
                 <div class="yt-video-title">
-                    {payload.youtubeItems[currentYoutubeIndex].title}
+                    {payload.youtubeItems[playOrder[currentYoutubeIndex] ?? 0].title}
                 </div>
             {/if}
         </div>

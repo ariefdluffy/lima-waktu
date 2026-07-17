@@ -292,6 +292,7 @@ async function handleGet(params: Record<string, string | undefined>) {
       screensaverMorningWakeMinutes:
         masjid.screensaverMorningWakeMinutes ?? 120,
       screensaverAudioEnabled: masjid.screensaverAudioEnabled ?? 1,
+      youtubeShuffle: masjid.youtubeShuffle ?? 0,
       logoUrl: masjid.logoUrl ?? null,
     },
     schedule,

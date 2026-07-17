@@ -161,6 +161,7 @@ export const masjids = mysqlTable("masjids", {
   screensaverAudioEnabled: int("screensaver_audio_enabled")
     .default(1)
     .notNull(),
+  youtubeShuffle: int("youtube_shuffle").default(0).notNull(),
   logoUrl: varchar("logo_url", { length: 500 }),
   isActive: int("is_active").default(1).notNull(),
   ...timestamps,

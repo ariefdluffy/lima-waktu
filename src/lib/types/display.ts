@@ -112,6 +112,7 @@ export type DisplayPayload = {
     screensaverMorningDelayMinutes: number;
     screensaverMorningWakeMinutes: number;
     screensaverAudioEnabled: number;
+    youtubeShuffle: number;
     logoUrl: string | null;
   };
   schedule: {

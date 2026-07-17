@@ -29,7 +29,7 @@ import {
   todayYmdInTimezone,
 } from "$lib/server/prayer/resolver";
 import { invalidateCache } from "$lib/server/prayer/cache";
-import { invalidateDisplayCacheByDevice } from "$lib/server/display/cache";
+import { invalidateDisplayCacheByDevice, invalidateDisplayCacheByMasjid } from "$lib/server/display/cache";
 import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
@@ -844,6 +844,70 @@ export const actions: Actions = {
         ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
       });
     }
+  },
+
+  toggleYoutubeShuffle: async ({ locals, request }) => {
+    if (!locals.user) {
+      throw redirect(302, "/auth/login");
+    }
+    const form = await request.formData();
+    const masjidId = String(form.get("masjid_id") ?? "").trim();
+    const shuffleRaw = form.get("shuffle");
+
+    if (!masjidId) {
+      return fail(400, { error: "masjid_id wajib diisi" });
+    }
+
+    // Normalisasi ke 0/1 — terima "1"/"0"/"true"/"false"
+    let shuffle = 0;
+    if (shuffleRaw === "1" || shuffleRaw === "true") {
+      shuffle = 1;
+    } else if (shuffleRaw === "0" || shuffleRaw === "false") {
+      shuffle = 0;
+    } else {
+      return fail(400, { error: "Nilai shuffle tidak valid" });
+    }
+
+    // Pastikan masjid milik user (admin_masjid) atau superadmin
+    if (!locals.user.roles.includes("superadmin")) {
+      const [membership] = await db
+        .select({ masjidId: masjidUsers.masjidId })
+        .from(masjidUsers)
+        .where(
+          and(
+            eq(masjidUsers.userId, locals.user.id),
+            eq(masjidUsers.isActive, 1),
+            eq(masjidUsers.masjidId, masjidId),
+          ),
+        )
+        .limit(1);
+      if (!membership) {
+        return fail(403, { error: "Tidak punya akses ke masjid ini" });
+      }
+    }
+
+    await db
+      .update(masjids)
+      .set({ youtubeShuffle: shuffle })
+      .where(eq(masjids.id, masjidId));
+
+    // Invalidate cache display agar TV baca setting baru
+    try {
+      invalidateDisplayCacheByMasjid(masjidId);
+    } catch {
+      // ignore — best effort
+    }
+
+    await writeAuditLog({
+      masjidId,
+      userId: locals.user.id,
+      action: "update",
+      entity: "youtube_shuffle",
+      entityId: masjidId,
+      ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    });
+
+    return { success: true, shuffle };
   },
 
   bulkImportPrayerSchedule: async ({ locals, request }) => {
