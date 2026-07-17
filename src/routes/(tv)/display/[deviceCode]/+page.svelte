@@ -11,6 +11,7 @@
     import VerticalYoutubeLayout from "$lib/components/display/VerticalYoutubeLayout.svelte";
     import MoodOverlay from "$lib/components/display/MoodOverlay.svelte";
 import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte";
+    import ExpiredWatermark from "$lib/components/display/ExpiredWatermark.svelte";
     import "$lib/styles/display-fullhd.css";
     import "$lib/styles/display-layout-fix.css";
     import "$lib/styles/display-responsive-1366.css";
@@ -891,9 +892,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     {/if}
 
     {#if watermarkText}
-        <div class="watermark-overlay">
-            {watermarkText}
-        </div>
+        <ExpiredWatermark text={watermarkText} />
     {/if}
 {/if}
 
@@ -1900,26 +1899,5 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         .main-body {
             flex-direction: column;
         }
-    }
-
-    .watermark-overlay {
-        position: fixed;
-        bottom: 12px;
-        right: 12px;
-        z-index: 9999;
-        background: rgba(0, 0, 0, 0.7);
-        color: #fff;
-        padding: 8px 16px;
-        border-radius: 6px;
-        font-size: clamp(10px, 1.2vw, 14px);
-        font-weight: 600;
-        letter-spacing: 0.05em;
-        pointer-events: none;
-        animation: watermarkFadeIn 0.5s ease-out;
-    }
-
-    @keyframes watermarkFadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
     }
 </style>

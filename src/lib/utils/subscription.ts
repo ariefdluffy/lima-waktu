@@ -45,3 +45,20 @@ export function isSubscriptionExpired(
  */
 export const EXPIRED_WATERMARK =
   "LIMAWAKTU.MY.ID — Aktifkan langganan di menu Admin";
+
+/**
+ * Default durasi trial untuk masjid baru (hari).
+ */
+export const TRIAL_DURATION_DAYS = 14;
+
+/**
+ * Hitung tanggal akhir trial dari tanggal mulai.
+ */
+export function calculateTrialEndDate(
+  start: Date = new Date(),
+  days: number = TRIAL_DURATION_DAYS,
+): Date {
+  const end = new Date(start);
+  end.setDate(end.getDate() + days);
+  return end;
+}

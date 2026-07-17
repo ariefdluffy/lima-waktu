@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { randomUUID } from "node:crypto";
 import { db } from "$lib/server/db";
 import { masjids, masjidUsers, subscriptions } from "$lib/server/db/schema";
+import { calculateTrialEndDate } from "$lib/utils/subscription";
 
 export const load: PageServerLoad = async ({ locals }) => {
   if (!locals.user) throw redirect(302, "/auth/login");
@@ -36,6 +37,20 @@ export const actions: Actions = {
       userId: adminUserId,
       roleScope: "owner",
       isActive: 1,
+    });
+
+    // Auto-create 14-day trial subscription (konsisten dengan flow lain)
+    const today = new Date();
+    const trialEnd = calculateTrialEndDate(today);
+    await db.insert(subscriptions).values({
+      masjidId,
+      packageName: "Trial",
+      billingCycle: "monthly",
+      status: "trial",
+      startDate: today,
+      endDate: trialEnd,
+      price: "0.00",
+      autoRenew: 0,
     });
   },
 

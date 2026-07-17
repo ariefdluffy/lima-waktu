@@ -30,7 +30,7 @@ import {
 } from "$lib/server/prayer/resolver";
 import { invalidateCache } from "$lib/server/prayer/cache";
 import { invalidateDisplayCacheByDevice, invalidateDisplayCacheByMasjid } from "$lib/server/display/cache";
-import { isSubscriptionExpired } from "$lib/utils/subscription";
+import { isSubscriptionExpired, calculateTrialEndDate } from "$lib/utils/subscription";
 import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
@@ -1306,8 +1306,7 @@ export const actions: Actions = {
 
     // Auto-create 14-day trial subscription
     const today = new Date();
-    const endDate = new Date(today);
-    endDate.setDate(endDate.getDate() + 14);
+    const endDate = calculateTrialEndDate(today);
 
     await db.insert(subscriptions).values({
       masjidId,

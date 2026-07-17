@@ -10,6 +10,7 @@ import {
   devices,
 } from "$lib/server/db/schema";
 import { writeAuditLog } from "$lib/server/audit";
+import { calculateTrialEndDate } from "$lib/utils/subscription";
 
 export const load = async ({
   locals,
@@ -170,6 +171,20 @@ export const actions = {
         isActive: 1,
       });
     }
+
+    // Auto-create 14-day trial subscription (konsisten dengan flow admin)
+    const today = new Date();
+    const trialEnd = calculateTrialEndDate(today);
+    await db.insert(subscriptions).values({
+      masjidId,
+      packageName: "Trial",
+      billingCycle: "monthly",
+      status: "trial",
+      startDate: today,
+      endDate: trialEnd,
+      price: "0.00",
+      autoRenew: 0,
+    });
 
     await writeAuditLog({
         masjidId,
