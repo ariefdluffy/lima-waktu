@@ -22,6 +22,7 @@ import {
   getCachedDisplayPayload,
   setCachedDisplayPayload,
 } from "$lib/server/display/cache";
+import { isSubscriptionExpired, EXPIRED_WATERMARK } from "$lib/utils/subscription";
 
 export const GET: RequestHandler = async ({ params }) => {
   try {
@@ -110,15 +111,8 @@ async function handleGet(params: Record<string, string | undefined>) {
     .orderBy(desc(subscriptions.createdAt))
     .limit(1);
 
-  if (sub) {
-    const now = new Date();
-    const endDate = new Date(sub.endDate);
-    const isExpired =
-      sub.status === "expired" ||
-      ((sub.status === "trial" || sub.status === "grace") && endDate < now);
-    if (isExpired) {
-      watermark = "LIMAWAKTU.MY.ID — Aktifkan langganan di menu Admin";
-    }
+  if (sub && isSubscriptionExpired(sub)) {
+    watermark = EXPIRED_WATERMARK;
   }
 
   // Heartbeat update — fire-and-forget supaya tidak menahan respons.

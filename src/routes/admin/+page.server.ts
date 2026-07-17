@@ -30,6 +30,7 @@ import {
 } from "$lib/server/prayer/resolver";
 import { invalidateCache } from "$lib/server/prayer/cache";
 import { invalidateDisplayCacheByDevice, invalidateDisplayCacheByMasjid } from "$lib/server/display/cache";
+import { isSubscriptionExpired } from "$lib/utils/subscription";
 import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
@@ -394,11 +395,7 @@ export const load: PageServerLoad = async ({ locals, url, depends }) => {
     subscription: subscriptionRow ?? null,
     maxDevices: subscriptionRow?.maxDevices ?? 1,
     prayerProviderInfo,
-    isExpired: subscriptionRow
-      ? subscriptionRow.status === "expired" ||
-        ((subscriptionRow.status === "trial" || subscriptionRow.status === "grace") &&
-          new Date(subscriptionRow.endDate) < new Date())
-      : false,
+    isExpired: isSubscriptionExpired(subscriptionRow),
   };
 };
 

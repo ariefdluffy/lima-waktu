@@ -4,6 +4,7 @@
     import { page } from "$app/stores";
     import { onMount } from "svelte";
     import { showToast as showToastGlobal } from "$lib/stores/toast";
+    import { isSubscriptionExpired as isSubExpiredShared } from "$lib/utils/subscription";
     import AdminSidebar from "$lib/components/admin/AdminSidebar.svelte";
     import ConfirmDialog from "$lib/components/admin/ConfirmDialog.svelte";
     import SectionDashboard from "$lib/components/admin/SectionDashboard.svelte";
@@ -83,13 +84,7 @@
         status: string;
         endDate: string | Date;
     }): boolean {
-        if (sub.status === "expired") return true;
-        if (
-            (sub.status === "trial" || sub.status === "grace") &&
-            new Date(sub.endDate) < new Date()
-        )
-            return true;
-        return false;
+        return isSubExpiredShared(sub);
     }
 
     // Type helper: slide dari server sudah include fileUrl via join
