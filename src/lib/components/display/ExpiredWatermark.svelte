@@ -6,8 +6,8 @@
      */
     let {
         text,
-        visibleDurationMs = 14000,
-        hiddenDurationMs = 46000,
+        visibleDurationMs = 10000,
+        hiddenDurationMs = 290000,
     }: {
         text: string;
         visibleDurationMs?: number;
@@ -79,41 +79,41 @@
     .expired-watermark__text {
         display: inline-block;
         font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
-        font-size: clamp(28px, 5.5vw, 72px);
+        /* font-size di-batasi supaya text ~53 char pas 1 layar
+           di TV HD (1280px) sampai FHD (1920px).
+           3vw di 1920px = 57.6 → capped 44. Di 1280px = 38.4. */
+        font-size: clamp(18px, 3vw, 44px);
         font-weight: 700;
-        letter-spacing: 0.22em;
-        color: rgba(255, 255, 255, 0.7);
+        letter-spacing: 0.16em;
+        color: rgba(255, 255, 255, 0.72);
         text-shadow:
             0 0 18px rgba(0, 0, 0, 0.85),
             0 2px 4px rgba(0, 0, 0, 0.6);
-        padding: 0.5em 1.2em;
+        padding: 0.4em 1em;
+        max-width: 96vw;
         white-space: nowrap;
-        /* Slide horizontal: masuk pelan, diam di tengah, keluar pelan (total 14s)
-           Pulse opacity terpisah, loop 3s untuk efek samar berdenyut. */
+        overflow: hidden;
+        text-overflow: clip;
+        /* Fade in/out di tengah + pulse opacity. Tidak ada slide horizontal
+           supaya text tidak terpotong ke kanan. */
         animation:
-            watermarkSlide 14s linear forwards,
+            watermarkFade 10s ease-in-out forwards,
             watermarkPulse 3s ease-in-out infinite;
     }
 
-    /* Slide horizontal:
-       - 0–18%: masuk dari kiri (pelan)
-       - 18–82%: diam di tengah, drift pelan ke kanan
-       - 82–100%: keluar ke kanan (pelan) */
-    @keyframes watermarkSlide {
+    /* Fade in/out: muncul pelan, diam 8s, hilang pelan.
+       Diam di tengah (translateX 0), tidak melintas. */
+    @keyframes watermarkFade {
         0% {
-            transform: translateX(-60vw);
             opacity: 0;
         }
-        18% {
-            transform: translateX(0);
-            opacity: 0.7;
+        15% {
+            opacity: 0.75;
         }
-        82% {
-            transform: translateX(0);
-            opacity: 0.7;
+        85% {
+            opacity: 0.75;
         }
         100% {
-            transform: translateX(60vw);
             opacity: 0;
         }
     }
@@ -122,10 +122,10 @@
     @keyframes watermarkPulse {
         0%,
         100% {
-            opacity: 0.55;
+            opacity: 0.6;
         }
         50% {
-            opacity: 0.85;
+            opacity: 0.9;
         }
     }
 

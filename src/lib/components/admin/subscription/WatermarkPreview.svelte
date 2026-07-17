@@ -18,31 +18,30 @@
         </div>
     </div>
     <p class="mt-2 text-xs text-slate-400">
-        Animasi: slide horizontal menyeberangi layar + pulse opacity (samar).
+        Animasi: fade in/out di tengah layar + pulse opacity (samar).
+        Interval: 5 menit, tampil 10 detik.
     </p>
 </div>
 
 <style>
     .animate-marquee {
         display: inline-block;
-        font-size: clamp(20px, 4vw, 56px);
+        font-size: clamp(18px, 3vw, 44px);
         font-weight: 700;
-        letter-spacing: 0.22em;
-        animation: marqueeSlide 8s linear infinite;
+        letter-spacing: 0.16em;
+        animation: marqueeFade 6s ease-in-out infinite;
     }
-    @keyframes marqueeSlide {
+    @keyframes marqueeFade {
         0% {
-            transform: translateX(-100%);
             opacity: 0;
         }
-        15% {
-            opacity: 0.7;
+        20% {
+            opacity: 0.75;
         }
-        85% {
-            opacity: 0.7;
+        80% {
+            opacity: 0.75;
         }
         100% {
-            transform: translateX(100%);
             opacity: 0;
         }
     }
