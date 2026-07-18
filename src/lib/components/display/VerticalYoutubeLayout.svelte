@@ -50,7 +50,7 @@
     let ytPlayer: any = null;
     let ytPlayerReady = $state(false);
 
-    const shouldPauseYoutube = $derived(
+    const shouldMuteYoutube = $derived(
         mood !== "normal" || preAdzanRemaining > 0,
     );
 
@@ -96,7 +96,7 @@
 
     function playNextVideo() {
         // Jangan pindah/load video baru saat adzan, iqamah, khusuk, atau pre-adzan.
-        if (shouldPauseYoutube) return;
+
         if (!payload.youtubeItems || payload.youtubeItems.length === 0) return;
         const currentShuffle = payload.masjid?.youtubeShuffle ?? 0;
         const shuffleChanged = lastShuffleMode !== null && lastShuffleMode !== currentShuffle;
@@ -146,7 +146,7 @@
                 videoId: firstVideoId,
                 playerVars: {
                     autoplay: 1,
-                    mute: 0,
+                    mute: 1,
                     controls: 0,
                     loop: 0,
                     modestbranding: 1,
@@ -159,24 +159,21 @@
                 events: {
                     onReady: (event: any) => {
                         ytPlayerReady = true;
+                        event.target.mute();
                         event.target.setVolume(30);
-                        if (shouldPauseYoutube) {
-                            event.target.pauseVideo();
-                        } else {
-                            event.target.playVideo();
-                        }
+                        if (shouldMuteYoutube) event.target.mute();
+                        else event.target.unMute();
+                        event.target.playVideo();
                     },
                     onStateChange: (event: any) => {
                         // YouTube kadang mulai sendiri setelah buffering/load.
                         // Paksa tetap pause selama adzan, iqamah, khusuk, atau pre-adzan.
                         if (event.data === 1) {
-                            if (shouldPauseYoutube) {
-                                event.target.pauseVideo();
-                                return;
-                            }
                             event.target.setVolume(30);
+                            if (shouldMuteYoutube) event.target.mute();
+                            else event.target.unMute();
                         }
-                        if (event.data === 0 && !shouldPauseYoutube) {
+                        if (event.data === 0) {
                             playNextVideo();
                         }
                     },
@@ -215,11 +212,10 @@
     // ── Pause/Resume YouTube saat mood overlay / pre-adzan ─────
     $effect(() => {
         if (!ytPlayer || !ytPlayerReady) return;
-        if (shouldPauseYoutube) {
-            ytPlayer.pauseVideo();
-        } else {
-            ytPlayer.playVideo();
-        }
+        ytPlayer.setVolume(30);
+        if (shouldMuteYoutube) ytPlayer.mute();
+        else ytPlayer.unMute();
+        ytPlayer.playVideo();
     });
 
     // ── Rebuild playOrder saat playlist / setting shuffle berubah ──

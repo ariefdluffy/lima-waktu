@@ -26,82 +26,55 @@
 </script>
 
 {#if mood === "adzan"}
-    {#if isJumatAdzan}
-        <!-- LAYAR JUMAT -->
-        <div class="mood-overlay mood-overlay--jumat" class:mood-overlay--vertical={orientation === "vertical"}>
-            <!-- <div class="mood-icon">🕌</div> -->
-            <div class="mood-jumat-badge">HARI JUM'AT</div>
-            <div class="mood-title">أَذَانُ الْجُمُعَة</div>
-            <div class="mood-subtitle">ADZAN JUM'AT</div>
-            <div class="mood-prayer">SHOLAT JUM'AT</div>
-            <div class="mood-ayat">
-                يَا أَيُّهَا الَّذِينَ آمَنُوا إِإذَا نُودِيَ لِلصَّلَاةِ مِن
-                يَوْمِ الْجُمُعَةِ فَاسْعَوْا إِلَىٰ ذِكْرِ اللَّهِ
-            </div>
-            <div class="mood-ayat-src">QS. Al-Jumu'ah: 9</div>
-            <div class="mood-adzan-call">
-                حَيَّ عَلَى الصَّلَاةِ • حَيَّ عَلَى الْفَلَاحِ
-            </div>
-            {#if countdown}
-                <div class="mood-countdown">
-                    <div class="mood-countdown-label">{countdownLabel}</div>
-                    <div class="mood-countdown-val">{countdown}</div>
-                </div>
+    <div class="mood-overlay mood-overlay--adzan" class:mood-overlay--vertical={orientation === "vertical"}>
+        <div class="mood-panel mood-panel--identity">
+            {#if isJumatAdzan}
+                <div class="mood-jumat-badge">HARI JUM'AT</div>
+                <div class="mood-title">أَذَانُ الْجُمُعَة</div>
+                <div class="mood-subtitle">ADZAN JUM'AT</div>
+                <div class="mood-prayer">SHOLAT JUM'AT</div>
+            {:else}
+                <div class="mood-title">وَقْتُ الْأَذَان</div>
+                <div class="mood-subtitle">WAKTU ADZAN</div>
+                <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
             {/if}
         </div>
-    {:else}
-        <!-- LAYAR ADZAN BIASA -->
-        <div class="mood-overlay mood-overlay--adzan" class:mood-overlay--vertical={orientation === "vertical"}>
-            <!-- <div class="mood-icon">🕌</div> -->
-            <div class="mood-title">وَقْتُ الْأَذَان</div>
-            <div class="mood-subtitle">WAKTU ADZAN</div>
-            <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
-            <div class="mood-ayat">
-                "Allahu Akbar, Allahu Akbar. Asyhadu alla ilaha illallah,
-                Asyhadu anna Muhammadar Rasulullah."
-            </div>
-            <div class="mood-adzan-call">
-                حَيَّ عَلَى الصَّلَاةِ • حَيَّ عَلَى الْفَلَاحِ
-            </div>
-            {#if countdown}
-                <div class="mood-countdown">
-                    <div class="mood-countdown-label">{countdownLabel}</div>
-                    <div class="mood-countdown-val">{countdown}</div>
-                </div>
-            {/if}
+        <div class="mood-divider"></div>
+        <div class="mood-panel mood-panel--info">
+            <div class="mood-ayat">{isJumatAdzan ? "فَاسْعَوْا إِلَىٰ ذِكْرِ اللَّهِ" : "حَيَّ عَلَى الصَّلَاةِ • حَيَّ عَلَى الْفَلَاحِ"}</div>
+            {#if countdown}<div class="mood-countdown"><div class="mood-countdown-label">{countdownLabel}</div><div class="mood-countdown-val">{countdown}</div></div>{/if}
         </div>
-    {/if}
+    </div>
+
 {/if}
 
 {#if mood === "iqamah"}
     <div class="mood-overlay mood-overlay--iqamah" class:mood-overlay--vertical={orientation === "vertical"}>
-        <!-- <div class="mood-icon">🕌</div> -->
-        <div class="mood-title">WAKTU MENUNGGU IQAMAH</div>
-        <div class="mood-subtitle">BERSEGERA WUDHU DAN SHOLAT SUNNAH</div>
-        <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
-        {#if countdown}
-            <div class="mood-countdown">
-                <div class="mood-countdown-label">{countdownLabel}</div>
-                <div class="mood-countdown-val">{countdown}</div>
-            </div>
-        {/if}
+        <div class="mood-panel mood-panel--identity">
+            <div class="mood-title">WAKTU IQAMAH</div>
+            <div class="mood-subtitle">BERSEGERA WUDHU DAN SHOLAT SUNNAH</div>
+            <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
+        </div>
+        <div class="mood-divider"></div>
+        <div class="mood-panel mood-panel--info">
+            <div class="mood-callout">RAPATKAN DAN LURUSKAN SHAF</div>
+            {#if countdown}<div class="mood-countdown"><div class="mood-countdown-label">{countdownLabel}</div><div class="mood-countdown-val">{countdown}</div></div>{/if}
+        </div>
     </div>
 {/if}
 
 {#if mood === "khusuk"}
     <div class="mood-overlay mood-overlay--khusuk" class:mood-overlay--vertical={orientation === "vertical"}>
-        <div class="mood-title">SHOLAT {moodPrayerName}</div>
-        <div class="mood-subtitle">MOHON KHUSYUK</div>
-        <div class="mood-ayat">
-            "Sesungguhnya shalat itu mencegah dari perbuatan keji dan mungkar"
+        <div class="mood-panel mood-panel--identity">
+            <div class="mood-title">SHOLAT {moodPrayerName}</div>
+            <div class="mood-subtitle">MOHON KHUSYUK</div>
         </div>
-        <div class="mood-ayat-src">QS. Al-Ankabut: 45</div>
-        {#if countdown}
-            <div class="mood-countdown">
-                <div class="mood-countdown-label">{countdownLabel}</div>
-                <div class="mood-countdown-val">{countdown}</div>
-            </div>
-        {/if}
+        <div class="mood-divider"></div>
+        <div class="mood-panel mood-panel--info">
+            <div class="mood-ayat">"Sesungguhnya shalat itu mencegah dari perbuatan keji dan mungkar"</div>
+            <div class="mood-ayat-src">QS. Al-Ankabut: 45</div>
+            {#if countdown}<div class="mood-countdown"><div class="mood-countdown-label">{countdownLabel}</div><div class="mood-countdown-val">{countdown}</div></div>{/if}
+        </div>
     </div>
 {/if}
 
@@ -111,10 +84,10 @@
         inset: 0;
         z-index: 50;
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
+        align-items: stretch;
         justify-content: center;
-        gap: clamp(2px, 0.6vh, 10px);
+        gap: 0;
         overflow: hidden;
         padding: 2vh 0;
         background: #000;
@@ -176,6 +149,24 @@
             )
         );
     }
+
+    .mood-panel {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(10px, 2vh, 28px);
+        padding: clamp(24px, 5vw, 80px);
+    }
+
+    .mood-panel--identity { background: rgba(0, 0, 0, 0.16); }
+    .mood-divider { width: 1px; margin: 8vh 0; background: linear-gradient(transparent, var(--accent-primary), transparent); opacity: .65; }
+    .mood-callout { color: var(--text-secondary); font-size: clamp(18px, 2.4vw, 42px); font-weight: 700; text-align: center; letter-spacing: .12em; }
+    .mood-overlay--vertical { flex-direction: column; }
+    .mood-overlay--vertical .mood-divider { width: 70%; height: 1px; margin: 0 auto; }
+    .mood-overlay--vertical .mood-panel { width: 100%; padding: 3vh 5vw; }
 
     .mood-icon {
         font-size: clamp(36px, 7vw, 100px);
