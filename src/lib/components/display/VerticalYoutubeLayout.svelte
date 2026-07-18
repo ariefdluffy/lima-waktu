@@ -167,10 +167,16 @@
                         }
                     },
                     onStateChange: (event: any) => {
+                        // YouTube kadang mulai sendiri setelah buffering/load.
+                        // Paksa tetap pause selama adzan, iqamah, khusuk, atau pre-adzan.
                         if (event.data === 1) {
+                            if (shouldPauseYoutube) {
+                                event.target.pauseVideo();
+                                return;
+                            }
                             event.target.setVolume(30);
                         }
-                        if (event.data === 0) {
+                        if (event.data === 0 && !shouldPauseYoutube) {
                             playNextVideo();
                         }
                     },
