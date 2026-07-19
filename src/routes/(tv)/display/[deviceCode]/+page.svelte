@@ -350,6 +350,12 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
         // Parse debug parameter dari URL
         debugOverrides = parseDebugParam();
         
+        // Helper dev: expose prayer state ke window untuk tes live mood transition
+        // tanpa menunggu waktu adzan. Pakai di Console browser TV:
+        //   prayer.mood = "khusuk"   // pause YouTube
+        //   prayer.mood = "normal"   // resume YouTube
+        (window as any).prayer = prayer;
+        
         // Jitter 0-5s agar tidak semua TV request bareng (thundering herd).
         setTimeout(fetchData, Math.random() * 5000);
         
