@@ -6,6 +6,16 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
+
+    /* Fallback font vars agar selalu resolve walau tanpa theme palette.
+       Override otomatis oleh themeCssVars() saat tema aktif. */
+    --font-heading: "Cinzel", serif;
+    --font-body: "Inter", "Exo 2", sans-serif;
+    --font-arabic: "Noto Naskh Arabic", "Scheherazade New", serif;
+
+    /* Fallback warna dasar */
+    --bg-primary: #0a0f1e;
+    --text-primary: #ffffff;
 }
 
 html,

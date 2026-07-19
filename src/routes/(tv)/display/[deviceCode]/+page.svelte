@@ -544,7 +544,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
 <svelte:head>
     <title>Display TV - {payload?.masjid?.name ?? "Lima Waktu"}</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@400;600;700&family=Exo+2:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&family=Scheherazade+New:wght@400;700&display=swap"
         rel="stylesheet"
     />
 </svelte:head>
