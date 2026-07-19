@@ -198,8 +198,16 @@
                             // Unmute only after player is already playing; avoids autoplay block.
                             event.target.unMute();
                         }
+                        // Jika pause ditolak/terlambat setelah transisi mood, retry sekali.
+                        if (event.data === 2 && !shouldPauseYoutube) {
+                            setTimeout(() => {
+                                if (!shouldPauseYoutube && ytPlayer && ytPlayerReady) {
+                                    ytPlayer.playVideo();
+                                }
+                            }, 300);
+                        }
                         // 0 = ended, pindah ke video berikutnya hanya saat mode normal
-                        if (event.data === 0) {
+                        if (event.data === 0 && !shouldPauseYoutube) {
                             playNextVideo();
                         }
                     },
@@ -238,47 +246,19 @@
     });
 
     // ── Pause/Resume YouTube saat mood overlay / pre-adzan ─────
-    let resumeTimer: ReturnType<typeof setInterval> | null = null;
-
-    function resumeYoutube() {
-        if (!ytPlayer || !ytPlayerReady || shouldPauseYoutube) return;
-
-        ytPlayer.setVolume(30);
-        ytPlayer.playVideo();
-
-        // YouTube API kadang mengabaikan playVideo() setelah pauseVideo().
-        // Retry sampai player benar-benar PLAYING, lalu pulihkan audio.
-        if (resumeTimer) clearInterval(resumeTimer);
-        let attempts = 0;
-        resumeTimer = setInterval(() => {
-            attempts++;
-            if (!ytPlayer || shouldPauseYoutube || attempts > 10) {
-                if (resumeTimer) clearInterval(resumeTimer);
-                resumeTimer = null;
-                return;
-            }
-            const state = ytPlayer.getPlayerState?.();
-            if (state === 1) {
-                ytPlayer.unMute();
-                if (resumeTimer) clearInterval(resumeTimer);
-                resumeTimer = null;
-            } else {
-                ytPlayer.playVideo();
-            }
-        }, 500);
-    }
-
+    // ── Pause/Resume YouTube saat mood overlay / pre-adzan ─────
     $effect(() => {
-        // Explicit dependency: mood/pre-adzan transition harus memicu effect.
         const pause = mood !== "normal" || preAdzanRemaining > 0;
         if (!ytPlayer || !ytPlayerReady) return;
+
         if (pause) {
-            if (resumeTimer) clearInterval(resumeTimer);
-            resumeTimer = null;
             ytPlayer.pauseVideo();
-        } else {
-            resumeYoutube();
+            return;
         }
+
+        // Resume langsung, sama seperti alur sebelum mood overlay.
+        ytPlayer.setVolume(30);
+        ytPlayer.playVideo();
     });
 
     // ── Rebuild playOrder saat playlist / setting shuffle berubah ──
