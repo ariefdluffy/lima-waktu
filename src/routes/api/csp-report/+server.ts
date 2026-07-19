@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ request }) => {
       lineNumber: report["line-number"] ?? null,
       columnNumber: report["column-number"] ?? null,
       userAgent: request.headers.get("user-agent") ?? null,
-      ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? request.socket.remoteAddress ?? null,
+      ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
     };
 
     // Log CSP violation (in production, send to monitoring service)

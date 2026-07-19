@@ -7,7 +7,8 @@ export type AuditAction =
 	| 'create'
 	| 'update'
 	| 'delete'
-	| 'upload';
+	| 'upload'
+	| 'delete_all';
 
 export async function writeAuditLog(params: {
 	masjidId?: string | null;
