@@ -50,7 +50,7 @@
     let ytPlayer: any = null;
     let ytPlayerReady = $state(false);
 
-    const shouldMuteYoutube = $derived(
+    const shouldPauseYoutube = $derived(
         mood !== "normal" || preAdzanRemaining > 0,
     );
 
@@ -146,7 +146,7 @@
                 videoId: firstVideoId,
                 playerVars: {
                     autoplay: 1,
-                    mute: 1,
+                    mute: 0,
                     controls: 0,
                     loop: 0,
                     modestbranding: 1,
@@ -159,19 +159,22 @@
                 events: {
                     onReady: (event: any) => {
                         ytPlayerReady = true;
-                        event.target.mute();
                         event.target.setVolume(30);
-                        if (shouldMuteYoutube) event.target.mute();
-                        else event.target.unMute();
-                        event.target.playVideo();
+                        if (shouldPauseYoutube) {
+                            event.target.pauseVideo();
+                        } else {
+                            event.target.playVideo();
+                        }
                     },
                     onStateChange: (event: any) => {
                         // YouTube kadang mulai sendiri setelah buffering/load.
                         // Paksa tetap pause selama adzan, iqamah, khusuk, atau pre-adzan.
                         if (event.data === 1) {
+                            if (shouldPauseYoutube) {
+                                event.target.pauseVideo();
+                                return;
+                            }
                             event.target.setVolume(30);
-                            if (shouldMuteYoutube) event.target.mute();
-                            else event.target.unMute();
                         }
                         if (event.data === 0) {
                             playNextVideo();
@@ -212,10 +215,12 @@
     // ── Pause/Resume YouTube saat mood overlay / pre-adzan ─────
     $effect(() => {
         if (!ytPlayer || !ytPlayerReady) return;
-        ytPlayer.setVolume(30);
-        if (shouldMuteYoutube) ytPlayer.mute();
-        else ytPlayer.unMute();
-        ytPlayer.playVideo();
+        if (shouldPauseYoutube) {
+            ytPlayer.pauseVideo();
+        } else {
+            ytPlayer.setVolume(30);
+            ytPlayer.playVideo();
+        }
     });
 
     // ── Rebuild playOrder saat playlist / setting shuffle berubah ──
