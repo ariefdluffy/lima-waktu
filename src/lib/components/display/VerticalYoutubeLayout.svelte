@@ -146,7 +146,8 @@
                 videoId: firstVideoId,
                 playerVars: {
                     autoplay: 1,
-                    mute: 0,
+                    // Muted autoplay allowed by browser; audio restored after playback starts.
+                    mute: 1,
                     controls: 0,
                     loop: 0,
                     modestbranding: 1,
@@ -163,6 +164,7 @@
                         if (shouldPauseYoutube) {
                             event.target.pauseVideo();
                         } else {
+                            event.target.mute();
                             event.target.playVideo();
                         }
                     },
@@ -175,6 +177,8 @@
                                 return;
                             }
                             event.target.setVolume(30);
+                            // Unmute only after player is already playing; avoids autoplay block.
+                            event.target.unMute();
                         }
                         if (event.data === 0) {
                             playNextVideo();
@@ -219,6 +223,7 @@
             ytPlayer.pauseVideo();
         } else {
             ytPlayer.setVolume(30);
+            ytPlayer.mute();
             ytPlayer.playVideo();
         }
     });
