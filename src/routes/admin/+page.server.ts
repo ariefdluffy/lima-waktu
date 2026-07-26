@@ -34,7 +34,7 @@ import { isSubscriptionExpired, calculateTrialEndDate } from "$lib/utils/subscri
 import { prayerCalculationMethods as prayerCalcMethodsTable } from "$lib/server/db/schema";
 
 const PAGE_SIZE = 10;
-const YOUTUBE_PAGE_SIZE = 20;
+const YOUTUBE_PAGE_SIZE = 25;
 
 // Helper: get provider info dari DB
 async function getProviderInfo(providerId: number | null) {

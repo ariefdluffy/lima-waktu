@@ -146,7 +146,7 @@
 
         const orderedIds = items.map((i) => i.id).join(",");
         const pageYT = Math.max(1, Number(new URLSearchParams(window.location.search).get("pageYT") ?? 1));
-        const pageOffset = (pageYT - 1) * 20;
+        const pageOffset = (pageYT - 1) * 25;
 
         const formData = new FormData();
         formData.set("masjid_id", data.masjid.id);
