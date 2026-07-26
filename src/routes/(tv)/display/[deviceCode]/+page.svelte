@@ -1815,7 +1815,7 @@ import PreAdzanCountdown from "$lib/components/display/PreAdzanCountdown.svelte"
     }
 
     .masjid-name {
-        font-family: var(--font-heading, "Cinzel"), serif;
+        font-family: var(--font-heading, "Aref Ruqaa"), serif;
         font-size: clamp(10px, 2.8vw, 30px);
         font-weight: 700;
         color: var(--accent-primary);

@@ -189,7 +189,7 @@
         width: 100vw;
         height: 100vh;
         background: var(--bg-primary);
-        font-family: var(--font-body, "Exo 2", sans-serif);
+        font-family: var(--font-body, "Cairo", sans-serif);
         position: relative;
         overflow: hidden;
         color: var(--text-primary);
@@ -208,7 +208,7 @@
         height: 28px;
         background: linear-gradient(90deg, #065f46, #047857, #065f46);
         color: white;
-        font-family: "Inter", system-ui, sans-serif;
+        font-family: "Cairo", system-ui, sans-serif;
         font-size: 11px;
         letter-spacing: 0.03em;
     }
@@ -346,7 +346,7 @@
         font-size: clamp(16px, 3vw, 60px);
     }
     .masjid-name {
-        font-family: var(--font-heading, "Cinzel"), serif;
+        font-family: var(--font-heading, "Aref Ruqaa"), serif;
         font-size: clamp(13px, 2.5vw, 44px);
         font-weight: 700;
         color: var(--accent-primary);

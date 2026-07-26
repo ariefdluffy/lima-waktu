@@ -52,8 +52,8 @@
     <div class="mood-overlay mood-overlay--iqamah" class:mood-overlay--vertical={orientation === "vertical"}>
         <div class="mood-panel mood-panel--identity">
             <div class="mood-title">WAKTU IQAMAH</div>
-            <div class="mood-subtitle">BERSEGERA WUDHU DAN SHOLAT SUNNAH</div>
             <div class="mood-prayer">SHOLAT {moodPrayerName}</div>
+            <div class="mood-subtitle">BERSEGERA WUDHU DAN SHOLAT SUNNAH</div>
         </div>
         <div class="mood-divider"></div>
         <div class="mood-panel mood-panel--info">

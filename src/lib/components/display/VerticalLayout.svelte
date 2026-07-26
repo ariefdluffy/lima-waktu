@@ -382,7 +382,7 @@
     }
 
     .v-masjid-name {
-        font-family: var(--font-heading, "Cinzel"), serif;
+        font-family: var(--font-heading, "Aref Ruqaa"), serif;
         font-size: clamp(16px, 3.8vw, 36px);
         font-weight: 700;
         color: var(--accent-primary);
@@ -524,7 +524,7 @@
     }
 
     .v-next-name {
-        font-family: var(--font-heading, "Cinzel"), serif;
+        font-family: var(--font-heading, "Aref Ruqaa"), serif;
         font-size: clamp(20px, 4.8vw, 42px);
         font-weight: 700;
         color: var(--accent-primary);

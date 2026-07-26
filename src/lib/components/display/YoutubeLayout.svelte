@@ -634,7 +634,7 @@
     }
 
     .yt-info-next__name {
-        font-family: var(--font-heading, "Cinzel"), serif;
+        font-family: var(--font-heading, "Aref Ruqaa"), serif;
         font-size: clamp(16px, 3.2vw, 44px);
         font-weight: 700;
         color: #fbbf24;
