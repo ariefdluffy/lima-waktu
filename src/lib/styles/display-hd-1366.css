@@ -64,7 +64,7 @@
     }
 
     .left-date {
-        font-size: clamp(10px, 1.4vw, 36px);
+        font-size: clamp(9px, 1.1vw, 28px);
         margin-bottom: 0px;
     }
 
@@ -85,12 +85,12 @@
     }
 
     .countdown-label {
-        font-size: clamp(7px, 1.4vw, 28px);
+        font-size: clamp(6px, 1.1vw, 20px);
         margin-bottom: 0px;
     }
 
     .countdown-val {
-        font-size: clamp(18px, 3.6vw, 64px);
+        font-size: clamp(15px, 2.8vw, 48px);
     }
 
     .progress-track {
@@ -448,7 +448,7 @@
     }
 
     .countdown-val {
-        font-size: clamp(20px, 3.8vw, 68px);
+        font-size: clamp(16px, 2.9vw, 50px);
     }
 
     .prayer-card-time {

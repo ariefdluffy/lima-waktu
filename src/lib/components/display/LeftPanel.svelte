@@ -61,7 +61,7 @@
     }
 
     .left-date {
-        font-size: clamp(12px, 1.5vw, 52px);
+        font-size: clamp(10px, 1.2vw, 38px);
         color: var(--accent-primary);
         font-weight: 600;
         margin-bottom: 2px;
@@ -84,7 +84,7 @@
     }
 
     .next-prayer-time {
-        font-size: clamp(50px, 6.5vw, 148px);
+        font-size: clamp(45px, 6vw, 132px);
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;
@@ -102,7 +102,7 @@
     }
 
     .countdown-label {
-        font-size: clamp(8px, 1.5vw, 32px);
+        font-size: clamp(7px, 1.2vw, 24px);
         color: var(--text-muted);
         letter-spacing: 0.12em;
         display: block;
@@ -110,7 +110,7 @@
     }
 
     .countdown-val {
-        font-size: clamp(22px, 3.3vw, 80px);
+        font-size: clamp(18px, 2.6vw, 60px);
         font-weight: 700;
         color: var(--accent-secondary);
         font-variant-numeric: tabular-nums;

@@ -37,7 +37,7 @@
 
   /* Left Panel Optimization */
   .left-date {
-    font-size: 56px;
+    font-size: 40px;
     margin-bottom: 8px;
   }
 
@@ -57,12 +57,12 @@
   }
 
   .countdown-label {
-    font-size: 40px;
+    font-size: 28px;
     margin-bottom: 8px;
   }
 
   .countdown-val {
-    font-size: 96px;
+    font-size: 68px;
     margin-bottom: 12px;
   }
 
@@ -199,7 +199,7 @@
   }
 
   .left-date {
-    font-size: 112px;
+    font-size: 80px;
   }
 
   .next-label {
@@ -215,11 +215,11 @@
   }
 
   .countdown-label {
-    font-size: 80px;
+    font-size: 56px;
   }
 
   .countdown-val {
-    font-size: 192px;
+    font-size: 136px;
   }
 
   .progress-track {

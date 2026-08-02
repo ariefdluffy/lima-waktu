@@ -64,7 +64,7 @@
     }
 
     .left-date {
-        font-size: clamp(10px, 1.6vw, 44px);
+        font-size: clamp(9px, 1.3vw, 32px);
         margin-bottom: 1px;
     }
 
@@ -85,12 +85,12 @@
     }
 
     .countdown-label {
-        font-size: clamp(7px, 1.6vw, 32px);
+        font-size: clamp(6px, 1.2vw, 22px);
         margin-bottom: 1px;
     }
 
     .countdown-val {
-        font-size: clamp(20px, 3.8vw, 68px);
+        font-size: clamp(16px, 2.9vw, 50px);
     }
 
     .progress-track {
@@ -363,7 +363,7 @@
     }
 
     .left-date {
-        font-size: clamp(9px, 1.4vw, 36px);
+        font-size: clamp(8px, 1.1vw, 28px);
     }
 
     .next-label {
@@ -379,11 +379,11 @@
     }
 
     .countdown-label {
-        font-size: clamp(6px, 1.4vw, 28px);
+        font-size: clamp(6px, 1.1vw, 20px);
     }
 
     .countdown-val {
-        font-size: clamp(16px, 3.8vw, 68px);
+        font-size: clamp(14px, 2.9vw, 50px);
     }
 
     .iqamah-label {
