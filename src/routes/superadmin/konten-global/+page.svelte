@@ -15,7 +15,8 @@
 
     function formatDate(d: unknown): string {
         if (!d) return "-";
-        return new Date(d as string).toLocaleDateString("id-ID", {
+        return new Date(d as string).toLocaleString("id-ID", {
+            timeZone: "Asia/Makassar",
             day: "2-digit",
             month: "short",
             year: "numeric",
@@ -27,6 +28,7 @@
     function formatDateShort(d: unknown): string {
         if (!d) return "-";
         return new Date(d as string).toLocaleDateString("id-ID", {
+            timeZone: "Asia/Makassar",
             day: "2-digit",
             month: "short",
             year: "numeric",

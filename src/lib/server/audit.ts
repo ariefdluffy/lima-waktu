@@ -7,6 +7,7 @@ export type AuditAction =
 	| 'create'
 	| 'update'
 	| 'delete'
+	| 'restore'
 	| 'upload'
 	| 'delete_all';
 

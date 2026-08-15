@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { RequestEvent } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { roles, userRoles, users } from "$lib/server/db/schema";
@@ -45,7 +45,7 @@ export async function findAuthUserById(
       fullName: users.fullName,
     })
     .from(users)
-    .where(and(eq(users.id, userId), eq(users.isActive, 1)))
+    .where(and(eq(users.id, userId), eq(users.isActive, 1), isNull(users.deletedAt)))
     .limit(1);
 
   if (!user) {
@@ -73,7 +73,7 @@ export async function findAuthUserByCredentials(
   const [user] = await db
     .select({ id: users.id, passwordHash: users.passwordHash })
     .from(users)
-    .where(and(eq(users.email, email), eq(users.isActive, 1)))
+    .where(and(eq(users.email, email), eq(users.isActive, 1), isNull(users.deletedAt)))
     .limit(1);
 
   if (!user) return null;

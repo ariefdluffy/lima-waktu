@@ -2,6 +2,7 @@ import { sequence } from "@sveltejs/kit/hooks";
 import type { Handle } from "@sveltejs/kit";
 import { getAuthenticatedUserFromSession } from "$lib/server/auth/session";
 // import { startPrayerScheduler } from "$lib/server/prayer/scheduler";
+import { startSubscriptionScheduler } from "$lib/server/subscription/scheduler";
 
 // PrayerScheduler dimatikan sementara — aktifkan kembali jika diperlukan
 // try {
@@ -10,6 +11,14 @@ import { getAuthenticatedUserFromSession } from "$lib/server/auth/session";
 //   const msg = err instanceof Error ? err.message : String(err);
 //   console.error("[Hooks] Failed to start prayer scheduler:", msg);
 // }
+
+// SubscriptionScheduler: proses auto-renew tiap jam
+try {
+  startSubscriptionScheduler();
+} catch (err) {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.error("[Hooks] Failed to start subscription scheduler:", msg);
+}
 
 const PUBLIC_PATHS = ["/_app/", "/display", "/api/v1/display", "/uploads", "/auth/login"];
 

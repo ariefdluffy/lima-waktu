@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
@@ -53,7 +53,7 @@ export const actions: Actions = {
     const [existingUser] = await db
       .select({ id: users.id })
       .from(users)
-      .where(eq(users.email, email))
+      .where(and(eq(users.email, email), isNull(users.deletedAt)))
       .limit(1);
 
     if (existingUser) {

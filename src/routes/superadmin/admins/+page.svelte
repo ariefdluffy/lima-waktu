@@ -15,10 +15,13 @@
         masjidName: string;
     } | null>(null);
     let deleteFormEl = $state<HTMLFormElement | null>(null);
+    let deleteAdminTarget = $state<{userId: string; fullName: string} | null>(null);
+    let deleteAdminFormEl = $state<HTMLFormElement | null>(null);
 
     $effect(() => {
         if (form?.deleted) showToast("Admin berhasil dihapus dari masjid");
         if (form?.saved) showToast("Data admin berhasil disimpan");
+        if (form?.restored) showToast("Admin berhasil dipulihkan");
         if (form?.error) showToast(form.error, "error");
     });
 
@@ -49,7 +52,8 @@
 
     function formatDate(d: unknown): string {
         if (!d) return "-";
-        return new Date(d as string).toLocaleDateString("id-ID", {
+        return new Date(d as string).toLocaleString("id-ID", {
+            timeZone: "Asia/Makassar",
             day: "2-digit",
             month: "short",
             year: "numeric",
@@ -72,10 +76,17 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
         <p class="text-xs text-slate-500">Total {data.total} admin masjid</p>
-        <button
-            class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-            onclick={() => (showCreateModal = true)}>+ Tambah Admin</button
-        >
+        <div class="flex items-center gap-2">
+            <a
+                href="/superadmin/admins/deleted"
+                class="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 inline-flex items-center gap-1"
+                >🗑 Admin Terhapus</a
+            >
+            <button
+                class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                onclick={() => (showCreateModal = true)}>+ Tambah Admin</button
+            >
+        </div>
     </div>
 
     <!-- Search -->
@@ -229,6 +240,32 @@
                                     >
                                         {a.isActive ? "⏸" : "▶"}
                                     </button>
+                                </form>
+                                <form
+                                    method="POST"
+                                    action="?/deleteAdmin"
+                                    class="inline"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="user_id"
+                                        value={a.id}
+                                    />
+                                    <button
+                                        type="button"
+                                        class="rounded-lg bg-red-100 px-3 py-2.5 text-xs min-h-[44px] font-medium text-red-600 hover:bg-red-200 inline-flex items-center justify-center"
+                                        onclick={(e) => {
+                                            deleteAdminTarget = {
+                                                userId: a.id,
+                                                fullName: a.fullName,
+                                            };
+                                            deleteAdminFormEl = (
+                                                e.currentTarget as HTMLButtonElement
+                                            ).closest(
+                                                "form",
+                                            ) as HTMLFormElement;
+                                        }}>🗑</button
+                                    >
                                 </form>
                             </div>
                         </td>
@@ -521,6 +558,25 @@
     oncancel={() => {
         deleteTarget = null;
         deleteFormEl = null;
+    }}
+/>
+
+<ConfirmDialog
+    open={deleteAdminTarget !== null}
+    title="Hapus Admin"
+    message={deleteAdminTarget
+        ? `Hapus admin "${deleteAdminTarget.fullName}"? Akun akan dinonaktifkan dan bisa dipulihkan lewat database.`
+        : ""}
+    confirmLabel="Ya, Hapus"
+    cancelLabel="Batal"
+    onconfirm={() => {
+        if (deleteAdminFormEl) deleteAdminFormEl.requestSubmit();
+        deleteAdminTarget = null;
+        deleteAdminFormEl = null;
+    }}
+    oncancel={() => {
+        deleteAdminTarget = null;
+        deleteAdminFormEl = null;
     }}
 />
 

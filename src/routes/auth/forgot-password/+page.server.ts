@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { Actions, PageServerLoad } from "./$types";
 import { db } from "$lib/server/db";
 import { users, passwordResets } from "$lib/server/db/schema";
@@ -21,7 +21,7 @@ export const actions: Actions = {
     const [user] = await db
       .select({ id: users.id, fullName: users.fullName })
       .from(users)
-      .where(eq(users.email, email))
+      .where(and(eq(users.email, email), isNull(users.deletedAt)))
       .limit(1);
 
     // Jangan bocorkan apakah email terdaftar — tetap kasih pesan sukses

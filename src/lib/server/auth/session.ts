@@ -31,7 +31,7 @@ async function buildAuthUser(userId: string): Promise<AuthUser | null> {
 	const [user] = await db
 		.select({ id: users.id, email: users.email, fullName: users.fullName })
 		.from(users)
-		.where(and(eq(users.id, userId), eq(users.isActive, 1)))
+		.where(and(eq(users.id, userId), eq(users.isActive, 1), isNull(users.deletedAt)))
 		.limit(1);
 
 	if (!user) {

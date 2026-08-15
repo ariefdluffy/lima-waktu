@@ -1,4 +1,4 @@
-import { desc, eq, sql, count, like, or } from "drizzle-orm";
+import { desc, eq, sql, count, like, or, isNull, and } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import { randomUUID } from "node:crypto";
 
@@ -10,6 +10,7 @@ import {
   masjidUsers,
   masjids,
   auditLogs,
+  userSessions,
 } from "$lib/server/db/schema";
 import { hashPassword } from "$lib/server/auth/password";
 import { writeAuditLog } from "$lib/server/audit";
@@ -29,17 +30,10 @@ export const load = async ({
   const limit = 20;
   const offset = (page - 1) * limit;
 
-  const whereConditions = [];
-  if (search) {
-    whereConditions.push(
-      or(like(users.fullName, `%${search}%`), like(users.email, `%${search}%`)),
-    );
-  }
-
-  const where =
-    whereConditions.length > 0
-      ? sql`${sql.join(whereConditions, sql` AND `)}`
-      : undefined;
+  const where = and(
+    isNull(users.deletedAt),
+    search ? or(like(users.fullName, `%${search}%`), like(users.email, `%${search}%`)) : undefined,
+  );
 
   const [adminRows, totalResult, allMasjids, auditLogRows] = await Promise.all([
     db
@@ -336,5 +330,81 @@ export const actions = {
     }
 
     return { deleted: true };
+  },
+
+  deleteAdmin: async ({ request, locals }) => {
+    const form = await request.formData();
+    const userId = String(form.get("user_id") ?? "").trim();
+
+    if (!userId) return { error: "User ID wajib diisi" };
+    if (locals.user?.id === userId) {
+      return { error: "Tidak bisa menghapus akun sendiri" };
+    }
+
+    const [target] = await db
+      .select({ id: users.id, fullName: users.fullName, email: users.email })
+      .from(users)
+      .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+      .limit(1);
+
+    if (!target) return { error: "User tidak ditemukan atau sudah dihapus" };
+
+    const now = new Date();
+    // Soft delete: tandai deletedAt + nonaktifkan, revoke semua sesi aktif
+    await db
+      .update(users)
+      .set({ deletedAt: now, isActive: 0 })
+      .where(eq(users.id, userId));
+
+    await db
+      .update(userSessions)
+      .set({ revokedAt: now })
+      .where(and(eq(userSessions.userId, userId), isNull(userSessions.revokedAt)));
+
+    await writeAuditLog({
+      userId: locals.user?.id,
+      action: "delete",
+      entity: "admin",
+      entityId: userId,
+      changesJson: JSON.stringify({
+        targetEmail: target.email,
+        targetName: target.fullName,
+        softDelete: true,
+      }),
+      ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    });
+
+    throw redirect(302, "/superadmin/admins?deleted=1");
+  },
+
+  restoreAdmin: async ({ request, locals }) => {
+    const form = await request.formData();
+    const userId = String(form.get("user_id") ?? "").trim();
+
+    if (!userId) return { error: "User ID wajib diisi" };
+
+    const [target] = await db
+      .select({ id: users.id, email: users.email })
+      .from(users)
+      .where(and(eq(users.id, userId), sql`${users.deletedAt} IS NOT NULL`))
+      .limit(1);
+
+    if (!target) return { error: "User tidak ditemukan atau belum dihapus" };
+
+    await db
+      .update(users)
+      .set({ deletedAt: null, isActive: 1 })
+      .where(eq(users.id, userId));
+
+    await writeAuditLog({
+      userId: locals.user?.id,
+      action: "restore",
+      entity: "admin",
+      entityId: userId,
+      changesJson: JSON.stringify({ targetEmail: target.email }),
+      ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    });
+
+    return { restored: true };
   },
 };

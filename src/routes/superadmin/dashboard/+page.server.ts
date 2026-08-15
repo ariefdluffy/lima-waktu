@@ -1,4 +1,4 @@
-import { desc, eq, sql, count, and } from "drizzle-orm";
+import { desc, eq, sql, count, and, isNull } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 
 import { db } from "$lib/server/db";
@@ -46,10 +46,11 @@ export const load = async ({ locals }: { locals: App.Locals }) => {
       .where(eq(masjids.isActive, 1))
       .then((r) => Number(r[0].val)),
 
-    // Total users
+    // Total users (tidak termasuk soft-deleted)
     db
       .select({ val: count() })
       .from(users)
+      .where(isNull(users.deletedAt))
       .then((r) => Number(r[0].val)),
 
     // Total devices

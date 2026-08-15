@@ -60,6 +60,7 @@ export const users = mysqlTable(
     phone: varchar("phone", { length: 24 }),
     isActive: int("is_active").default(1).notNull(),
     lastLoginAt: datetime("last_login_at"),
+    deletedAt: datetime("deleted_at"),
     ...timestamps,
   },
   (table) => [uniqueIndex("users_email_uq").on(table.email)],

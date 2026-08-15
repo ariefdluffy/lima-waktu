@@ -74,6 +74,7 @@
 
     function formatDate(d: string | Date): string {
         return new Date(d).toLocaleDateString("id-ID", {
+            timeZone: "Asia/Makassar",
             year: "numeric",
             month: "long",
             day: "numeric",

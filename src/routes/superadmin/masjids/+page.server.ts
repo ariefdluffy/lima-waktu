@@ -1,4 +1,4 @@
-import { desc, eq, sql, count, like, or } from "drizzle-orm";
+import { desc, eq, sql, count, like, or, isNull, and } from "drizzle-orm";
 import { redirect } from "@sveltejs/kit";
 import { randomUUID } from "node:crypto";
 import { db } from "$lib/server/db";
@@ -118,6 +118,7 @@ export const load = async ({
   const allUsers = await db
     .select({ id: users.id, fullName: users.fullName, email: users.email })
     .from(users)
+    .where(and(eq(users.isActive, 1), isNull(users.deletedAt)))
     .orderBy(users.fullName);
 
   return {
