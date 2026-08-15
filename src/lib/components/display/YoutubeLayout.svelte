@@ -178,7 +178,7 @@
                 events: {
                     onReady: (event: any) => {
                         ytPlayerReady = true;
-                        event.target.setVolume(75);
+                        event.target.setVolume(85);
                         if (shouldPauseYoutube) {
                             event.target.pauseVideo();
                         } else {
@@ -194,7 +194,7 @@
                                 event.target.pauseVideo();
                                 return;
                             }
-                            event.target.setVolume(75);
+                            event.target.setVolume(85);
                             // Unmute only after player is already playing; avoids autoplay block.
                             event.target.unMute();
                         }
@@ -257,7 +257,7 @@
         }
 
         // Resume langsung, sama seperti alur sebelum mood overlay.
-        ytPlayer.setVolume(75);
+        ytPlayer.setVolume(85);
         ytPlayer.playVideo();
     });
 
