@@ -160,7 +160,7 @@
                 events: {
                     onReady: (event: any) => {
                         ytPlayerReady = true;
-                        event.target.setVolume(30);
+                        event.target.setVolume(75);
                         if (shouldPauseYoutube) {
                             event.target.pauseVideo();
                         } else {
@@ -176,7 +176,7 @@
                                 event.target.pauseVideo();
                                 return;
                             }
-                            event.target.setVolume(30);
+                            event.target.setVolume(75);
                             // Unmute only after player is already playing; avoids autoplay block.
                             event.target.unMute();
                         }
@@ -222,7 +222,7 @@
         if (shouldPauseYoutube) {
             ytPlayer.pauseVideo();
         } else {
-            ytPlayer.setVolume(30);
+            ytPlayer.setVolume(75);
             ytPlayer.mute();
             ytPlayer.playVideo();
         }
